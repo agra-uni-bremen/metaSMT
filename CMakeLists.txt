@@ -4,6 +4,7 @@ SET(VERSION 0.1)
 cmake_minimum_required(VERSION 2.8.2)
 include(CheckIncludeFileCXX)
 include(FeatureSummary)
+include(CTest)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
