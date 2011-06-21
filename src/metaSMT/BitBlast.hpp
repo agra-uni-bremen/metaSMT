@@ -713,8 +713,12 @@ namespace metaSMT {
           bv_result ret (value.size());
           result_base one  = _solver(predtags::true_tag (), boost::any());
           result_base zero = _solver(predtags::false_tag(), boost::any());
+          std::string::reverse_iterator vite = value.rbegin();
+          typename bv_result::iterator rite = ret.begin();
           for (unsigned i = 0; i < value.size(); ++i) {
-            ret[i] = value[i]=='1' ? one : zero;
+            *rite = (*vite)=='1' ? one : zero;
+            ++rite;
+            ++vite;
           }
           return ret;
         }
