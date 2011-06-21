@@ -109,6 +109,7 @@ cd $BUILD_DIR
 eval_echo $CMAKE $SRC_DIR \
   -DCMAKE_INSTALL_PREFIX="$INSTALL" \
   -DCMAKE_PREFIX_PATH="$PREFIX_PATH" \
+  $CMAKE_ARGS \
   -DBOOST_ROOT="$DEPS/$BOOST"
 
 echo "finished bootstrap, you can now call make in $BUILD_DIR"
