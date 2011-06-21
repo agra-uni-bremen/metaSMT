@@ -157,6 +157,47 @@ BOOST_AUTO_TEST_CASE( nequal_t )
   BOOST_REQUIRE( solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( bin_constant_t )
+{
+
+  assumption(ctx, equal( bvbin("0"), bvuint(0, 1) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("1"), bvuint(1, 1) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("0000"), bvuint(0, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("0011"), bvuint(3, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("1010"), bvuint(10, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("1111"), bvuint(15, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption(ctx, equal( bvbin("11111111"), bvuint(255,8) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, nequal( bvbin("11111111"), bvuint(255,8) ) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  assumption(ctx, equal( bvbin("11110000"), bvuint(240,8) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, nequal( bvbin("11110000"), bvuint(240,8) ) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  bitvector x = new_bitvector(8);
+
+  assumption(ctx, equal( x,  bvbin("10100011") ) );
+  BOOST_REQUIRE( solve(ctx) );
+  unsigned u = read_value(ctx, x);
+  BOOST_REQUIRE_EQUAL( u, 163u);
+  assumption(ctx, nequal( bvbin("10100011"), bvuint(163,8) ) );
+  BOOST_REQUIRE( !solve(ctx) );
+}
+
 BOOST_AUTO_TEST_CASE( hex_constant_t )
 {
 
@@ -1142,7 +1183,6 @@ BOOST_AUTO_TEST_CASE( bvult_all )
   }
 }
 
-
 BOOST_AUTO_TEST_CASE( bvugt_t )
 {
   using namespace boost::logic;
@@ -1691,6 +1731,69 @@ BOOST_AUTO_TEST_CASE( bvint_t )
 
   metaSMT::assumption( ctx, metaSMT::logic::nequal( bvsint(-13,w), bvint(-13,w) ) );
   BOOST_REQUIRE( !solve(ctx) );
+}
+
+BOOST_AUTO_TEST_CASE( bvuint_t )
+{
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,8),
+    bvbin("01111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,16),
+    bvbin("0000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+  
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,32),
+    bvbin("00000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+  
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,64),
+    bvbin("0000000000000000000000000000000000000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,128),
+    bvbin("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+}
+
+BOOST_AUTO_TEST_CASE( bvsint_t )
+{
+  const unsigned w = 256;
+  bitvector x = new_bitvector(w);
+
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,8),
+    bvbin("01111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,16),
+    bvbin("0000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+  
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,32),
+    bvbin("00000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+  
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,64),
+    bvbin("0000000000000000000000000000000000000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,128),
+    bvbin("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
