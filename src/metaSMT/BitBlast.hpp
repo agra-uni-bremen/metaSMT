@@ -734,7 +734,8 @@ namespace metaSMT {
           result_base one  = _solver(predtags::true_tag (), boost::any());
           result_base zero = _solver(predtags::false_tag(), boost::any());
           for (unsigned i = 0; i < width; ++i) {
-            ret[i] = (value & (1ul << i )) ? one : zero;
+            ret[i] = (value & 1) ? one : zero;
+            value >>=1;
           }
           return ret;
         }
