@@ -26,6 +26,8 @@ namespace metaSMT {
     : SolverContext
     , boost::proto::callable_context< DirectSolver_Context<SolverContext>, boost::proto::null_context >
   { 
+    DirectSolver_Context() {}
+
     /// The returned expression type is the result_type of the SolverContext
     typedef typename SolverContext::result_type result_type;
 
@@ -247,6 +249,10 @@ namespace metaSMT {
     private:
       typedef typename std::tr1::unordered_map<unsigned, result_type> VariableLookupT;
       VariableLookupT _variables;
+
+      // disable copying DirectSolvers;
+      DirectSolver_Context(DirectSolver_Context const & );
+      DirectSolver_Context& operator=(DirectSolver_Context const & );
   };
 
   namespace features {
