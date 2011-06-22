@@ -94,7 +94,7 @@ namespace metaSMT {
       : _gtx( new Graph_Context() )
     { }
 
-    GraphSolver_Context ( const GraphSolver_Context & ctx )
+    explicit GraphSolver_Context ( const GraphSolver_Context & ctx )
       : _gtx( ctx._gtx ) // share graph
       , _solver() // create new solver
       , _lookup() // create new lookup table
