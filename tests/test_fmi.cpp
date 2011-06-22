@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( simple_sat )
 
   fmi::assertion ( ctx, control != control  );
 
-  BOOST_REQUIRE( solve( ctx ) );
+  BOOST_REQUIRE( !solve( ctx ) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
