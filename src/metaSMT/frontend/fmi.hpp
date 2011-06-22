@@ -155,8 +155,8 @@ namespace metaSMT {
       , logic::QF_BV::tag::var_tag
     > ::type bv;
 
-    template<typename T1> 
-    bv new_variable(T1, unsigned width) {
+    template<typename Context>
+    bv new_variable(Context &, unsigned width) {
       logic::QF_BV::tag::var_tag tag;
       tag.id = impl::new_var_id();
       tag.width= width;
@@ -198,22 +198,22 @@ namespace metaSMT {
     typedef void result_type;
 
     template < typename Context, typename Expression >
-    void operator() ( Context ctx, Expression e ) { 
+    void operator() ( Context & ctx, Expression e ) {
       proto::display_expr( transform::fmiToQF_BV()(e) );
       //assertion(ctx, transform::fmiToQF_BV()(e));
     }
-    // overload with params 
+    // overload with params
     template < typename Context, typename Expression >
-    void operator() ( Context ctx, Expression e, bv arg0 )
+    void operator() ( Context & ctx, Expression e, bv arg0 )
     {  (*this)(ctx, e);  }
     template < typename Context, typename Expression >
-    void operator() ( Context ctx, Expression e, bv arg0, bv arg1 )
+    void operator() ( Context & ctx, Expression e, bv arg0, bv arg1 )
     {  (*this)(ctx, e);  }
     template < typename Context, typename Expression >
-    void operator() ( Context ctx, Expression e, bv arg0, bv arg1, bv arg2 )
+    void operator() ( Context & ctx, Expression e, bv arg0, bv arg1, bv arg2 )
     {  (*this)(ctx, e);  }
     template < typename Context, typename Expression >
-    void operator() ( Context ctx, Expression e, bv arg0, bv arg1, bv arg2, bv arg3 )
+    void operator() ( Context & ctx, Expression e, bv arg0, bv arg1, bv arg2, bv arg3 )
     { (*this)(ctx, e); }
   } generate;
 
