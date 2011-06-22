@@ -55,8 +55,9 @@ namespace metaSMT {
         }
 
         ~Boolector() {
-          BOOST_FOREACH(BtorExp* expr, _exprs) {
-            boolector_release(_btor, expr);
+          for( std::list<BtorExp*>::iterator ite = _exprs.begin(); ite!=_exprs.end(); ++ite)
+          {
+            boolector_release(_btor, *ite);
           }
           boolector_delete(_btor);
         }
