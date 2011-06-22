@@ -12,6 +12,7 @@ extern "C" {
 #include <boost/mpl/map/map40.hpp>
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <list>
 
 namespace metaSMT {
   namespace solver {
