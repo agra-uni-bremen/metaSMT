@@ -40,6 +40,11 @@ namespace metaSMT {
       public:
         typedef BtorExp* result_type;
 
+        result_type ptr(BtorExp* expr) {
+          _exprs.push_back(expr);
+          return expr;
+        }
+      
         Boolector ()
         {
           _btor = boolector_new();
@@ -49,6 +54,9 @@ namespace metaSMT {
         }
 
         ~Boolector() {
+          BOOST_FOREACH(BtorExp* expr, _exprs) {
+            boolector_release(_btor, expr);
+          }
           boolector_delete(_btor);
         }
 
@@ -74,34 +82,34 @@ namespace metaSMT {
 
         result_type operator() (predtags::var_tag const & var, boost::any args )
         {
-          return boolector_var(_btor, 1, NULL);
+          return ptr(boolector_var(_btor, 1, NULL));
         }
 
         result_type operator() (predtags::false_tag , boost::any arg ) {
-          return boolector_false(_btor);
+          return ptr(boolector_false(_btor));
         }
 
         result_type operator() (predtags::true_tag , boost::any arg ) {
-          return boolector_true(_btor);
+          return ptr(boolector_true(_btor));
         }
 
         result_type operator() (predtags::not_tag , result_type a) {
-          return boolector_not(_btor, a) ;
+          return ptr(boolector_not(_btor, a) );
         }
 
 
         result_type operator() (bvtags::var_tag const & var, boost::any args )
         {
           assert ( var.width != 0 );
-          return boolector_var(_btor, var.width, NULL);
+          return ptr(boolector_var(_btor, var.width, NULL));
         }
 
         result_type operator() (bvtags::bit0_tag , boost::any arg ) {
-          return boolector_false(_btor);
+          return ptr(boolector_false(_btor));
         }
 
         result_type operator() (bvtags::bit1_tag , boost::any arg ) {
-          return boolector_true(_btor);
+          return ptr(boolector_true(_btor));
         }
 
         result_type operator() (bvtags::bvuint_tag , boost::any arg ) {
@@ -110,18 +118,18 @@ namespace metaSMT {
           //std::cout << "bvuint "<< p << std::endl;
           unsigned value = boost::get<0>(p);
           unsigned width = boost::get<1>(p);
-          return boolector_unsigned_int(_btor, value , width );
+          return ptr(boolector_unsigned_int(_btor, value , width ));
         }
 
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
           typedef boost::tuple<long, unsigned long> P;
           P p = boost::any_cast<P>(arg);
-          return boolector_int(_btor, boost::get<0>(p), boost::get<1>(p));
+          return ptr(boolector_int(_btor, boost::get<0>(p), boost::get<1>(p)));
         }
 
         result_type operator() (bvtags::bvbin_tag , boost::any arg ) {
           std::string val = boost::any_cast<std::string>(arg);
-          return boolector_const(_btor, val.c_str());
+          return ptr(boolector_const(_btor, val.c_str()));
         }
 
         result_type operator() (bvtags::bvhex_tag , boost::any arg ) {
@@ -181,59 +189,59 @@ namespace metaSMT {
             }
           }
           //std::cout << bin << std::endl;
-          return boolector_const(_btor, bin.c_str());
+          return ptr(boolector_const(_btor, bin.c_str()));
         }
 
         result_type operator() (bvtags::bvnot_tag , result_type a ) {
-          return boolector_not(_btor, a);
+          return ptr(boolector_not(_btor, a));
         }
 
         result_type operator() (bvtags::bvneg_tag , result_type a ) {
-          return boolector_neg(_btor, a);
+          return ptr(boolector_neg(_btor, a));
         }
 
         result_type operator() (bvtags::extract_tag const &
             , unsigned long upper, unsigned long lower
             , result_type e)
         {
-          return boolector_slice(_btor, e, upper, lower);
+          return ptr(boolector_slice(_btor, e, upper, lower));
         }
 
         result_type operator() (bvtags::zero_extend_tag const &
             , unsigned long width
             , result_type e)
         {
-          return boolector_uext(_btor, e, width);
+          return ptr(boolector_uext(_btor, e, width));
         }
 
         result_type operator() (bvtags::sign_extend_tag const &
             , unsigned long width
             , result_type e)
         {
-          return boolector_sext(_btor, e, width);
+          return ptr(boolector_sext(_btor, e, width));
         }
 
         result_type operator() (arraytags::array_var_tag const & var
                                 , boost::any args )
         {
-          return boolector_array(_btor, var.elem_width, var.index_width, NULL);
+          return ptr(boolector_array(_btor, var.elem_width, var.index_width, NULL));
         }
 
         result_type operator() (arraytags::select_tag const &
                                 , result_type array
                                 , result_type index) {
-          return boolector_read(_btor, array, index);
+          return ptr(boolector_read(_btor, array, index));
         }
 
         result_type operator() (arraytags::store_tag const &
                                 , result_type array
                                 , result_type index
                                 , result_type value) {
-          return boolector_write(_btor, array, index, value);
+          return ptr(boolector_write(_btor, array, index, value));
         }
 
         result_type operator() (predtags::ite_tag tag, result_type a, result_type b, result_type c) {
-          return boolector_cond(_btor, a, b, c);
+          return ptr(boolector_cond(_btor, a, b, c));
         }
 
         ////////////////////////
@@ -242,13 +250,13 @@ namespace metaSMT {
 
         template <typename TagT>
         result_type operator() (TagT tag, boost::any args ) {
-          return boolector_false(_btor);
+          return ptr(boolector_false(_btor));
         }
 
 
         template <typename TagT>
         result_type operator() (TagT tag, result_type a ) {
-          return boolector_false(_btor);
+          return ptr(boolector_false(_btor));
         }
 
         template< BtorExp* (*FN) (Btor*, BtorExp*, BtorExp*) >
@@ -311,19 +319,19 @@ namespace metaSMT {
             , mpl::at< Opcode_Map, TagT >
             , mpl::identity< Btor_F2<boolector_and> >
             >::type opcode;
-          return opcode::exec(_btor, a, b);
+          return ptr(opcode::exec(_btor, a, b));
           } else {
             std::cout << "unknown operator: " << tag << std::endl;
 
             assert(false && "unknown operator");
-            return boolector_false(_btor);
+            return ptr(boolector_false(_btor));
           }
         }
 
 
         template <typename TagT>
         result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
-          return boolector_false(_btor);
+          return ptr(boolector_false(_btor));
         }
 
 
@@ -332,6 +340,7 @@ namespace metaSMT {
 
       private:
         Btor *_btor;
+        std::list<BtorExp*> _exprs;
     };
 
     /**@}*/
