@@ -61,14 +61,37 @@ namespace metaSMT {
     {};
 
     TRANSLATE_FMI_QF_BV( proto::tag::bitwise_and,    logic::QF_BV::tag::bvand_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::bitwise_or,     logic::QF_BV::tag::bvor_tag)
     TRANSLATE_FMI_QF_BV( proto::tag::bitwise_xor,    logic::QF_BV::tag::bvxor_tag)
     TRANSLATE_FMI_QF_BV( proto::tag::equal_to,       logic::tag::equal_tag)
     TRANSLATE_FMI_QF_BV( proto::tag::not_equal_to,   logic::tag::nequal_tag)
     TRANSLATE_FMI_QF_BV( proto::tag::modulus_assign, logic::tag::equal_tag)
     TRANSLATE_FMI_QF_BV( proto::tag::shift_left,     logic::QF_BV::tag::bvshl_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::shift_right,    logic::QF_BV::tag::bvshr_tag)
+
+    TRANSLATE_FMI_QF_BV( proto::tag::plus,           logic::QF_BV::tag::bvadd_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::multiplies,     logic::QF_BV::tag::bvmul_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::minus,          logic::QF_BV::tag::bvsub_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::divides,        logic::QF_BV::tag::bvudiv_tag)
+    TRANSLATE_FMI_QF_BV( proto::tag::modulus,        logic::QF_BV::tag::bvurem_tag)
 
 #undef TRANSLATE_FMI_QF_BV
 
+    template<>
+    struct fmiToQF_BV_c::case_<proto::tag::complement>
+      : proto::call<
+          proto::functional::make_expr<logic::QF_BV::tag::bvnot_tag>(
+                fmiToQF_BV(proto::_left)
+            )>
+    {};
+
+    template<>
+    struct fmiToQF_BV_c::case_<proto::tag::negate>
+      : proto::call<
+          proto::functional::make_expr<logic::QF_BV::tag::bvneg_tag>(
+                fmiToQF_BV(proto::_left)
+            )>
+    {};
 
     struct fmiToQF_BV : proto::switch_< fmiToQF_BV_c > {};
   

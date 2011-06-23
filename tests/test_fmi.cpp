@@ -7,6 +7,20 @@
 using namespace metaSMT;
 using boost::proto::display_expr;
 
+template<typename Context, typename E1, typename E2>
+void require_equal_expr(Context & ctx
+    , E1 const & e1
+    , E2 const & e2
+) {
+  BOOST_REQUIRE(( proto::matches<E1, fmi::grammar>::value ));
+  proto::display_expr(e1);
+  transform::fmiToQF_BV toBV;
+  metaSMT::assumption(ctx, metaSMT::logic::equal ( toBV(e1), toBV(e2) ));
+  BOOST_REQUIRE(solve(ctx));
+  metaSMT::assumption(ctx, metaSMT::logic::nequal( toBV(e1), toBV(e2) ));
+  BOOST_REQUIRE(!solve(ctx));
+}
+
 BOOST_FIXTURE_TEST_SUITE(fmi_t, Solver_Fixture )
 
 BOOST_AUTO_TEST_CASE( syntax )
@@ -66,6 +80,32 @@ BOOST_AUTO_TEST_CASE( simple_sat )
   fmi::assertion ( ctx, control != control  );
 
   BOOST_REQUIRE( !solve( ctx ) );
+}
+
+BOOST_AUTO_TEST_CASE( bitwise_expr )
+{
+  fmi::bv x = fmi::new_variable(ctx, 4);
+  fmi::bv y = fmi::new_variable(ctx, 4);
+
+  require_equal_expr(ctx, x & y , bvand(x,y) );
+  require_equal_expr(ctx, x | y , bvor(x,y) );
+  require_equal_expr(ctx, x ^ y , bvxor(x,y) );
+  require_equal_expr(ctx,   ~x  , bvnot(x) );
+  require_equal_expr(ctx, x << y, bvshl(x, y) );
+  require_equal_expr(ctx, x >> y, bvshr(x, y) );
+}
+
+BOOST_AUTO_TEST_CASE( arithmetic_expr )
+{
+  fmi::bv x = fmi::new_variable(ctx, 4);
+  fmi::bv y = fmi::new_variable(ctx, 4);
+
+  require_equal_expr(ctx, x + y , bvadd(x,y) );
+  require_equal_expr(ctx, x * y , bvmul(x,y) );
+  require_equal_expr(ctx, x - y , bvsub(x,y) );
+  require_equal_expr(ctx,   -x  , bvneg(x) );
+  require_equal_expr(ctx, x / y , bvudiv(x, y) );
+  require_equal_expr(ctx, x % y , bvurem(x, y) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
