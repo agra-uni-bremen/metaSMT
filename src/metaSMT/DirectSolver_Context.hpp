@@ -5,6 +5,8 @@
 #include "frontend/QF_BV.hpp"
 #include "Group_Context.hpp"
 #include "Features.hpp"
+#include "API/Assertion.hpp"
+#include "API/Assumption.hpp"
 
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -246,6 +248,14 @@ namespace metaSMT {
       return r;
     }
 
+    void command( assertion_cmd const &, result_type e) {
+      SolverContext::assertion(e);
+    }
+    void command( assumption_cmd const &, result_type e) {
+      SolverContext::assumption(e);
+    }
+    using SolverContext::command;
+
     private:
       typedef typename std::tr1::unordered_map<unsigned, result_type> VariableLookupT;
       VariableLookupT _variables;
@@ -259,18 +269,14 @@ namespace metaSMT {
     template<typename Context, typename Feature>
     struct supports< DirectSolver_Context<Context>, Feature>
     : supports<Context, Feature>::type {};
-  }
 
-  template <typename SolverType, typename Expr>
-  void assertion( DirectSolver_Context<SolverType> & ctx, Expr const & e )
-  {
-    ctx.assertion(  evaluate(ctx, e) );
-  }
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, assertion_cmd>
+    : boost::mpl::true_ {};
 
-  template <typename SolverType, typename Expr>
-  void assumption( DirectSolver_Context<SolverType> & ctx, Expr const & e )
-  {
-    ctx.assumption( evaluate(ctx, e) );
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, assumption_cmd>
+    : boost::mpl::true_ {};
   }
 
   template <typename SolverType, typename Expr>

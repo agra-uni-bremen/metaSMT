@@ -4,6 +4,8 @@
 #include "Graph_Context.hpp"
 #include "result_wrapper.hpp"
 #include "Features.hpp"
+#include "API/Assertion.hpp"
+#include "API/Assumption.hpp"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -19,9 +21,6 @@ namespace metaSMT {
     CallByTag(Callee * callee, std::vector<T> const & args, boost::any const & arg)
       : callee(callee), args(args), arg(arg) {}
 
-
-    struct assertion_cmd {};
-    struct assumption_cmd {};
 
     typedef typename Callee::result_type result_type;
 
@@ -176,6 +175,13 @@ namespace metaSMT {
       return _solver.command(cmd);
     }
 
+    void command( assertion_cmd const &, result_type e) {
+      assertion(e);
+    }
+    void command( assumption_cmd const &, result_type e) {
+      assumption(e);
+    }
+
 
     void sync() {
       BOOST_FOREACH( Cmd const & f, _cmd_queue) {
@@ -280,16 +286,14 @@ namespace metaSMT {
     template<typename Context, typename Feature>
     struct supports< GraphSolver_Context<Context>, Feature>
     : supports<Context, Feature>::type {};
-  }
 
-  template <typename SolverTypes, typename Expr>
-  void assertion( GraphSolver_Context<SolverTypes> & ctx, Expr const & e ) {
-    ctx.assertion(  ctx.evaluate(e) );
-  }
+    template<typename Context>
+    struct supports< GraphSolver_Context<Context>, assertion_cmd>
+    : boost::mpl::true_ {};
 
-  template <typename SolverTypes, typename Expr>
-  void assumption( GraphSolver_Context<SolverTypes> & ctx, Expr const & e ) {
-    ctx.assumption(  ctx.evaluate(e) );
+    template<typename Context>
+    struct supports< GraphSolver_Context<Context>, assumption_cmd>
+    : boost::mpl::true_ {};
   }
 
   template <typename SolverTypes, typename Expr>

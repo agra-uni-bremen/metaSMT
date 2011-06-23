@@ -49,6 +49,7 @@ install(FILES
   DESTINATION include/metaSMT/backend/SAT
 )
 
+add_subdirectory(API)
 add_subdirectory(tags)
 add_subdirectory(support)
 
