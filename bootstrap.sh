@@ -44,6 +44,7 @@ usage: $0 [--free] [--non-free] build
   --mode <type>   the CMake build type to configure, types are
    -m <type>      RELEASE, MINSIZEREL, RELWITHDEBINFO, DEBUG
    -Dvar=val      pass options to cmake
+  --cmake=/p/t/c  use this version of cmake
   --cmake         build a custom cmake version
   <build>         the folder to setup the build environment in
 EOF
@@ -61,12 +62,14 @@ while [[ "$@" ]]; do
     --mode|-m)    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_BUILD_TYPE=$2"; shift;;
      -D*)         CMAKE_ARGS="$CMAKE_ARGS $1";;
     --clean|-c)   CLEAN="rm -rf";;
+    --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
              *)   ## assume build dir
                   BUILD_DIR="$1" ;;
   esac
   shift;
 done
+
 
 if [[ "$CLEAN" ]]; then
   rm -rf $BUILD_DIR
