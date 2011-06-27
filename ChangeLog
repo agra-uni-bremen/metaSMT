@@ -1,0 +1,14 @@
+== ChangeLog ==
+
+== metaSMT 1 -> 2 ==
+Bugfixes:
+* Fixed 2 bug in BitBlast constant handling (wrong bit order, overflow)
+* Fixed memory leak in Boolector backend
+* Disabled Copy Constructor of DirectSolver
+
+Other changes:
+* further work on the FMI frontend
+* Refactored assertion, assumption to use "command"-API, moved to separate
+  headers
+* fixes and enhancements to the build system and bootstrap script
+
