@@ -1,5 +1,5 @@
 #include <metaSMT/frontend/QF_BV.hpp>
-#include <metaSMT/Comment.hpp>
+#include <metaSMT/API/Comment.hpp>
 #include <boost/test/unit_test.hpp>
 
 // lazy headers

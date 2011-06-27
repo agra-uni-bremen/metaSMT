@@ -3,13 +3,14 @@
 #include <metaSMT/backend/ClauseWriter.hpp>
 #include <metaSMT/backend/SAT_Clause.hpp>
 #include <metaSMT/backend/PicoSAT.hpp>
+#include <metaSMT/API/Group.hpp>
 #include <metaSMT/BitBlast.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef DirectSolver_Context< Group_Context<BitBlast < SAT_Clause < 
+  typedef DirectSolver_Context< Group<BitBlast < SAT_Clause < 
     ClauseWriter< dimacs_solver< executable::PrecoSAT > >
   > > > > ContextType;
   ContextType ctx ;

@@ -1,5 +1,7 @@
 #include "backend/Boolector.hpp"
 #include "DirectSolver_Context.hpp"
+#include "API/Group.hpp"
+
 #include "boost/mpl/list.hpp"
 #include "boost/mpl/eval_if.hpp"
 
@@ -25,13 +27,13 @@ namespace metaSMT {
     
     template <typename This, typename Arg>
     struct result< This( Arg ) > {
-      typedef Group_Context< Arg > type;
+      typedef Group< Arg > type;
     };
 
     template<typename Arg> 
-    Group_Context< Arg >
+    Group< Arg >
     operator() (Arg) {
-      return Group_Context<Arg>();
+      return Group<Arg>();
     }
   };
 

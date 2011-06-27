@@ -3,7 +3,6 @@
 #include "result_wrapper.hpp"
 #include "frontend/Logic.hpp"
 #include "frontend/QF_BV.hpp"
-#include "Group_Context.hpp"
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"

@@ -5,7 +5,7 @@
 #include <string>
 
 #include <metaSMT/frontend/Logic.hpp>
-#include <metaSMT/Group_Context.hpp>
+#include <metaSMT/API/Group.hpp>
 
 using namespace std;
 using namespace metaSMT;

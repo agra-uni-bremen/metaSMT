@@ -3,7 +3,7 @@
 #include <string>
 
 #include <metaSMT/frontend/Logic.hpp>
-#include <metaSMT/Stack.hpp>
+#include <metaSMT/API/Stack.hpp>
 
 using namespace std;
 using namespace metaSMT;

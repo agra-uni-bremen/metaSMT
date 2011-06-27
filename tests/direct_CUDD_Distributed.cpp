@@ -16,7 +16,7 @@ struct Solver_Fixture {
   : gen( time(NULL) )
   , rnd ( random_bit(gen) )
   {  }
-  //typedef DirectSolver_Context< Group_Context < CUDD_Distributed > > ContextType;
+  //typedef DirectSolver_Context< Group < CUDD_Distributed > > ContextType;
   typedef DirectSolver_Context< BitBlast<CUDD_Distributed > > ContextType;
   //typedef DirectSolver_Context< CUDD_Distributed > ContextType;
   ContextType ctx ;

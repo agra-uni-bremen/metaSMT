@@ -1,8 +1,8 @@
 #pragma once
 
-#include "impl/_var_id.hpp"
-#include "tags/Logic.hpp"
-#include "Features.hpp"
+#include "../impl/_var_id.hpp"
+#include "../tags/Logic.hpp"
+#include "../Features.hpp"
 
 #include <cstdio>
 #include <vector>

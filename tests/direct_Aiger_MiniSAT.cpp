@@ -3,14 +3,14 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/SAT_Aiger.hpp>
 #include <metaSMT/backend/MiniSAT.hpp>
-#include <metaSMT/Group_Context.hpp>
+#include <metaSMT/API/Group.hpp>
 #include <metaSMT/BitBlast.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef DirectSolver_Context<  Group_Context < BitBlast < SAT_Aiger < MiniSAT > > > > ContextType;
+  typedef DirectSolver_Context<  Group< BitBlast < SAT_Aiger < MiniSAT > > > > ContextType;
   ContextType ctx ;
 };
 

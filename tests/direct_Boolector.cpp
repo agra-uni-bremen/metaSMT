@@ -1,15 +1,15 @@
 #define BOOST_TEST_MODULE direct_Boolector
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
-#include <metaSMT/Stack.hpp>
-#include <metaSMT/Comment.hpp>
-#include <metaSMT/Group_Context.hpp>
+#include <metaSMT/API/Stack.hpp>
+#include <metaSMT/API/Comment.hpp>
+#include <metaSMT/API/Group.hpp>
 #include <metaSMT/Instantiate.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< IgnoreComments< Group_Context < Stack < Boolector > > > > ContextType;
+  typedef DirectSolver_Context< IgnoreComments< Group < Stack < Boolector > > > > ContextType;
   ContextType ctx ;
 };
 

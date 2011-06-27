@@ -1,8 +1,8 @@
 #pragma once
 
-#include "impl/_var_id.hpp" 
-#include "tags/Logic.hpp" 
-#include "Features.hpp" 
+#include "../impl/_var_id.hpp" 
+#include "../tags/Logic.hpp" 
+#include "../Features.hpp" 
 
 #include <cstdio>
 #include <vector>
@@ -42,7 +42,7 @@ namespace metaSMT {
    *
    * \code
    *  // enable Group API for ctx
-   *  DirectSolver_Context< Group_Context<Context> > ctx;
+   *  DirectSolver_Context< Group<Context> > ctx;
    *  guard_type main = current_group(ctx);
    *
    *  // create and select a group
@@ -66,13 +66,13 @@ namespace metaSMT {
    */
 
   template<typename Solver>
-  struct Group_Context : public Solver 
+  struct Group : public Solver 
   {
     typedef typename Solver::result_type result_type; 
     typedef std::tr1::unordered_map < guard_type, result_type > guard_map_t;
     typedef typename guard_map_t::value_type value_pair; 
 
-    Group_Context ()  
+    Group ()  
     {
       guard_counter_ = 0; 
       command ( group_create() ); 
@@ -151,14 +151,14 @@ namespace metaSMT {
   };
 
   namespace features {
-    /* Group_Context supports group api */
+    /* Group supports group api */
     template<typename Context>
-    struct supports< Group_Context<Context>, group_api>
+    struct supports< Group<Context>, group_api>
     : boost::mpl::true_ {};
 
     /* Forward all other supported operations */
     template<typename Context, typename Feature>
-    struct supports< Group_Context<Context>, Feature>
+    struct supports< Group<Context>, Feature>
     : supports<Context, Feature>::type {};
 
   } /* features */

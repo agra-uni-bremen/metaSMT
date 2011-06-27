@@ -9,6 +9,7 @@ extern "C"
 }
 #include <vector>
 #include <exception>
+#include <iostream>
 
 #include <boost/fusion/sequence/intrinsic.hpp>
 #include <boost/fusion/support/is_sequence.hpp>

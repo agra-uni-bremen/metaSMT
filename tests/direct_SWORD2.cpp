@@ -1,12 +1,12 @@
 #define BOOST_TEST_MODULE direct_SWORD
 #include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/Group_Context.hpp>
+#include <metaSMT/API/Group.hpp>
 #include <metaSMT/backend/SWORD_Backend.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< Group_Context < SWORD_Backend > > ContextType;
+  typedef DirectSolver_Context< Group < SWORD_Backend > > ContextType;
   ContextType ctx ;
 };
 

@@ -7,6 +7,7 @@
 #include <boost/proto/core.hpp>
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
+#include <boost/foreach.hpp>
 
 #include <iostream>
 

@@ -1,11 +1,12 @@
 #define BOOST_TEST_MODULE direct_CUDD
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/CUDD_Context.hpp>
+#include <metaSMT/API/Group.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< Group_Context < CUDD_Context > > ContextType;
+  typedef DirectSolver_Context< Group < CUDD_Context > > ContextType;
   ContextType ctx ;
 };
 
