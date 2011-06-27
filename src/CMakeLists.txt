@@ -1,5 +1,8 @@
 
 add_subdirectory(lib)
-add_subdirectory(metaSMT)
+install(DIRECTORY metaSMT 
+  DESTINATION include/
+  FILES_MATCHING PATTERN "*.hpp"
+)
 
 # vim: ft=cmake:ts=2:sw=2:expandtab
