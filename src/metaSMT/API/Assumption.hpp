@@ -39,4 +39,5 @@ namespace metaSMT {
 
     ctx.command(assumption_cmd(),  evaluate(ctx, e) );
   }
+  /**@}*/
 } /* metaSMT */

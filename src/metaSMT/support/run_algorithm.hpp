@@ -197,6 +197,54 @@ namespace metaSMT
   }; 
 
 
+  /**
+   * \brief Run algorithm API
+   *
+   * compile an algorithm for multiple contexts. Select at run-time
+   * which algorithm will be used.
+   *
+   * The call to run_algorithm is parametrized with an boost MPL sequence
+   * of Context-types and an algorithm template that will be
+   * instanciated for all Contexts. At run-time specific instance of the
+   * Algorithm can be executed by passing its index in the sequence. 
+   * Furthermore parameters can be passed to the contexts operator().
+   *
+   * \code
+   * typedef boost::mpl::vector < 
+   *     DirectSolver_Context < Boolector >
+   *   , DirectSolver_Context < BitBlast < SAT_Aiger < MiniSAT > > >
+   *   , DirectSolver_Context < BitBlast < SAT_Aiger < PicoSAT > > >
+   *   , DirectSolver_Context < BitBlast < CUDD_Context > >
+ 
+   *   , GraphSolver_Context < Boolector >
+   *   , GraphSolver_Context < BitBlast < SAT_Aiger < MiniSAT > > >
+   *   , GraphSolver_Context < BitBlast < SAT_Aiger < PicoSAT > > >
+   *   , GraphSolver_Context < BitBlast < CUDD_Context > >
+   *    
+   *     > SolverVec;
+   *  DirectSolver_Context< Boolector > ctx;
+   *
+   *  template<typename Context>
+   *  struct MyAlgorithm {
+   *    typedef void result_type;
+   *    result_type operator() () {
+   *      Context ctx;
+   *      ...
+   *    }
+   *  }
+   *
+   *  int main(int argc, const char *argv[])
+   *  {
+   *    unsigned i = atoi(argv[1]);
+   *    run_algorithm<SolverVec, MyAlgorithm>(i);
+   *    return 0;
+   *  }
+   * \endcode
+   * \ingroup Support
+   * \defgroup run_algorithm Run algorithm
+   * @{
+   */
+
   template<typename Vec, template<class T> class Algo>
   typename eval_visitor<Vec, Algo>::result_type run_algorithm ( unsigned wanted )
   {
@@ -251,10 +299,7 @@ namespace metaSMT
     return visitor.get_result (); 
   }
 
-
- 
-
-
+  /**@}*/
 }
 
 
