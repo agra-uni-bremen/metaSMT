@@ -154,44 +154,57 @@ else (metaSMT_DOC_Doxygen)
 endif (metaSMT_DOC_Doxygen)
 
 
+set(EXTERNAL_FIND "")
+macro( config_find package path)
+  set(EXTERNAL_FIND "${EXTERNAL_FIND}
+find_package(${package} QUIET PATHS ${path})")
+endmacro(config_find)
 
 if(SWORD_FOUND)
+  config_find(SWORD ${SWORD_DIR})
   list(APPEND metaSMT_LIBS ${SWORD_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${SWORD_INCLUDE_DIR})
 endif(SWORD_FOUND)
 
 if(Boolector_FOUND)
+  config_find(Boolector ${Boolector_DIR})
   list(APPEND metaSMT_LIBS ${Boolector_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${Boolector_INCLUDE_DIR})
 endif(Boolector_FOUND)
 
 if(Z3_FOUND)
+  config_find(Z3 ${Z3_DIR})
   list(APPEND metaSMT_LIBS ${Z3_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${Z3_INCLUDE_DIR})
 endif(Z3_FOUND)
 
 if(mathsat_FOUND)
+  config_find(mathsat ${mathsat_DIR})
   list(APPEND metaSMT_LIBS ${mathsat_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${mathsat_INCLUDE_DIR})
 endif(mathsat_FOUND)
 
 if(Aiger_FOUND)
+  config_find(Aiger ${Aiger_DIR})
   list(APPEND metaSMT_LIBS ${Aiger_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${Aiger_INCLUDE_DIR})
 endif(Aiger_FOUND)
 
 if(CUDD_FOUND)
+  config_find(CUDD ${CUDD_DIR})
   list(APPEND metaSMT_LIBS CUDD_obj )
   list(APPEND metaSMT_INCLUDES ${CUDD_INCLUDE_DIR} ${cudd_INCLUDE_DIRS})
 endif(CUDD_FOUND)
 
 if(MiniSat_FOUND)
+  config_find(MiniSat ${MiniSat_DIR})
   list(APPEND metaSMT_LIBS MiniSat_libMiniSat)
   list(APPEND metaSMT_INCLUDES ${MiniSat_INCLUDE_DIR})
   list(APPEND metaSMT_CXXFLAGS "${MiniSat_CXXFLAGS}")
 endif(MiniSat_FOUND)
 
 if (PicoSAT_FOUND)
+  config_find(PicoSAT ${PicoSAT_DIR})
   list(APPEND metaSMT_LIBS ${PicoSAT_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${PicoSAT_INCLUDE_DIR})
 endif (PicoSAT_FOUND)
@@ -219,6 +232,8 @@ list(INSERT metaSMT_INCLUDES 0 ${CMAKE_INSTALL_PREFIX}/include)
 ## create metaSMT CMake config file
 file(WRITE ${PROJECT_BINARY_DIR}/metaSMTConfig.cmake 
 "set(metaSMT_FOUND 1)
+${EXTERNAL_FIND}
+
 set(metaSMT_INCLUDE_DIR ${metaSMT_INCLUDES})
 get_filename_component(metaSMT_CONFIG_DIR "\${CMAKE_CURRENT_LIST_FILE}" PATH)
 include("\${metaSMT_CONFIG_DIR}/metaSMT.cmake" )
