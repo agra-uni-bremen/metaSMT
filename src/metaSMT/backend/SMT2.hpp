@@ -11,6 +11,7 @@
 #include <fstream>
 #include <boost/mpl/map/map40.hpp>
 #include <boost/any.hpp>
+#include <boost/function.hpp>
 #include <boost/format.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -23,6 +24,14 @@
 #include <boost/fusion/adapted/std_pair.hpp>
 
 namespace metaSMT {
+
+  struct set_symbol_table_cmd;
+
+  std::string default_symbol_table(unsigned id) {
+    char buf[64];
+    sprintf(buf, "var_%u", id);
+    return buf;
+  }
 
   struct write_comment;
   namespace features {
@@ -199,6 +208,7 @@ namespace metaSMT {
         , _outfile("meta.smt2")
         , _solution_file("meta.sol")
         , out(_outfile, _solution_file)
+        , table_(default_symbol_table)
         {
           //out << "(set-option interactive-mode true)\n";
           out << "(set-logic QF_BV)\n";
@@ -219,6 +229,10 @@ namespace metaSMT {
 
         void command ( write_comment const &, std::string message) {
           out << ";; " << message << '\n';
+        }
+
+        void command ( set_symbol_table_cmd const &, boost::function<std::string(unsigned)> const &table) {
+          table_ = table;
         }
 
         void assertion( result_type e ) { 
@@ -298,9 +312,7 @@ namespace metaSMT {
 
         result_type operator() (predtags::var_tag const & var, boost::any args )
         {
-          char buf[64];
-          sprintf(buf, "var_%u", var.id);
-
+          std::string buf = table_(var.id);
           restore_stack();
           out << boost::format( "(declare-fun %s () Bool)\n") % buf;
           out.check_response();
@@ -318,9 +330,7 @@ namespace metaSMT {
         result_type operator() (bvtags::var_tag const & var, boost::any args )
         {
           assert ( var.width != 0 );
-          char buf[64];
-          sprintf(buf, "bitv_%u", var.id);
-
+          std::string buf = table_(var.id);
           restore_stack();
           out << boost::format( "(declare-fun %s () (_ BitVec %d))\n") % buf % var.width;
           out.check_response();
@@ -464,6 +474,7 @@ namespace metaSMT {
         std::ofstream _solution_file;
         smt2_solver_pipe out;
         std::list<result_type> _assumptions;
+        boost::function<std::string(unsigned)> table_;
     };
     /**@}*/
 	
@@ -472,6 +483,10 @@ namespace metaSMT {
   namespace features {
     template<>
     struct supports< solver::SMT2, features::comment_api>
+    : boost::mpl::true_ {};
+
+    template<>
+    struct supports< solver::SMT2, set_symbol_table_cmd>
     : boost::mpl::true_ {};
   } /* features */
 } // namespace metaSMT

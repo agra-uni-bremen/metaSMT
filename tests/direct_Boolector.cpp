@@ -3,13 +3,14 @@
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/API/Stack.hpp>
 #include <metaSMT/API/Comment.hpp>
+#include <metaSMT/API/SymbolTable.hpp>
 #include <metaSMT/API/Group.hpp>
 #include <metaSMT/Instantiate.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< IgnoreComments< Group < Stack < Boolector > > > > ContextType;
+  typedef DirectSolver_Context< IgnoreSymbolTable< IgnoreComments< Group < Stack < Boolector > > > > > ContextType;
   ContextType ctx ;
 };
 

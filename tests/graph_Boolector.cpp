@@ -4,12 +4,14 @@
 #include <metaSMT/API/Group.hpp>
 #include <metaSMT/API/Stack.hpp>
 #include <metaSMT/API/Comment.hpp>
+#include <metaSMT/API/SymbolTable.hpp>
+#include <metaSMT/API/Group.hpp>
 
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef GraphSolver_Context< IgnoreComments< Stack < Group< Boolector > > > > ContextType;
+  typedef GraphSolver_Context< IgnoreSymbolTable< IgnoreComments< Group < Stack < Boolector > > > > > ContextType;
   ContextType ctx ;
 };
 
