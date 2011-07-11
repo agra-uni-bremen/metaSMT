@@ -125,10 +125,6 @@ namespace metaSMT {
         }
       }
 
-      void command ( write_comment const &, std::string const & message) {
-        os_ << ";; " << message << '\n';
-      }
-
       ~smt2_solver_pipe() {
         delete _solver;
         delete _result;
