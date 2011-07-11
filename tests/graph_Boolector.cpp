@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE graph_Boolector
 #include <metaSMT/GraphSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
-#include <metaSMT/API/Group.hpp>
 #include <metaSMT/API/Stack.hpp>
 #include <metaSMT/API/Comment.hpp>
 #include <metaSMT/API/SymbolTable.hpp>
