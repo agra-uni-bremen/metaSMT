@@ -207,7 +207,7 @@ namespace metaSMT {
         , table_(default_symbol_table)
         {
           //out << "(set-option interactive-mode true)\n";
-          out << "(set-logic QF_BV)\n";
+          out << "(set-logic QF_ABV)\n";
           out.check_response();
 
           // for Z3
@@ -402,22 +402,31 @@ namespace metaSMT {
                                 , boost::any args )
         {
           //return boolector_array(_btor, var.elem_width, var.index_width, NULL);
-          return "not_implemented";
+          std::string buf = table_(var.id);
+          restore_stack();
+          out << boost::format( "(declare-fun %s () (Array (_ BitVec %d) (_ BitVec %d)))\n")
+            % buf % var.index_width % var.elem_width;
+          out.check_response();
+          return buf;
         }
-
+ 
         result_type operator() (arraytags::select_tag const &
                                 , result_type array
-                                , result_type index) {
+                                , result_type index)
+        {
           //return boolector_read(_btor, array, index);
-          return "not_implemented";
+          return boost::str( boost::format(
+              "(select %s %s)") % array % index);
         }
 
         result_type operator() (arraytags::store_tag const &
                                 , result_type array
                                 , result_type index
-                                , result_type value) {
+                                , result_type value)
+        {
           //return boolector_write(_btor, array, index, value);
-          return "not_implemented";
+          return boost::str( boost::format(
+              "(store %s %s %s)") % array % index % value);
         }
 
         ////////////////////////
