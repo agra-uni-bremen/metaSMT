@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../tags/QF_BV.hpp"
+#include "../tags/QF_UF.hpp"
 #include "../tags/Array.hpp"
 #include "../support/SMT_Tag_Mapping.hpp"
 #include "../support/find_executable.hpp"
@@ -42,6 +43,7 @@ namespace metaSMT {
     namespace predtags = ::metaSMT::logic::tag;
     namespace bvtags = ::metaSMT::logic::QF_BV::tag;
     namespace arraytags = ::metaSMT::logic::Array::tag;
+    namespace uftags = ::metaSMT::logic::QF_UF::tag;
   
     struct lazy_string {
       
@@ -189,6 +191,18 @@ namespace metaSMT {
       }
     };
 
+    struct type_visitor : boost::static_visitor<std::string> {
+      type_visitor() {}
+
+      std::string operator() (type::BitVector const &arg) const {
+        return boost::str( boost::format("(_ BitVec %u)") % arg.width );
+      }
+
+      std::string operator() (type::Boolean const &arg) const {
+        return "Bool";
+      }
+    };
+
     /**
      * @ingroup Backend
      * @class SMT2 SMT2.hpp metaSMT/include/SMT2.hpp
@@ -313,6 +327,45 @@ namespace metaSMT {
           out << boost::format( "(declare-fun %s () Bool)\n") % buf;
           out.check_response();
           return buf;
+        }
+
+        result_type operator() (uftags::function_var_tag const & var, boost::any args) {
+          std::string buf = table_(var.id);
+          restore_stack();
+          out << boost::str( boost::format( "(declare-fun %s (" ) % buf );
+          unsigned const num_args = var.args.size();
+          for (unsigned u = 0; u < num_args; ++u) {
+            out << boost::apply_visitor(type_visitor(), var.args[u]) << ' ';
+          }
+          out << boost::str( boost::format(") %s)\n") % boost::apply_visitor(type_visitor(), var.result_type) );
+          out.check_response();
+          return buf;
+        }
+
+        result_type operator() (proto::tag::function,
+                                result_type func_decl) {
+          return boost::str( boost::format("(%s)") );
+        }
+
+        result_type operator() (proto::tag::function,
+                                result_type func_decl,
+                                result_type arg) {
+          return boost::str( boost::format("(%s %s)") % func_decl % arg );
+        }
+
+        result_type operator() (proto::tag::function,
+                                result_type func_decl,
+                                result_type arg1,
+                                result_type arg2) {
+          return boost::str( boost::format("(%s %s %s)") % func_decl % arg1 % arg2 );
+        }
+
+        result_type operator() (proto::tag::function,
+                                result_type func_decl,
+                                result_type arg1,
+                                result_type arg2,
+                                result_type arg3) {
+          return boost::str( boost::format("(%s %s %s %s)") % func_decl % arg1 % arg2 % arg3 );
         }
 
         result_type operator() (predtags::false_tag , boost::any arg ) {
