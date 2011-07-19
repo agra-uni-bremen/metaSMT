@@ -2,7 +2,9 @@
 
 #include "result_wrapper.hpp"
 #include "frontend/Logic.hpp"
+#include "frontend/QF_UF.hpp"
 #include "frontend/QF_BV.hpp"
+#include "frontend/Array.hpp"
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
@@ -145,6 +147,20 @@ namespace metaSMT {
     }
 
     using SolverContext::read_value;
+
+    result_type operator() (boost::proto::tag::terminal,  
+        ::metaSMT::logic::QF_UF::tag::function_var_tag tag)
+    {
+      typename VariableLookupT::const_iterator iter
+        = _variables.find(tag.id);
+      if ( iter != _variables.end() ) {
+        return iter->second;
+      } else {
+        result_type ret = SolverContext::operator() ( tag, boost::any() );
+        _variables.insert( std::make_pair(tag.id, ret) );
+        return ret;
+      }
+    }
 
     result_type operator() (boost::proto::tag::terminal,  
         ::metaSMT::logic::Array::tag::array_var_tag tag)

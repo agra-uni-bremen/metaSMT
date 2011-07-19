@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../tags/QF_BV.hpp"
+#include "../tags/QF_UF.hpp"
 #include "../tags/Array.hpp"
 #include "../result_wrapper.hpp"
 #include "../Features.hpp"
@@ -39,8 +40,25 @@ namespace metaSMT {
     namespace predtags = ::metaSMT::logic::tag;
     namespace bvtags = ::metaSMT::logic::QF_BV::tag;
     namespace arraytags = ::metaSMT::logic::Array::tag;
+    namespace uftags = ::metaSMT::logic::QF_UF::tag;
     namespace qi = boost::spirit::qi;
     namespace ascii = boost::spirit::ascii;
+
+    struct domain_type_visitor : boost::static_visitor<Z3_sort> {
+      domain_type_visitor(Z3_context &z3)
+        : z3_(z3)
+      {}
+
+      Z3_sort operator() (type::BitVector const &arg) const {
+        return Z3_mk_bv_sort(z3_, arg.width);
+      }
+
+      Z3_sort operator() (type::Boolean const &arg) const {
+        return Z3_mk_bool_sort(z3_);
+      }
+
+      Z3_context &z3_;
+    };
 
     /**
      * \ingroup Backend
@@ -50,7 +68,28 @@ namespace metaSMT {
      **/
     class Z3_Context {
     public:
-      typedef Z3_ast result_type;
+      struct result_type {
+        boost::variant<Z3_ast, Z3_func_decl> internal;
+
+        result_type()
+        {}
+
+        result_type(Z3_ast a)
+          : internal(a)
+        {}
+
+        result_type(Z3_func_decl a)
+          : internal(a)
+        {}
+
+        operator Z3_ast() {
+          return boost::get<Z3_ast>(internal);
+        }
+
+        operator Z3_func_decl() {
+          return boost::get<Z3_func_decl>(internal);
+        }
+      };
 
       Z3_Context () {
         Z3_config cfg;
@@ -176,6 +215,61 @@ namespace metaSMT {
         sprintf(buf, "var_%u", var.id);
         Z3_symbol s = Z3_mk_string_symbol(z3_, buf);
         return Z3_mk_const(z3_, s, ty);
+      }
+
+      result_type operator() (uftags::function_var_tag const & var, boost::any args) {
+        unsigned const num_args = var.args.size();
+
+        // construct the name of the uninterpreted_function
+        char buf[64];
+        sprintf(buf, "function_var_%u", var.id);
+        Z3_symbol uf_name = Z3_mk_string_symbol(z3_, buf);
+
+        // construct result sort
+        sprintf(buf, "return_type_%u", var.id);
+        Z3_symbol result_name = Z3_mk_string_symbol(z3_, buf);
+        Z3_sort result_type = boost::apply_visitor(domain_type_visitor(z3_), var.result_type);
+
+        // construct argument sorts
+        Z3_sort *domain_type = new Z3_sort[num_args];
+        for (unsigned u = 0; u < num_args; ++u) {
+          sprintf(buf, "domain_%u_%u", var.id, u);
+          Z3_symbol dom_name = Z3_mk_string_symbol(z3_, buf);
+          domain_type[u] = boost::apply_visitor(domain_type_visitor(z3_), var.args[u]);
+        }
+
+        Z3_func_decl uf = Z3_mk_func_decl(z3_, uf_name, num_args, domain_type, result_type);
+        return uf;
+      }
+
+      result_type operator() (proto::tag::function,
+                              result_type func_decl) {
+        Z3_ast arg_array[] = {};
+        return Z3_mk_app(z3_, func_decl, 0, arg_array);
+      }
+
+      result_type operator() (proto::tag::function,
+                              result_type func_decl,
+                              result_type arg) {
+        Z3_ast arg_array[] = { arg };
+        return Z3_mk_app(z3_, func_decl, 1, arg_array);
+      }
+
+      result_type operator() (proto::tag::function,
+                              result_type func_decl,
+                              result_type arg1,
+                              result_type arg2) {
+        Z3_ast arg_array[] = { arg1, arg2 };
+        return Z3_mk_app(z3_, func_decl, 2, arg_array);
+      }
+
+      result_type operator() (proto::tag::function,
+                              result_type func_decl,
+                              result_type arg1,
+                              result_type arg2,
+                              result_type arg3) {
+        Z3_ast arg_array[] = { arg1, arg2, arg3 };
+        return Z3_mk_app(z3_, func_decl, 3, arg_array);
       }
 
       result_type operator() (bvtags::bvcomp_tag ,
