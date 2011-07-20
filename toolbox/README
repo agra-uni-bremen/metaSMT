@@ -1,0 +1,26 @@
+== metaSMT toolbox ==
+This folder is meant for small projects that use metaSMT. 
+All subfolders are automatically compiled into executables with the current build configuration.
+
+== How to make a new project ==
+
+# copy the example project
+cp -r simple new_project
+
+# or copy a project with custom CMakeLists.txt
+cp -r sudoku new_project
+# specify the correct dependencies
+edit new_project/CMakeLists.txt
+
+
+# and tell cmake to pick up new projects
+cd build
+make rebuild_cache
+
+
+== Reference and Guidance ==
+The sudoku/ and guess_mastermind/ folders both show the basic usage of 
+metaSMT.
+
+The use of all metaSMT expressions is also demonstrated in the tests folder of
+metaSMT. 
