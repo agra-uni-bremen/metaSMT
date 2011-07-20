@@ -59,6 +59,10 @@ add_test_executable( graph test_graph.cpp)
 
 add_test_executable( direct_SWORD direct_SWORD2.cpp REQUIRES SWORD_FOUND )
 add_test_executable( graph_SWORD graph_SWORD2.cpp REQUIRES SWORD_FOUND )
+add_test_executable( direct_Threaded_SWORD direct_Threaded_SWORD.cpp 
+  REQUIRES SWORD_FOUND
+  LIBRARIES ${Boost_THREAD_LIBRARY}
+)
 
 add_test_executable( direct_CUDD direct_CUDD.cpp REQUIRES CUDD_FOUND )
 add_test_executable( graph_CUDD graph_CUDD.cpp REQUIRES CUDD_FOUND )
