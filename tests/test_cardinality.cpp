@@ -143,6 +143,14 @@ BOOST_AUTO_TEST_CASE( test_cardinality_with_bv )
       BOOST_REQUIRE_EQUAL( solve(ctx), count_u >= r );
 
       assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_leq(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u <= r );
+
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_gt(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u > r );
+
+      assumeFromUnsigned(ctx, vec, u);
       assumption(ctx, cardinality_lt(ctx, vec, r));
       BOOST_REQUIRE_EQUAL( solve(ctx), count_u < r );
 

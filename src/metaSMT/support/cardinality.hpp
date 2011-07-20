@@ -77,6 +77,20 @@ namespace metaSMT {
     assert(ps.size() > 0 && "Lower than cardinality constraint requires at least one input variable");
     return evaluate(ctx, Not(cardinality_geq(ctx, ps, cardinality)));
   }
+
+  template <typename Context, typename Boolean>
+  typename Context::result_type
+  cardinality_leq(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
+    assert(ps.size() > 0 && "Lower equal cardinality constraint requires at least one input variable");
+    return evaluate(ctx, Not(cardinality_geq(ctx, ps, cardinality+1)));
+  }
+
+  template <typename Context, typename Boolean>
+  typename Context::result_type
+  cardinality_gt(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
+    assert(ps.size() > 0 && "Greater than cardinality constraint requires at least one input variable");
+    return evaluate(ctx, Not(cardinality_leq(ctx, ps, cardinality)));
+  }
  
   template <typename Context, typename Boolean>
   typename Context::result_type
