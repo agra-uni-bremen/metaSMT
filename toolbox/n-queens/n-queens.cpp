@@ -1,5 +1,5 @@
 #include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/backend/Boolector_Context.hpp>
+#include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/support/cardinality.hpp>
  
 #include <metaSMT/support/run_algorithm.hpp>
@@ -138,7 +138,7 @@ int
 main(int argc, const char *argv[])
 {
   typedef mpl::vector < 
-      DirectSolver_Context < Boolector_Context >
+      DirectSolver_Context < Boolector >
       > SolverVec;
 
   if( argc < 2) {
