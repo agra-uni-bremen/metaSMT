@@ -42,6 +42,11 @@ namespace metaSMT {
       , e_( proto::deep_copy(e) )
       { }
 
+      typename Context::result_type operator() ( )
+      {
+        return evaluate(ctx_, e_);
+      }
+
       template<typename Arg1> 
       typename Context::result_type operator() ( Arg1 const & arg1)
       {
