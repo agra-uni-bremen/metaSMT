@@ -9,7 +9,7 @@ include(CTest)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
 set(Boost_ADDITIONAL_VERSIONS "1.46.1")
-find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(Boost REQUIRED COMPONENTS iostreams thread)
 set_package_info(Boost "Portable C++ libraries")
 include_directories(${Boost_INCLUDE_DIRS})
 
