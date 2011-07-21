@@ -16,8 +16,87 @@ class Fixture {
   protected:
 };
 
+void check_conversion_XXX( result_wrapper const & rw)
+{
+  using boost::logic::indeterminate;
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, indeterminate);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, false);
+
+  std::string s = rw;
+  BOOST_REQUIRE_EQUAL( s, "000" );
+
+  int i = rw;
+  BOOST_REQUIRE_EQUAL( i, 0);
+
+  unsigned u = rw;
+  BOOST_REQUIRE_EQUAL( u, 0);
+
+  vector<bool> a, b(3, false);
+  b[0] = true;
+  a = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+
+  vector<tribool> ta, tb(3, indeterminate);
+  ta = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(ta.begin(), ta.end(), tb.begin(), tb.end());
+
+  unsigned char uc = rw;
+  BOOST_REQUIRE_EQUAL( uc, 0);
+
+  signed char sc = rw;
+  BOOST_REQUIRE_EQUAL( sc, 0);
+
+
+  dynamic_bitset<> bs = rw;
+  BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(3, 0u));
+}
+
+void check_conversion_0_in_8bit( result_wrapper const & rw)
+{
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, false);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, false);
+
+  std::string s = rw;
+  BOOST_REQUIRE_EQUAL( s, "00000000" );
+
+  int i = rw;
+  BOOST_REQUIRE_EQUAL( i, 0);
+
+  unsigned u = rw;
+  BOOST_REQUIRE_EQUAL( u, 0);
+
+  vector<bool> a, b(8, false);
+  a = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+
+  vector<tribool> tb = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
+
+  unsigned char uc = rw;
+  BOOST_REQUIRE_EQUAL( uc, 0);
+
+  signed char sc = rw;
+  BOOST_REQUIRE_EQUAL( sc, 0);
+
+
+  dynamic_bitset<> bs = rw;
+  BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(8, 0u));
+}
+
 void check_conversion_1_in_8bit( result_wrapper const & rw)
 {
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, true);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, true);
+
   std::string s = rw;
   BOOST_REQUIRE_EQUAL( s, "00000001" );
 
@@ -48,6 +127,12 @@ void check_conversion_1_in_8bit( result_wrapper const & rw)
 
 void check_conversion_128_in_8bit( result_wrapper const & rw)
 {
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, true);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, true);
+
   std::string s = rw;
   BOOST_REQUIRE_EQUAL( s, "10000000" );
 
@@ -78,6 +163,12 @@ void check_conversion_128_in_8bit( result_wrapper const & rw)
 
 void check_conversion_13_in_8bit( result_wrapper const & rw)
 {
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, true);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, true);
+
   std::string s = rw;
   BOOST_REQUIRE_EQUAL( s, "00001101" );
 
@@ -108,6 +199,78 @@ void check_conversion_13_in_8bit( result_wrapper const & rw)
 
 }
 
+void check_conversion_true( result_wrapper const & rw)
+{
+  using boost::logic::tribool;
+
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, true);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, true);
+
+  std::string s = rw;
+  BOOST_REQUIRE_EQUAL( s, "1" );
+
+  vector<bool> a, b(1, true);
+  a = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+
+  vector<tribool> tb = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
+
+  int i = rw;
+  BOOST_REQUIRE_EQUAL( i, -1);
+
+  unsigned u = rw;
+  BOOST_REQUIRE_EQUAL( u, 1u);
+
+  unsigned char uc = rw;
+  BOOST_REQUIRE_EQUAL( uc, 1u);
+
+  signed char sc = rw;
+  BOOST_REQUIRE_EQUAL( (int)sc, -1);
+
+  dynamic_bitset<> bs = rw;
+  BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(1, 1u));
+}
+
+void check_conversion_false( result_wrapper const & rw)
+{
+  using boost::logic::tribool;
+
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, false);
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, false);
+
+  std::string s = rw;
+  BOOST_REQUIRE_EQUAL( s, "0" );
+
+  vector<bool> a, b(1, false);
+  a = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+
+  vector<tribool> tb = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
+
+  unsigned char uc = rw;
+  BOOST_REQUIRE_EQUAL( uc, 0u);
+
+  signed char sc = rw;
+  BOOST_REQUIRE_EQUAL( sc, 0);
+
+  int i = rw;
+  BOOST_REQUIRE_EQUAL( i, 0);
+
+  unsigned u = rw;
+  BOOST_REQUIRE_EQUAL( u, 0u);
+
+  dynamic_bitset<> bs = rw;
+  BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(1, 0u));
+}
+
 BOOST_FIXTURE_TEST_SUITE(test_result_wrapper, Fixture )
 
 BOOST_AUTO_TEST_CASE( from_string )
@@ -127,28 +290,14 @@ BOOST_AUTO_TEST_CASE( from_string )
   check_conversion_1_in_8bit( result_wrapper( std::string("00000001")) );
   check_conversion_128_in_8bit( result_wrapper( std::string("10000000")) );
   check_conversion_13_in_8bit( result_wrapper( std::string("00001101")) );
+  check_conversion_true( result_wrapper( std::string("1")) );
+  check_conversion_false( result_wrapper( std::string("0")) );
 }
 
-BOOST_AUTO_TEST_CASE( bool_from_bool )
+BOOST_AUTO_TEST_CASE( from_bool )
 {
-  bool b;
-  b = result_wrapper(true);
-  BOOST_REQUIRE_EQUAL(b, true);
-
-  b = result_wrapper(false);
-  BOOST_REQUIRE_EQUAL(b, false);
-}
-
-BOOST_AUTO_TEST_CASE( bool_from_string )
-{
-  bool b;
-	result_wrapper rw1("1");
-  b = rw1;
-  BOOST_REQUIRE_EQUAL(b, true);
-
-	result_wrapper rw2("0");
-  b = rw2;
-  BOOST_REQUIRE_EQUAL(b, false);
+  check_conversion_true ( result_wrapper( result_wrapper(true ) ) );
+  check_conversion_false( result_wrapper( result_wrapper(false) ) );
 }
 
 BOOST_AUTO_TEST_CASE( tribool_from_string )
@@ -218,6 +367,8 @@ BOOST_AUTO_TEST_CASE( from_dynamic_bitset )
 
   check_conversion_1_in_8bit( result_wrapper(dynamic_bitset<>(8, 1)) );
   check_conversion_128_in_8bit( result_wrapper(dynamic_bitset<>(8, 128)) );
+  check_conversion_true ( result_wrapper(dynamic_bitset<>(1, 1)) );
+  check_conversion_false( result_wrapper(dynamic_bitset<>(1, 0)) );
 }
 
 BOOST_AUTO_TEST_CASE( minus_one_from_dynamic_bitset )
@@ -257,14 +408,16 @@ BOOST_AUTO_TEST_CASE( from_vector_bool )
   vec[3]=true;
   vec[7]=false;
   check_conversion_13_in_8bit( result_wrapper(vec) );
+  check_conversion_true ( result_wrapper(vector<bool>(1, true)) );
+  check_conversion_false( result_wrapper(vector<bool>(1, false)) );
 }
 
 BOOST_AUTO_TEST_CASE( from_vector_tribool )
 {
   using boost::logic::indeterminate;
-
+  using boost::logic::tribool;
   // check for 1
-  std::vector< boost::logic::tribool > vec (8, false);
+  std::vector< tribool > vec (8, false);
   vec[0] = true;
 
   check_conversion_1_in_8bit( result_wrapper(vec) );
@@ -280,9 +433,11 @@ BOOST_AUTO_TEST_CASE( from_vector_tribool )
   vec[3]=true;
   vec[7]=false;
   check_conversion_13_in_8bit( result_wrapper(vec) );
+  check_conversion_true ( result_wrapper(vector<tribool>(1, true)) );
+  check_conversion_false( result_wrapper(vector<tribool>(1, false)) );
 }
 
-BOOST_AUTO_TEST_CASE( from_integra_value_width )
+BOOST_AUTO_TEST_CASE( from_integral_value_and_width )
 {
   using boost::logic::indeterminate;
 
@@ -294,6 +449,9 @@ BOOST_AUTO_TEST_CASE( from_integra_value_width )
 
   // check  for 8u/-8
   check_conversion_13_in_8bit( result_wrapper(13, 8) );
+
+  check_conversion_true ( result_wrapper(1, 1) );
+  check_conversion_false( result_wrapper(0, 1) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() // result_wrapper
