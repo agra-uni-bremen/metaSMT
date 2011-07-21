@@ -82,12 +82,19 @@ namespace metaSMT {
         return v;
       }
       result_type operator() ( std::vector<boost::logic::tribool> const & t ) const {
-        return t.front();
+        boost::logic::tribool ret = false;
+        for (unsigned i = 0; i < t.size(); ++i) {
+          ret = ret||t[i];
+        }
+        return ret;
       }
 
       template<typename T, typename T2>
       result_type operator() ( boost::dynamic_bitset<T, T2> const & t ) const {
-        return t[0];
+        for (unsigned i = 0; i < t.size(); ++i) {
+          if (t[i]) return true;
+        }
+        return false;
       }
 
       result_type operator() (bool b ) const {
@@ -95,18 +102,26 @@ namespace metaSMT {
       }
 
       result_type operator() ( std::vector<bool> const & vb) const {
-        return vb.front();
+        for (unsigned i = 0; i < vb.size(); ++i) {
+          if (vb[i]) return true;
+        }
+        return false;
       }
 
       result_type operator() ( std::string const & s ) const {
-        switch(s[0]){
+        // true if any bit is true;
+        boost::logic::tribool ret = false;
+        for (unsigned i = 0; i < s.size(); ++i) {
+        switch(s[i]){
           case '0': 
-            return false;
+            break;
           case '1': 
             return true;
           default:
-            return boost::logic::indeterminate;
+            ret = boost::logic::indeterminate;
+          }
         }
+        return ret;
       }
     };
 
@@ -215,14 +230,21 @@ namespace metaSMT {
       as_integer ( Rng rng ) : _rng(rng) {}
 
       result_type operator() ( bool b ) const {
-        return b;
+        if (boost::is_signed<Integer>::value) {
+          return -(Integer)b;
+        } else {
+          return b;
+        }
       }
 
       result_type operator() ( boost::logic::tribool const & b ) const {
         if(_rng && boost::logic::indeterminate(b))
           return random_bit();
-        else
-          return b ? 1 : 0;
+        else if (boost::is_signed<Integer>::value) {
+          return b ? -1 : 0;
+        } else {
+          return b ? 1 :0;
+        }
       }
 
       result_type operator() ( std::vector< boost::logic::tribool > const & val ) const
