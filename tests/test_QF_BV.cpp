@@ -203,18 +203,49 @@ BOOST_AUTO_TEST_CASE( hex_constant_t )
 
   assumption(ctx, equal( bvhex("0"), bvuint(0, 4) ) );
   BOOST_REQUIRE( solve(ctx) );
-
-
+  assumption(ctx, equal( bvhex("1"), bvuint(1, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("2"), bvuint(2, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
   assumption(ctx, equal( bvhex("3"), bvuint(3, 4) ) );
   BOOST_REQUIRE( solve(ctx) );
-
-
-
+  assumption(ctx, equal( bvhex("4"), bvuint(4, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("5"), bvuint(5, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("6"), bvuint(6, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("7"), bvuint(7, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("8"), bvuint(8, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("9"), bvuint(9, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("a"), bvuint(10, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
   assumption(ctx, equal( bvhex("A"), bvuint(10, 4) ) );
   BOOST_REQUIRE( solve(ctx) );
-
+  assumption(ctx, equal( bvhex("b"), bvuint(11, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("B"), bvuint(11, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("c"), bvuint(12, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("C"), bvuint(12, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("d"), bvuint(13, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("D"), bvuint(13, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("e"), bvuint(14, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("E"), bvuint(14, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  assumption(ctx, equal( bvhex("f"), bvuint(15, 4) ) );
+  BOOST_REQUIRE( solve(ctx) );
   assumption(ctx, equal( bvhex("F"), bvuint(15, 4) ) );
   BOOST_REQUIRE( solve(ctx) );
+
 
 
 
@@ -1396,7 +1427,14 @@ BOOST_AUTO_TEST_CASE( uninitialized_readt )
    BOOST_CHECK_EQUAL(xd, xd);
 }
 
-BOOST_AUTO_TEST_CASE( self_equalitiest )
+/**
+ * this tests triggers an invalid optimization
+ * is SWORD, the constrained is preprocessed,
+ * found to constant true and replaced with
+ * true. Therefore no assignment for the 
+ * variables is generated.
+ */
+BOOST_AUTO_TEST_CASE( keeps_tiny_assertions )
 {
    const char w = 32;
 
@@ -1433,7 +1471,7 @@ BOOST_AUTO_TEST_CASE( self_equalitiest )
    BOOST_CHECK_EQUAL(tmp1d, 3);
 }
 
-BOOST_AUTO_TEST_CASE( self_equalitiest_good )
+BOOST_AUTO_TEST_CASE( keeps_small_assertions )
 {
    const char w = 32;
 
