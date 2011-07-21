@@ -569,36 +569,42 @@ namespace metaSMT {
                 *(iter++) = _0;
                 *(iter++) = _1;                
                break;
+              case 'a':
               case 'A':
                 *(iter++) = _0;
                 *(iter++) = _1;
                 *(iter++) = _0;
                 *(iter++) = _1;                
                break;
+              case 'b':
               case 'B':
                 *(iter++) = _1;
                 *(iter++) = _1;
                 *(iter++) = _0;
                 *(iter++) = _1;                
                break;
+              case 'c':
               case 'C':
                 *(iter++) = _0;
                 *(iter++) = _0;
                 *(iter++) = _1;
                 *(iter++) = _1;                
                break;
+              case 'd':
               case 'D':
                 *(iter++) = _1;
                 *(iter++) = _0;
                 *(iter++) = _1;
                 *(iter++) = _1;                
                break;
+              case 'e':
               case 'E':
                 *(iter++) = _0;
                 *(iter++) = _1;
                 *(iter++) = _1;
                 *(iter++) = _1;                
                break;
+              case 'f':
               case 'F':
                 *(iter++) = _1;
                 *(iter++) = _1;
