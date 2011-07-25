@@ -3,6 +3,8 @@
 #include "../tags/SAT.hpp"
 #include "../result_wrapper.hpp"
 #include "SAT/model_parser.hpp"
+#include "../support/GoTmp.hpp"
+
 
 #include <vector>
 #include <exception>
@@ -301,6 +303,7 @@ namespace metaSMT {
 
           bool solve ( )
           {
+            GoTmp working_directory;
             std::string name = "clause-writer.cnf"; 
             write_cnf ( name ); 
 
