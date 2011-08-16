@@ -30,10 +30,12 @@
 namespace metaSMT {
 
   /**
-   * @brief direct Solver integration
-   *
-   *  Threaded_Context takes a SolverType and directly feeds all commands
-   *  to it. Variable expressions are cached and only evaluated once.
+   * @brief Multi-multiple solver contexts and dispatches all calls
+   * (assertions/assumptions) to both of them. The "faster" solver context 
+   * is used to acquire  the assignment for the variables.
+   * 
+   * \tparam SolverContext1 a valid metaSMT context, e.g. DirectSolver_Context<...>
+   * \tparam SolverContext2 another valid metaSMT context
    **/
   template<typename SolverContext1, typename SolverContext2>
   struct Threaded_Context 
@@ -44,6 +46,15 @@ namespace metaSMT {
     , t_2(worker, 2, boost::ref(queue2))
     {}
 
+ /**
+   * \brief controls the running threads
+   *
+   * The destructor regulates the threads by interrupting and joining 
+   * the threads.
+   *
+   *
+   */
+
     ~Threaded_Context() {
       t_1.interrupt();
       t_2.interrupt();
@@ -51,6 +62,7 @@ namespace metaSMT {
       t_2.join();
     }
 
+  /** \cond */
   template<typename Result>
   struct PTFunction {
     PTFunction( boost::packaged_task<Result> * pt) : pt(pt) {}
@@ -145,7 +157,19 @@ namespace metaSMT {
           task();
  	 }
     }
+  /** \endcond */
 
+  /**
+   * \brief evaluate an expression in both contexts
+   *
+   * Takes the current expression and creates a task for each Context.
+   * The tasks are put into the respective queues and the future results 
+   * are returned as result_type.
+   * 
+   * \param e The expression to evaluate
+   * \return result_type - tuple of future results of the contexts
+   *
+   */
     template<typename Expr>
     result_type evaluate(Expr const & e) {
 	
@@ -165,6 +189,19 @@ namespace metaSMT {
     	return r; 
     }
 
+  /**
+   * \brief read the backend result from an expression of the last call of solve
+   *
+   * This method reads the result of the last call of solve for bitvectors
+   * and predicates. It takes an expression and creates a task for the 
+   * respective context. Dependent on the result of the solver, the task is 
+   * put into the respective queue and the result is returned as 
+   * result_wrapper. 
+   * 
+   * \param e The expression to read 
+   * \return result_wrapper 
+   *
+   */
     template<typename Expr>
     result_wrapper read_value (Expr const & e)
     {
@@ -190,7 +227,19 @@ namespace metaSMT {
 	} 
 	return result_wrapper("X");
     }
-
+    
+  /**
+   * \brief read the value from a result_type of the last call of solve
+   *
+   * Reads the result of the call of solve only for result_types.
+   * Dependent to the result of the solver, the result_type is put 
+   * into a tasks and then pushed into the respective queue.
+   * This method returns a result_wrapper.  
+   * 
+   * \param e result_type to read 
+   * \return result_wrapper
+   *
+   */
     result_wrapper read_value (result_type & e)
     {
     	using boost::fusion::at_c;
@@ -217,7 +266,16 @@ namespace metaSMT {
 	  return result_wrapper("X");
 	
     }
-
+  /**
+   * \brief insert a result_type into queues
+   *
+   * Takes a result_type and split it into the respective queues.
+   * 
+   * \param cmd  - a Command
+   * \param e - a result_type
+   * \return void
+   *
+   */
     template<typename Command>
     void command( Command const & cmd, result_type e) 
     {
@@ -225,12 +283,24 @@ namespace metaSMT {
      queue2.push( call_command (ctx2, cmd, boost::fusion::at_c<1>(e)) );
     }
 
+  /**
+   * \brief insert an argument into queues
+   *
+   * This method takes an argument and push it into the two queues.
+   * 
+   * \param cmd - a Command
+   * \param a1 - an argument
+   * \return void
+   *
+   */
+
     template<typename Command, typename Arg1>
     void command( Command const & cmd, Arg1 a1) 
     {
      queue1.push( call_command (ctx1, cmd, a1) );
      queue2.push( call_command (ctx2, cmd, a1) );
     }
+
 
     bool solve()
     {
