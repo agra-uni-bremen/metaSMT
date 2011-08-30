@@ -12,8 +12,8 @@ void require_equal_expr(Context & ctx
     , E1 const & e1
     , E2 const & e2
 ) {
-  BOOST_REQUIRE(( proto::matches<E1, fmi::grammar>::value ));
-  proto::display_expr(e1);
+  BOOST_REQUIRE(( boost::proto::matches<E1, fmi::grammar>::value ));
+  boost::proto::display_expr(e1);
   transform::fmiToQF_BV toBV;
   metaSMT::assumption(ctx, metaSMT::logic::equal ( toBV(e1), toBV(e2) ));
   BOOST_REQUIRE(solve(ctx));
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( syntax )
   //nextGate [ pos ] = fmi::new_variable (solver, lines);
   fmi::bv hit      = fmi::new_variable (solver, 1);
 
-  //proto::display_expr(fmi::generate(_0 == _0));
+  //boost::proto::display_expr(fmi::generate(_0 == _0));
 
   using namespace logic::QF_BV;
 
