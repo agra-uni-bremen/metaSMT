@@ -29,6 +29,13 @@
 
 namespace metaSMT {
 
+  /**
+   * @brief Multi-multiple solver contexts and dispatches all calls
+   * (assertions/assumptions) to both of them in parallel. After the "prioritized" solver context is ready then it is used exclusively.
+   * 
+   * \tparam SolverContext1 a valid metaSMT context, e.g. DirectSolver_Context<...>
+   * \tparam SolverContext2 another valid metaSMT context
+   **/
   template<typename SolverContext1, typename SolverContext2>
   struct Priority_Context 
     : boost::proto::callable_context< Priority_Context<SolverContext1, SolverContext2>, boost::proto::null_context >
@@ -40,6 +47,13 @@ namespace metaSMT {
 	  ,t_1(worker, 1, boost::ref(queue1))
           ,t_2(worker, 2, boost::ref(queue2))    {}
 
+ /**
+   * \brief controls the running threads
+   *
+   * The destructor regulates the threads by interrupting and joining 
+   * the threads.
+   *
+   */
     ~Priority_Context() {
       t_1.interrupt();
       t_2.interrupt();
@@ -47,6 +61,7 @@ namespace metaSMT {
       t_2.join();
     }
 
+ /** \cond */
   template<typename Result>
   struct PTFunction {
     PTFunction( boost::packaged_task<Result> * pt) : pt(pt) {}
@@ -127,15 +142,52 @@ namespace metaSMT {
 	 )>
         , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
        > {};
-  
+       
+    static void worker ( int id, concurrent_queue<boost::function0<void> > & queue) {
+	 while(true) { 
+	  boost::function0<void> task = NULL;
+	  queue.wait_and_pop(task);
+          task();
+ 	 }
+    }
+
+    template<typename Command>
+    void command( Command const & cmd, result_type e) 
+     {
+      queue1.push( call_command (ctx1, cmd, boost::fusion::at_c<0>(e)) );
+      queue2.push( call_command (ctx2, cmd, boost::fusion::at_c<1>(e)) );
+     }
+
+
+    template<typename Command, typename Arg1>
+    void command( Command const & cmd, Arg1 a1) 
+     {
+      queue1.push( call_command (ctx1, cmd, a1) );
+      queue2.push( call_command (ctx2, cmd, a1) );
+     }
+
+    /** \endcond */
+
+
+  /**
+   * \brief evaluate an expression in both contexts
+   *
+   * Takes the current expression and creates a task for each Context.
+   * Tasks are put into the respective queues and read by future tag.
+   * The future results are returned as result_type.
+   * 
+   * \param e The expression to evaluate
+   * \return result_type - tuple of future results of the contexts
+   *
+   */
   template<typename Expr>
    result_type evaluate(Expr const & e) 
     {
       boost::packaged_task <typename SolverContext1::result_type>* pt1
-	  = new boost::packaged_task<typename SolverContext1::result_type>(lazy(ctx1, unpack_future<0>()(e) ));
+	  = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(ctx1, unpack_future<0>()(e) ));
     
       boost::packaged_task <typename SolverContext2::result_type>* pt2
-	  = new boost::packaged_task<typename SolverContext2::result_type>(lazy(ctx2, unpack_future<1>()(e) ));
+	  = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(ctx2, unpack_future<1>()(e) ));
  
 	
       queue1.push(mkPT(pt1));
@@ -148,6 +200,17 @@ namespace metaSMT {
       return r; 
     }
 
+  /**
+   * \brief read the value of an expression in both contexts
+   *
+   * after a retrieval of the solver, the current expression is taken and created a task for each Context.
+   * Both tasks are put into the respective queues and read by future tags.
+   * The results of the futures are returned as result_wrapper.
+   * 
+   * \param e The expression to read
+   * \return result_wrapper - tuple of results of the contexts
+   *
+   */
  template<typename Expr>
     result_wrapper read_value (Expr const & e)
     {
@@ -173,6 +236,18 @@ namespace metaSMT {
 	} 
 	return result_wrapper("X");
     }
+    
+  /**
+   * \brief read the value of a result_type in both contexts
+   *
+   * Takes the current expression and creates a task for each Context, after a retrieval of the solver.
+   * Tasks are put into the respective queues and read by the future tag.
+   * The future results are returned as result_wrapper.
+   * 
+   * \param e The result-type to read
+   * \return result_wrapper - tuple of results of the contexts
+   *
+   */
   result_wrapper read_value (result_type & e)
     {
     	using boost::fusion::at_c;
@@ -200,30 +275,15 @@ namespace metaSMT {
 	
     }
 
-    static void worker ( int id, concurrent_queue<boost::function0<void> > & queue) {
-	 while(true) { 
-	  boost::function0<void> task = NULL;
-	  queue.wait_and_pop(task);
-          task();
- 	 }
-    }
-
-    template<typename Command>
-    void command( Command const & cmd, result_type e) 
-     {
-      queue1.push( call_command (ctx1, cmd, boost::fusion::at_c<0>(e)) );
-      queue2.push( call_command (ctx2, cmd, boost::fusion::at_c<1>(e)) );
-     }
-
-
-    template<typename Command, typename Arg1>
-    void command( Command const & cmd, Arg1 a1) 
-     {
-      queue1.push( call_command (ctx1, cmd, a1) );
-      queue2.push( call_command (ctx2, cmd, a1) );
-     }
-
-
+   /**
+   * \brief controls the order of the solver
+   *
+   * Puts the contexts into each queues and retrieves, which solver was last called.
+   * The future results are returned as bool.
+   * 
+   * \return bool - task with respective value
+   *
+   */
    bool solve()
     {
 
@@ -261,27 +321,68 @@ namespace metaSMT {
       counter1++;  
       return future2.get();
    } 
-    
-    void set_counter0( unsigned counter0)
+
+   /**
+   * \brief  set the value of an unsigned variable
+   *
+   * Takes an unsigend variable and set his value to the current variable.
+   * 
+   * \param counter0 The value of the variable
+   * \return void
+   */
+     void set_counter0( unsigned counter0)
     {
 	this.counter0 = counter0;
     }
 
+   /**
+   * \brief  set the value of an unsigned variable
+   *
+   * Takes an unsigend variable and set his value to the current variable.
+   * 
+   * \param counter1 The value of the variable
+   * \return void
+   *
+   */
     void set_counter1( unsigned counter1)
     {
 	this.counter1 = counter1;
     }
    
+   /**
+   * \brief  get the value of a variable
+   *
+   * Gives back the value of the current variable.
+   * \return unsigend - the value of the variable
+   *
+   */
     unsigned get_count0()
     {
 	return counter0;
     }
 
+    /**
+   * \brief  get the value of a variable
+   *
+   * Gives back the value of the current variable.
+   * \return unsigend - the value of the variable
+   *
+   */
     unsigned get_count1()
     {
 	return counter1;
     }
-     static void setReady( bool &ready )
+
+  /**
+   * \brief  set the value of a bool variable
+   *
+   * Takes a variable and set his value true.
+   * 
+   * \param ready - current variable
+   * \return void
+   *
+   */
+   static void setReady( bool &ready )
     {
       ready = true;
     }
