@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/variant/variant.hpp>
 #include "Boolean.hpp"
 #include "BitVector.hpp"
 
