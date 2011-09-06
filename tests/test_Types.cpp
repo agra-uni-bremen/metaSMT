@@ -8,6 +8,7 @@ using namespace std;
 using namespace metaSMT;
 using namespace metaSMT::logic;
 using namespace metaSMT::logic::QF_BV;
+using namespace metaSMT::type;
 namespace proto = boost::proto;
 
 BOOST_FIXTURE_TEST_SUITE(Types, Solver_Fixture )
@@ -94,8 +95,8 @@ BOOST_AUTO_TEST_CASE( conversion ) {
   TypedSymbol<ContextType> p(p_primitive);
   TypedSymbol<ContextType> bv(bv_primitive, w);
 
-  assertion(ctx, equal(to_bool(ctx, bv), p_primitive));
-  assertion(ctx, equal(zero_extend(31, to_bitvector(ctx, p)), bv_primitive));
+  assertion(ctx, equal(type::detail::to_bool(ctx, bv), p_primitive));
+  assertion(ctx, equal(zero_extend(31, type::detail::to_bitvector(ctx, p)), bv_primitive));
   
   assertion(ctx, equal(bv.toBool(ctx), p_primitive));
   assertion(ctx, equal(p.toBV(ctx, w), bv_primitive));
@@ -103,6 +104,6 @@ BOOST_AUTO_TEST_CASE( conversion ) {
   solve( ctx );
 }
 
-BOOST_AUTO_TEST_SUITE_END() //QF_BV
+BOOST_AUTO_TEST_SUITE_END() // Types
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
