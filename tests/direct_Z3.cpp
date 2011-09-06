@@ -19,3 +19,4 @@ struct Solver_Fixture {
 #include "test_unsat.cpp"
 #include "test_cardinality.cpp"
 #include "test_stack.cpp"
+#include "test_Types.cpp"
