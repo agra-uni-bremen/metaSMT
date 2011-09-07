@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( init_typed_symbol ) {
   TypedSymbol<ContextType> p(new_variable());
   TypedSymbol<ContextType> bv(new_bitvector(w), w);
 
-  typename ContextType::result_type r = bv.eval(ctx);
+  ContextType::result_type r = bv.eval(ctx);
   TypedSymbol<ContextType> expr(r, type::BitVector(w));
 
   BOOST_REQUIRE(  p.isBool() );
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE( check_bitwidth ) {
   TypedSymbol<ContextType> bv(new_bitvector(w), w);
   BOOST_REQUIRE( w == boost::get<type::BitVector>(bv.type).width );
 
-  typename ContextType::result_type r = bv.eval(ctx);
+  ContextType::result_type r = bv.eval(ctx);
   TypedSymbol<ContextType> expr(r, type::BitVector(w));
   BOOST_REQUIRE( expr.isBitVector() );
   BOOST_REQUIRE( expr.isExpression() );
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( get_id ) {
   TypedSymbol<ContextType> p(p_primitive);
   TypedSymbol<ContextType> bv(bv_primitive, w);
 
-  typename ContextType::result_type r = bv.eval(ctx);
+  ContextType::result_type r = bv.eval(ctx);
   TypedSymbol<ContextType> expr(r, type::BitVector(w));
 
   BOOST_REQUIRE( p.isPrimitiveBool() );
