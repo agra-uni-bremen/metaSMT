@@ -119,7 +119,7 @@ namespace metaSMT {
   }
 
   /**
-   * \brief assertion stack push funtion
+   * \brief assertion stack push function
    * \param ctx The context to work on
    * \param howmany number of stack leves to push, defaults to 1
    * \return void
@@ -132,7 +132,7 @@ namespace metaSMT {
   }
 
   /**
-   * \brief assertion stack pop funtion
+   * \brief assertion stack pop function
    * \param ctx The context to work on
    * \param howmany number of stack leves to pop, defaults to 1
    * \return void
