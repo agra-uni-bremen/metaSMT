@@ -39,6 +39,7 @@ function (add_test_executable name source )
   foreach( req ${req_REQUIRES} )
     if(NOT ${req} )
       set(req_all 0)
+      # message("UNSATISFIED DEPENDENCY: " ${req} " of " ${name})
     endif(NOT ${req} )
   endforeach( req )
 
