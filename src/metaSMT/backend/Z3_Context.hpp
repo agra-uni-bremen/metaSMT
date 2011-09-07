@@ -82,14 +82,27 @@ namespace metaSMT {
           : internal(a)
         {}
 
-        operator Z3_ast() {
+        inline operator Z3_ast() const {
           return boost::get<Z3_ast>(internal);
         }
 
-        operator Z3_func_decl() {
+        inline operator Z3_func_decl() const {
           return boost::get<Z3_func_decl>(internal);
         }
+
+        inline bool operator ==(result_type const &r) const {
+          return (internal == r.internal);
+        }
+
+        inline bool operator !=(result_type const &r) const {
+          return !(internal == r.internal);
+        }
+
+        inline bool operator <(result_type const &r) const {
+          return (internal < r.internal);
+        }
       };
+      // typedef Z3_ast result_type;
 
       Z3_Context () {
         Z3_config cfg;
