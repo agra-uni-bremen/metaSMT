@@ -42,6 +42,8 @@ namespace metaSMT {
      * @{
      */
 
+    namespace bv = logic::QF_BV;
+
     /* Forward TypedSymbol*/
     template < typename Context >
     struct TypedSymbol;
@@ -52,7 +54,7 @@ namespace metaSMT {
       struct Expr {
         typedef boost::variant<
           logic::predicate
-          , logic::QF_BV::bitvector
+          , bv::bitvector
           , typename Context::result_type
           > type;
       }; /* Expr */
@@ -71,7 +73,7 @@ namespace metaSMT {
         }
 
         typename Context::result_type
-        operator()(logic::QF_BV::bitvector const &expr) const {
+        operator()(bv::bitvector const &expr) const {
           return evaluate(ctx_, expr);
         }
 
@@ -144,7 +146,8 @@ namespace metaSMT {
         {}
 
         typename Context::result_type operator()(Boolean const &) const {
-          return evaluate(ctx_, Ite(s_.eval(ctx_), bit1, bit0));
+          return evaluate(ctx_, logic::Ite(s_.eval(ctx_),
+                                    bv::bit1, bv::bit0));
         }
 
         typename Context::result_type operator()(BitVector const &) const {
@@ -184,7 +187,8 @@ namespace metaSMT {
         }
 
         typename Context::result_type operator()(BitVector const &bv) const {
-          return evaluate(ctx_, nequal(s_.eval(ctx_), bvuint(0, bv.width)));
+          return evaluate(ctx_, logic::nequal(s_.eval(ctx_),
+                                              bv::bvuint(0, bv.width)));
         }
 
         Context &ctx_;
@@ -216,7 +220,7 @@ namespace metaSMT {
         , type(Boolean())
       {}
 
-      TypedSymbol(logic::QF_BV::bitvector bv, unsigned const w)
+      TypedSymbol(bv::bitvector bv, unsigned const w)
         : value(bv)
         , type(BitVector(w))
       {}
@@ -248,7 +252,7 @@ namespace metaSMT {
 
       // value == bitvector && type == BitVector
       inline bool isPrimitiveBitVector() const {
-        return detail::is_value<Context, logic::QF_BV::bitvector>( value );
+        return detail::is_value<Context, bv::bitvector>( value );
       }
 
       inline bool isPrimitive() const {
