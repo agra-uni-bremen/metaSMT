@@ -71,9 +71,9 @@ namespace metaSMT {
       void _eval( std::string & str) {
         if( dirty ) {
           str.reserve(size());
-          BOOST_FOREACH( lazy_string const & ls, _concats ) {
-            //str += (std::string) ls;
-          }
+          // BOOST_FOREACH( lazy_string const & ls, _concats ) {
+          //   str += (std::string) ls;
+          // }
         }
         dirty = false;
       }
