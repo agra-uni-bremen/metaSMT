@@ -174,10 +174,10 @@ namespace metaSMT {
     result_type evaluate(Expr const & e) {
 	
 	boost::packaged_task <typename SolverContext1::result_type>* pt1
-	  = new boost::packaged_task<typename SolverContext1::result_type>(lazy(ctx1, unpack_future<0>()(e) ));
+	  = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(ctx1, unpack_future<0>()(e) ));
     
     	boost::packaged_task <typename SolverContext2::result_type>* pt2
-	  = new boost::packaged_task<typename SolverContext2::result_type>(lazy(ctx2, unpack_future<1>()(e) ));
+	  = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(ctx2, unpack_future<1>()(e) ));
            
 	queue1.push(mkPT(pt1));
 	queue2.push(mkPT(pt2));

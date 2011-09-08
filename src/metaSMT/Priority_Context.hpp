@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <iostream>
+#include <pthread.h>
 
 namespace metaSMT {
 
@@ -42,10 +43,12 @@ namespace metaSMT {
   { 
    Priority_Context()
    	: ready(false)
+   	  ,ctx1(new SolverContext1)
+   	  ,ctx2(new SolverContext2)
 	  ,counter0(0)
 	  ,counter1(0)
-	  ,t_1(worker, 1, boost::ref(queue1))
-          ,t_2(worker, 2, boost::ref(queue2))    {}
+	  ,t_1(worker<SolverContext1>, ctx1, boost::ref(queue1))
+          ,t_2(worker<SolverContext2>, ctx2, boost::ref(queue2))    {}
 
  /**
    * \brief controls the running threads
@@ -57,8 +60,11 @@ namespace metaSMT {
     ~Priority_Context() {
       t_1.interrupt();
       t_2.interrupt();
-      t_1.join();
-      t_2.join();
+      //pthread_cancel(t_1.native_handle());
+      //pthread_cancel(t_2.native_handle());
+      //t_1.join();
+      //t_2.join();
+      
     }
 
  /** \cond */
@@ -143,7 +149,9 @@ namespace metaSMT {
         , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
        > {};
        
-    static void worker ( int id, concurrent_queue<boost::function0<void> > & queue) {
+    template<typename T>   
+    static void worker ( T* ctx_p, concurrent_queue<boost::function0<void> > & queue) {
+         std::auto_ptr<T> ctx(ctx_p);
 	 while(true) { 
 	  boost::function0<void> task = NULL;
 	  queue.wait_and_pop(task);
@@ -154,16 +162,16 @@ namespace metaSMT {
     template<typename Command>
     void command( Command const & cmd, result_type e) 
      {
-      queue1.push( call_command (ctx1, cmd, boost::fusion::at_c<0>(e)) );
-      queue2.push( call_command (ctx2, cmd, boost::fusion::at_c<1>(e)) );
+      queue1.push( call_command (*ctx1, cmd, boost::fusion::at_c<0>(e)) );
+      queue2.push( call_command (*ctx2, cmd, boost::fusion::at_c<1>(e)) );
      }
 
 
     template<typename Command, typename Arg1>
     void command( Command const & cmd, Arg1 a1) 
      {
-      queue1.push( call_command (ctx1, cmd, a1) );
-      queue2.push( call_command (ctx2, cmd, a1) );
+      queue1.push( call_command (*ctx1, cmd, a1) );
+      queue2.push( call_command (*ctx2, cmd, a1) );
      }
 
     /** \endcond */
@@ -184,10 +192,10 @@ namespace metaSMT {
    result_type evaluate(Expr const & e) 
     {
       boost::packaged_task <typename SolverContext1::result_type>* pt1
-	  = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(ctx1, unpack_future<0>()(e) ));
+	  = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(*ctx1, unpack_future<0>()(e) ));
     
       boost::packaged_task <typename SolverContext2::result_type>* pt2
-	  = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(ctx2, unpack_future<1>()(e) ));
+	  = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(*ctx2, unpack_future<1>()(e) ));
  
 	
       queue1.push(mkPT(pt1));
@@ -217,7 +225,7 @@ namespace metaSMT {
     	if( lastSAT == 1 )  {
 	  boost::packaged_task <result_wrapper*>* pt1
 	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext1, Expr>(ctx1, e) );
+	     	ReadCaller<SolverContext1, Expr>(*ctx1, e) );
  	  queue1.push(mkPT(pt1));
 
 	  std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
@@ -227,7 +235,7 @@ namespace metaSMT {
 	} else if (lastSAT == 2) {
 	  boost::packaged_task <result_wrapper*>* pt2
 	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext2, Expr>(ctx2, e) );
+	     	ReadCaller<SolverContext2, Expr>(*ctx2, e) );
  	  queue2.push(mkPT(pt2));
 
 	  std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
@@ -250,11 +258,11 @@ namespace metaSMT {
    */
   result_wrapper read_value (result_type & e)
     {
-    	using boost::fusion::at_c;
+    	namespace fu =  boost::fusion;
     	if( lastSAT == 1 )  {
 	  boost::packaged_task <result_wrapper*>* pt1
 	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext1, typename SolverContext1::result_type>(ctx1, at_c<0>(e).get()) );
+	     	ReadCaller<SolverContext1, typename SolverContext1::result_type>(*ctx1, fu::at_c<0>(e).get()) );
  	  queue1.push(mkPT(pt1));
 
 	  std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
@@ -264,7 +272,7 @@ namespace metaSMT {
 	} else if (lastSAT == 2) {
 	  boost::packaged_task <result_wrapper*>* pt2
 	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext2, typename SolverContext2::result_type>(ctx2, at_c<1>(e).get()) );
+	     	ReadCaller<SolverContext2, typename SolverContext2::result_type>(*ctx2, fu::at_c<1>(e).get()) );
  	  queue2.push(mkPT(pt2));
 
 	  std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
@@ -286,9 +294,9 @@ namespace metaSMT {
    */
    bool solve()
     {
-
+      std::cout << "solve called" << std::endl;
       boost::packaged_task <bool>* pt1
-	  = new boost::packaged_task<bool>( SolveCaller<SolverContext1>(ctx1) );
+	  = new boost::packaged_task<bool>( SolveCaller<SolverContext1>(*ctx1) );
 	   
       boost::unique_future<bool> future1 = pt1->get_future();
       queue1.push(mkPT(pt1));
@@ -296,11 +304,12 @@ namespace metaSMT {
       if(ready)
       {
 	counter0++;
+	lastSAT = 1;
 	return future1.get();
       }
 
       boost::packaged_task <bool>* pt2
-          = new boost::packaged_task<bool>( SolveCaller<SolverContext2>(ctx2) );
+          = new boost::packaged_task<bool>( SolveCaller<SolverContext2>(*ctx2) );
       boost::function0<void> newFunc 
           = boost::bind(&Priority_Context::setReady, boost::ref(ready) );	
 
@@ -384,6 +393,7 @@ namespace metaSMT {
    */
    static void setReady( bool &ready )
     {
+      std::cout << "now ready" << std::endl;
       ready = true;
     }
 
@@ -400,8 +410,8 @@ namespace metaSMT {
       boost::thread t_2;
       boost::condition_variable cvar;
 
-      SolverContext1 ctx1;
-      SolverContext2 ctx2;
+      SolverContext1 *ctx1;
+      SolverContext2 *ctx2;
 
       // the id of the solver which returned the last SAT result in solve,
       // 0: UNSAT/invalid
