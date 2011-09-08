@@ -15,9 +15,9 @@
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context<  UnpackFuture_Context< Stack <Boolector > >   > ContextType1;
+  typedef DirectSolver_Context<  UnpackFuture_Context< Stack <Boolector > >   > ContextType2;
 
-  typedef DirectSolver_Context<  UnpackFuture_Context< Stack <BitBlast<CUDD_Context> > > > ContextType2;
+  typedef DirectSolver_Context<  UnpackFuture_Context< Stack <BitBlast<CUDD_Context> > > > ContextType1;
 
   typedef Priority_Context< ContextType1, ContextType2 > ContextType;
   ContextType ctx ;

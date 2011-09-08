@@ -5,12 +5,13 @@
 #include <metaSMT/API/Comment.hpp>
 #include <metaSMT/API/SymbolTable.hpp>
 #include <metaSMT/API/Group.hpp>
+#include <metaSMT/API/AssignRandomBits.hpp>
 #include <metaSMT/Instantiate.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< IgnoreSymbolTable< IgnoreComments< Group < Stack < Boolector > > > > > ContextType;
+  typedef DirectSolver_Context< AssignRandomBits< IgnoreSymbolTable< IgnoreComments< Group < Stack < Boolector > > > > > > ContextType;
   ContextType ctx ;
 };
 
@@ -25,3 +26,4 @@ struct Solver_Fixture {
 #include "test_lazy.cpp"
 #include "test_annotate.cpp"
 #include "test_Types.cpp"
+#include "test_random_bits.cpp"
