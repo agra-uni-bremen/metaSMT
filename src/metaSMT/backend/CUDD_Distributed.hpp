@@ -13,18 +13,27 @@ class CUDD_Distributed : public CUDD_Context
 			
 public: 
 
-	CUDD_Distributed () {
-	reset();
+	CUDD_Distributed ()
+  : CUDD_Context()
+  , previous(_manager.bddZero())
+  {
+	  reset();
 	}
 
 	bool solve() {
  	 	BDD complete =_assertions & _assumptions;  
+    if ( previous != complete) {
+      //std::cout << "resetting distribution cache" << std::endl;
+			reset();
+      previous = complete;
+    } else {
+      //std::cout << "keeping distribution cache" << std::endl;
+    }
 	 	bool  ret =  complete != _manager.bddZero();
          	_assumptions = _manager.bddOne();
         	//printDD(complete.getNode(),"BDD.dot");
 	        if(ret) {
 			store_solution( complete.getNode() );
-			reset();
 		}
 		return ret;
 	}
@@ -152,25 +161,23 @@ private:
 	    assert( Cudd_V(root) == 1 );  
 	}
 	
-	void printDD(DdNode *root, std::string fileName) {
+  void printDD(DdNode *root, std::string fileName) {
+    FILE *file = fopen(fileName.c_str(),"w");
 
-
-
-	   FILE *file = fopen(fileName.c_str(),"w");
-	
-           char **iname = (char**) malloc(sizeof(char *)*_manager.ReadSize());
-	   for(unsigned i = 0; i < _manager.ReadSize(); ++i)
-	   {
-		char *name = (char*) malloc(256);
-		sprintf(name,"v%d", _manager.bddVar(i).NodeReadIndex());
-		iname [i] = name;
-	   }
-	   //extern int Cudd_DumpDot (DdManager *dd, int n, DdNode **f, char **inames, char **onames, FILE *fp);
-	   Cudd_DumpDot (_manager.getManager(),1,&root,iname, NULL,file);
-           fclose(file);	
-}
+    char **iname = (char**) malloc(sizeof(char *)*_manager.ReadSize());
+    for(unsigned i = 0; i < _manager.ReadSize(); ++i)
+    {
+      char *name = (char*) malloc(256);
+      sprintf(name,"v%d", _manager.bddVar(i).NodeReadIndex());
+      iname [i] = name;
+    }
+    //extern int Cudd_DumpDot (DdManager *dd, int n, DdNode **f, char **inames, char **onames, FILE *fp);
+    Cudd_DumpDot (_manager.getManager(),1,&root,iname, NULL,file);
+    fclose(file);	
+  }
     private:
       boost::mt19937 gen;
+      BDD previous;
     }; // class CUDD_Distribuded
 
   } //namespace metaSMT
