@@ -150,7 +150,7 @@ namespace metaSMT {
   typename boost::disable_if< features::supports<Context, features::stack_api> >::type
   push( Context & ctx, unsigned howmany=1) {
     BOOST_MPL_ASSERT_MSG(( features::supports<Context, features::stack_api>::value ),
-        context_does_not_support_push_stack_api, );
+        context_does_not_support_push_stack_api, () );
   }
 
   template <typename Context >

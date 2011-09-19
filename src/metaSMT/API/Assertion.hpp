@@ -35,6 +35,7 @@ namespace metaSMT {
     BOOST_MPL_ASSERT_MSG(
         ( features::supports< Context_, assertion_cmd>::value),
         context_does_not_support_assertion_api,
+        ()
     );
 
     ctx.command(assertion_cmd(),  evaluate(ctx, e) );
