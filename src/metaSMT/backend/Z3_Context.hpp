@@ -581,7 +581,7 @@ namespace metaSMT {
         //std::cout << assign_str << std::endl;
 
         static qi::rule<ConstIterator, std::string() > name_rule
-          = +(qi::char_ - ' ')
+          = +(qi::char_ - qi::char_(" ()"))
           ;
 
         static qi::rule<ConstIterator, BitvectorTuple() > true_rule
@@ -603,41 +603,72 @@ namespace metaSMT {
             >> ( true_rule | false_rule | bitvector_rule ) 
           ;
 
-        static qi::rule<ConstIterator> sexpr
-          = qi::lit("(")
-          >> *(~qi::char_("("))
-          >> *sexpr
-          >> *(~qi::char_(")"))
-          >> qi::lit(")")
-          ;
+        static qi::rule<ConstIterator, std::string()> sexpr
+          = qi::raw[
+            name_rule
+          |    qi::lit("(")
+            >> *qi::space
+            >> *((sexpr) >> *qi::space)
+            >> qi::lit(")")
+          ];
 
         // tested with for 2.18 and 2.19
         static qi::rule<ConstIterator, NamedTuple() > line_2_18
           = qi::lit("(define ") >> name_rule >> qi::lit(" ")
             >> value_rule >> ')'
           ;
+          ;
+
+        static qi::rule<ConstIterator, std::string() > array_2_18
+          = qi::raw[
+            qi::lit("(define ") >> name_rule
+            >> " as-array[" >> *(~qi::char_(']')) >> "])"
+          ];
+
+        static qi::rule<ConstIterator, std::string() > function_2_18
+          = qi::raw[
+            qi::lit("(define ") >> sexpr >> +qi::space >> sexpr>> qi::lit(')')
+          ];
+
         static qi::rule<ConstIterator, model_map() > rule
           = *((
                 line_2_18 
               | line_2_15
-              | sexpr
+              | qi::omit[array_2_18]
+              | qi::omit[function_2_18]
+              //| sexpr
               ) >> -qi::eol )
           ;
 
-        rule.name("rule");
-        true_rule.name("true_rule");
-        false_rule.name("false_rule");
-        bitvector_rule.name("bitvector_rule");
-        name_rule.name("name_rule");
+        //rule.name("rule");
+        //name_rule.name("name_rule");
+        //true_rule.name("true_rule");
+        //false_rule.name("false_rule");
+        //bitvector_rule.name("bitvector_rule");
+        //sexpr.name("sexpr");
+        //line_2_15.name("line_2_15");
+        //line_2_18.name("line_2_18");
+        //array_2_18.name("array_2_18");
+        //function_2_18.name("function_2_18");
 
         //debug(rule); // requires implementation of operator <<(.) for model_map
         //debug(name_rule);
         //debug(true_rule);
         //debug(false_rule);
         //debug(bitvector_rule);
+        //debug(sexpr);
+        //debug(line_2_15);
+        //debug(line_2_18);
+        //debug(array_2_18);
+        //debug(function_2_18);
 
         if (qi::parse(it, ie, rule, model_map_)) {
-          assert( it == ie && "Expression not completely consumed" );
+          if (it != ie ) {
+            std::cout << assign_str << "\n----\n";
+            std::cout << std::string(it,ie) << "\n----\n";
+            std::cout.flush();
+            assert( it == ie && "Expression not completely consumed" );
+          }
           return;
         }
 
