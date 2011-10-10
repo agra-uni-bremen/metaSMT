@@ -121,7 +121,7 @@ struct SynthNet
 
   SynthNet(unsigned lines)
   : num_lines(lines)
-  , num_levels(2)
+  , num_levels(1)
   , num_cex(0)
   {
     for (unsigned i = 0; i < lines; i++) {
@@ -131,7 +131,6 @@ struct SynthNet
         }
       }
     }
-    add_level_vars();
     add_level_vars();
   }
 
@@ -171,6 +170,7 @@ struct SynthNet
     add_level_vars();
     unsigned nlv = num_levels;
     ++num_levels;
+    std::cout << "adding level to " << num_cex << " " << num_levels << std::endl; 
     net.resize(extents[num_cex][num_levels]);
     for (unsigned i = 0; i < num_cex; i++) {
       //std::cout << "creating Level " << i << "," << nlv << "\n";
@@ -228,6 +228,9 @@ struct SynthNet
   }
 
   bool synth() {
+    std::cout 
+      << "starting synthesis for depth " << num_levels-1  
+      << ", " << num_cex << " counterexamples" << std::endl;
     boost::timer timer;
     assumeSorted();
     bool b = solve(ctx);
@@ -337,18 +340,19 @@ struct sortnet
 
   typedef DirectSolver_Context< IgnoreComments<solver::Z3_Context> > VerifyerContext;
   unsigned size; 
-  unsigned length; 
   SynthNet<Solver> syn_net;
 
   typedef std::list< Level > Net;
   Net ver_net;
   
   //sortnet ( unsigned size ) 
-  sortnet ( std::vector<std::string> const & inits ) 
+  sortnet ( unsigned min_depth, std::vector<std::string> const & inits ) 
   : size(inits[0].size())
   , syn_net(size)
-  , length(1)
   { 
+    for (unsigned i = 0; i < min_depth; i++) {
+      syn_net.add_level();
+    }
     foreach( std::string const & init, inits) {
       syn_net.add_counterexample(init);
     }
@@ -401,26 +405,31 @@ int main(int argc, const char *argv[])
     , DirectSolver_Context < IgnoreComments<BitBlast < CUDD_Context > > >
   > SolverVec;
 
-  if( argc < 2) {
+  if( argc < 3) {
     std::cout 
       << "usage: "<< argv[0] 
-      << "<solver> <size of the sortnet>\n"
+      << "<solver> <minimual depth of the sortnet> <input> [...]\n"
       << "solver can be: \n"
-      << "\t0 - Direct Boolector" 
-      << "\t1 - Direct SWORD" 
-      << "\t2 - Direct SMT2" 
+      << "\t0 - Direct Boolector\n"
+      << "\t1 - Direct Z3\n"
+      << "\t2 - Direct SWORD\n"
+      << "\t3 - Direct SMT-File (Z3)\n"
+      << "\t4 - Direct AIG->MiniSAT\n"
+      << "\t5 - Direct AIG->PicoSAT\n"
+      << "\t6 - Direct CUDD\n"
       << std::endl;
     exit(1);
   }
 
   unsigned solver = atoi ( argv[1] ); 
+  unsigned min_depth = atoi ( argv[2] ); 
 
   std::vector<std::string> inits;
-  for (unsigned i = 2; i < argc; i++) {
+  for (unsigned i = 3; i < argc; i++) {
     inits.push_back(argv[i]);
   }
 
-  run_algorithm<SolverVec, sortnet> ( solver, inits ); 
+  run_algorithm<SolverVec, sortnet> ( solver, min_depth, inits ); 
 
   return 0;
 }
