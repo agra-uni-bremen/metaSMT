@@ -1,6 +1,33 @@
 = TODO List =
 
-== Target Features for metaSMT 1.0 ==
+== features for metaSMT 4 (future release)==
+ * Type save 
+ * Python Interface/bindings
+ * SMT-Lib 2
+ * Portfolio Solver (Any number of Solvers)
+ * Parallel/Distributed/Clustered solving [network]
+ * Typed Expression (automatic handling)
+ * extend documentation of available commands (SMT expressions, other)
+
+== features for metaSMT 3 (next release)==
+ * CNF-Parser /Solver Frontend [done?]
+ * extend documentation of available commands (SMT expressions, other)
+ * Portfolio Solver (2 Threads) [done, cleanup needed]
+ * SMT-Lib 2 File output [done, for Z3 2.18]
+ * Typed Expression [WIP]
+ * Explicit Features [partial]
+ * API declaration an checking
+
+== Future versions (maybe) ==
+ * Solver independent Syntax Trees
+ * SMT-LIB 1 Parser
+ * BitBlasting QF_BV to LIA (or other Logics)
+ * Pseudo Boolean SAT/Solvers
+ * Solver Checking (using a different Solver)
+ * Fuzzing
+ * eFMI ( easy Formal Methods Interface)
+
+== Finished Features ==
  * support for Boolector (QF_BV, Core Logic) [done]
  * supoort for Z3 (QF_BV, Core Logic) [done]
  * supoort for MiniSAT (Core Logic) [done]
@@ -12,27 +39,12 @@
  * README for installation
  * install scripts for Solvers (s.a.)  [done]
  * Example algorithm (Sudoku, Mastermind, etc) [done]
- * Tool Paper [mostly done]
- * README/script to setup own projects
- * list/documentation of available commands (SMT expressions, other)
+ * Tool Paper [done]
+ * README/script to setup own projects [done]
  
-== Additional Features  for 1.0 ==
  * Cardinality Constraints [ done ]
  * Constraint Groups [done]
  * Constraint Stack [done]
  * Array over Bitvector Theory [done]
- * lazy expressions [done, major test missing]
+ * lazy expressions [done]
 
-== Future versions (maybe) ==
- * Solver independent Syntax Trees
- * SMT-LIB 1 Parser
- * SMT-LIB 2 Parser
- * SMT-LIB File output [ SMT1 from graph, SMT2 context for Z3 ]
- * BitBlasting QF_BV to LIA (or other Logics)
- * Types
- * Pseudo Boolean SAT/Solvers
- * Parallel/Distributed/Clustered solving
- * Solver Checking (using a different Solver)
- * Fuzzing
- * Explicit Features [partial]
- * eFMI ( easy Formal Methods Interface)
