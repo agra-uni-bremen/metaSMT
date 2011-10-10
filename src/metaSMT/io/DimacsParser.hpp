@@ -3,9 +3,11 @@
 
 #include <fstream>
 #include <vector>
+#include <set>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <boost/assign/std/set.hpp>
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
@@ -63,7 +65,7 @@ namespace metaSMT
     }
 
     template<typename Context>
-    static bool parse_dimacs ( std::ifstream& stream, Context& context )
+    static bool parse_dimacs ( std::ifstream& stream, Context& context, std::set < unsigned >& vars )
     {
       std::string line;
       unsigned n = 1;
@@ -77,6 +79,11 @@ namespace metaSMT
         bool r = parse_dimacs_clause ( line.begin(), line.end(), clause );
 
         addclause_to_context ( context, clause );
+
+        foreach ( int lit, clause )
+        {
+          vars.insert ( abs ( lit ) );
+        }
 
         if (!r)
         {

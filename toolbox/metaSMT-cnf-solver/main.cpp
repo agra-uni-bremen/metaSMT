@@ -34,7 +34,8 @@ int main(int argc, const char *argv[])
 
   boost::timer all_timer;
 
-  bool r = parse_dimacs ( stream, picosat );
+  std::set < unsigned > vars;
+  bool r = parse_dimacs ( stream, picosat, vars );
 
   if ( r ) 
   {
@@ -49,7 +50,30 @@ int main(int argc, const char *argv[])
   bool sat = solve ( picosat);
 
   if ( sat ) 
+  {
     std::cout << "s SATISFIABLE" << std::endl;
+    unsigned num = 0;
+
+    std::cout << "s ";
+    foreach ( unsigned var, vars )
+    {
+      SAT::tag::lit_tag Var;
+      Var.id = var;
+
+      if ( bool(read_value ( picosat, Var )) == true )
+        std::cout << var << " ";
+      else
+        std::cout << "-" << var << " ";
+
+      num++;
+
+      if ( num == 10 ) 
+      {
+        std::cout << "\ns ";
+        num = 0;
+      }
+    }
+  }
   else
     std::cout << "s UNSATISFIABLE" << std::endl;
 
