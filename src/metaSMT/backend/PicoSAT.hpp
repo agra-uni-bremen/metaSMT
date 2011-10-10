@@ -2,6 +2,7 @@
 
 #include "../tags/SAT.hpp"
 #include "../result_wrapper.hpp"
+#include "../Features.hpp"
 
 extern "C"
 {
@@ -19,26 +20,32 @@ extern "C"
  
 
 namespace metaSMT {
-  namespace solver {
+  // Forward declaration
+  struct addclause_cmd;
+  namespace features
+  {
+    struct addclaue_api;
+  }
 
+  namespace solver {
     class PicoSAT
     {
       public:
         PicoSAT ()
         {
-//          if ( in_use == USED )
-//            throw std:runtime_error ("Picosat already in use. Only single instances supported."); 
-         
+          //          if ( in_use == USED )
+          //            throw std:runtime_error ("Picosat already in use. Only single instances supported."); 
+
           picosat_init (); 
-//          in_use = USED;
+          //          in_use = USED;
         }
 
         ~PicoSAT ()
         {
           picosat_reset (); 
- //         in_use = UNUSED;
+          //         in_use = UNUSED;
         }
-         
+
 
         int toLit ( SAT::tag::lit_tag lit )
         {
@@ -50,6 +57,11 @@ namespace metaSMT {
           BOOST_FOREACH ( SAT::tag::lit_tag const& lit, clause )
             picosat_add ( toLit ( lit ) );
           picosat_add ( 0 ); 
+        }
+
+        void command ( addclause_cmd const&, std::vector < SAT::tag::lit_tag > const& cls )
+        {
+          clause ( cls );
         }
 
 
@@ -82,7 +94,7 @@ namespace metaSMT {
 
         result_wrapper read_value ( SAT::tag::lit_tag lit ) 
         {
-           
+
           switch ( picosat_deref ( toLit ( lit ) ) )
           {
             case -1:
@@ -98,9 +110,16 @@ namespace metaSMT {
         }
 
       private:
-//         enum { UNUSED, USED }; 
-//         static int in_use = UNUSED; 
+        //         enum { UNUSED, USED }; 
+        //         static int in_use = UNUSED; 
     };
   } /* solver */
+
+  namespace features {
+    template<>
+      struct supports< solver::PicoSAT, features::addclause_api>
+      : boost::mpl::true_ {};
+  } /* features */
+
 } /* metaSMT */
 // vim: ts=2 sw=2 et

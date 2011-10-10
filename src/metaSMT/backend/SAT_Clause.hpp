@@ -9,6 +9,13 @@
 
 namespace metaSMT
 {
+  // Forward declaration
+  struct addclause_cmd;
+  namespace features
+  {
+    struct addclaue_api;
+  }
+   
   template<typename SatSolver>
   class SAT_Clause
   {
@@ -166,6 +173,12 @@ namespace metaSMT
         solver.assumption( lit );
       }
 
+      template<typename Cmd, typename Expr>
+      void command ( Cmd const& cmd, Expr& expr )
+      {
+        solver.command ( cmd, expr ); 
+      }
+
       bool solve () 
       {
         return solver.solve (); 
@@ -195,4 +208,18 @@ namespace metaSMT
       SatSolver solver;
       result_type true_lit; 
   }; 
+
+  namespace features {
+    /* Stack supports stack api */
+    template<typename Context>
+      struct supports< SAT_Clause<Context>, features::addclause_api>
+      : boost::mpl::true_ {};
+
+    /* Forward all other supported operations */
+    template<typename Context, typename Feature>
+      struct supports< SAT_Clause<Context>, Feature>
+      : supports<Context, Feature>::type {};
+  }
+
+
 }

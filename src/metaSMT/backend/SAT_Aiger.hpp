@@ -10,6 +10,13 @@
 
 namespace metaSMT
 {
+  // Forward declaration
+  struct addclause_cmd;
+  namespace features
+  {
+    struct addclaue_api;
+  }
+
   template<typename SatSolver>
   class SAT_Aiger
   {
@@ -23,6 +30,12 @@ namespace metaSMT
 
         assertions.push_back ( true_var );
 
+      }
+
+      template< typename Command, typename Expr >
+      void command ( Command& cmd, Expr& e )
+      {
+        solver.command ( cmd, e );
       }
 
       template<typename Tag, typename Any>
@@ -158,4 +171,10 @@ namespace metaSMT
       result_type true_var; 
 
   }; 
+
+  namespace features {
+    template<>
+      struct supports< SAT_Aiger, features::addclause_api>
+      : boost::mpl::true_ {};
+  } /* features */
 }

@@ -16,9 +16,16 @@ namespace metaSMT {
   namespace bvtags = ::metaSMT::logic::QF_BV::tag;
   namespace predtags = ::metaSMT::logic::tag;
 
+  // Forward declaration
+  struct addclause_cmd;
+  namespace features
+  {
+    struct addclaue_api;
+  }
 
   template <typename PredicateSolver>
   struct BitBlast {
+    typedef BitBlast<PredicateSolver> this_type;
 
     typedef typename PredicateSolver::result_type result_base;
     typedef std::vector< result_base >  bv_result;
@@ -965,6 +972,12 @@ namespace metaSMT {
 
       /* pseudo command */
       void command ( BitBlast<PredicateSolver> const & ) { };
+      template<typename Command, typename Expr>
+      void command ( Command const& cmd, Expr& expr )
+      {
+        _solver.command ( cmd, expr );
+      }
+
 
     private:
       result_type sDivRem (result_type arg1, result_type arg2, bool value) {
@@ -1115,6 +1128,19 @@ namespace metaSMT {
         PredicateSolver _solver;
 
   };
+
+  namespace features {
+    /* Stack supports stack api */
+    template<typename Context>
+    struct supports< BitBlast<Context>, features::addclause_api>
+    : boost::mpl::true_ {};
+
+    /* Forward all other supported operations */
+    template<typename Context, typename Feature>
+    struct supports< BitBlast<Context>, Feature>
+    : supports<Context, Feature>::type {};
+  }
+
 
 } // namespace metaSMT 
 
