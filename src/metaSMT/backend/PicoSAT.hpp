@@ -24,7 +24,7 @@ namespace metaSMT {
   struct addclause_cmd;
   namespace features
   {
-    struct addclaue_api;
+    struct addclause_api;
   }
 
   namespace solver {
