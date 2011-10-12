@@ -14,7 +14,7 @@ namespace metaSMT
   struct addclause_cmd;
   namespace features
   {
-    struct addclaue_api;
+    struct addclause_api;
   }
 
   template<typename SatSolver>
@@ -173,8 +173,15 @@ namespace metaSMT
   }; 
 
   namespace features {
-    template<>
-      struct supports< SAT_Aiger, features::addclause_api>
-      : boost::mpl::true_ {};
-  } /* features */
+    /* Stack supports stack api */
+    template<typename Context>
+    struct supports< SAT_Aiger<Context>, features::addclause_api>
+    : boost::mpl::true_ {};
+
+    /* Forward all other supported operations */
+    template<typename Context, typename Feature>
+    struct supports< SAT_Aiger<Context>, Feature>
+    : supports<Context, Feature>::type {};
+  }
+
 }
