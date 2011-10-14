@@ -65,7 +65,7 @@ add_test_executable( direct_Threaded_SWORD direct_Threaded_SWORD.cpp
   LIBRARIES ${Boost_THREAD_LIBRARY}
 )
 add_test_executable( direct_Priority_Boolector_CUDD direct_Priority_Boolector_CUDD.cpp 
-  REQUIRES Boolector_FOUND CUDD_FOUND
+  REQUIRES Boolector_FOUND CUDD_FOUND Boost_THREAD_LIBRARY
   LIBRARIES ${Boost_THREAD_LIBRARY}
 )
 

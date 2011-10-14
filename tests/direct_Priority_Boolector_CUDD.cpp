@@ -2,7 +2,6 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/UnpackFuture_Context.hpp>
 #include <metaSMT/Priority_Context.hpp>
-#include <metaSMT/backend/SWORD_Backend.hpp>
 #include <metaSMT/backend/CUDD_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/BitBlast.hpp>
