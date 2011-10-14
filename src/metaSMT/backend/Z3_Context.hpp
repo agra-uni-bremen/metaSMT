@@ -619,13 +619,13 @@ namespace metaSMT {
           ;
           ;
 
-        static qi::rule<ConstIterator, std::string() > array_2_18
+        static qi::rule<ConstIterator > array_2_18
           = qi::raw[
             qi::lit("(define ") >> name_rule
             >> " as-array[" >> *(~qi::char_(']')) >> "])"
           ];
 
-        static qi::rule<ConstIterator, std::string() > function_2_18
+        static qi::rule<ConstIterator > function_2_18
           = qi::raw[
             qi::lit("(define ") >> sexpr >> +qi::space >> sexpr>> qi::lit(')')
           ];
