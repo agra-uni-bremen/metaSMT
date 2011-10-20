@@ -8,7 +8,7 @@ using namespace metaSMT;
 using namespace metaSMT::solver;
 using namespace metaSMT::logic;
 
-BOOST_FIXTURE_TEST_SUITE(test_graph_copy, Solver_Fixture )
+BOOST_FIXTURE_TEST_SUITE(can_copy_graph, Solver_Fixture )
 
 BOOST_AUTO_TEST_CASE( copy_false )
 {
