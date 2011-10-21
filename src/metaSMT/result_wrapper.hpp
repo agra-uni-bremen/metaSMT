@@ -9,6 +9,7 @@
 #include <boost/type_traits/is_signed.hpp>
 #include <boost/optional.hpp>
 #include <boost/function.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 
 
 #include <vector>
@@ -359,7 +360,8 @@ namespace metaSMT {
       result_wrapper( result_type r ) : r (r) { }
       result_wrapper( boost::logic::tribool t ) : r (t) { }
       result_wrapper( bool b ) : r (boost::logic::tribool(b)) { }
-      result_wrapper( const char* s ) : r (std::string(s)) { }
+      result_wrapper( std::string const & s ) : r (boost::algorithm::to_upper_copy(s)) { }
+      result_wrapper( const char* s ) : r(boost::algorithm::to_upper_copy(std::string(s))) { }
       result_wrapper( const char c ) 
       : r (c=='1' ? boost::logic::tribool(true) 
         : (c=='0' ? boost::logic::tribool(false) 

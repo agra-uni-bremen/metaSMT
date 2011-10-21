@@ -16,17 +16,21 @@ class Fixture {
   protected:
 };
 
+/**
+ * pass in a three bit don't care ("XXX"), the function
+ * checks the correct conversion to various types.
+ **/
 void check_conversion_XXX( result_wrapper const & rw)
 {
   using boost::logic::indeterminate;
   tribool tri = rw;
-  BOOST_REQUIRE_EQUAL( tri, indeterminate);
+  BOOST_REQUIRE( indeterminate(tri) );
 
   bool boolean = rw;
   BOOST_REQUIRE_EQUAL( boolean, false);
 
   std::string s = rw;
-  BOOST_REQUIRE_EQUAL( s, "000" );
+  BOOST_REQUIRE_EQUAL( s, "XXX" );
 
   int i = rw;
   BOOST_REQUIRE_EQUAL( i, 0);
@@ -35,7 +39,6 @@ void check_conversion_XXX( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL( u, 0);
 
   vector<bool> a, b(3, false);
-  b[0] = true;
   a = rw;
   BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
 
@@ -290,8 +293,13 @@ BOOST_AUTO_TEST_CASE( from_string )
   check_conversion_1_in_8bit( result_wrapper( std::string("00000001")) );
   check_conversion_128_in_8bit( result_wrapper( std::string("10000000")) );
   check_conversion_13_in_8bit( result_wrapper( std::string("00001101")) );
+  check_conversion_0_in_8bit( result_wrapper( std::string("00000000")) );
   check_conversion_true( result_wrapper( std::string("1")) );
   check_conversion_false( result_wrapper( std::string("0")) );
+  check_conversion_XXX( result_wrapper( std::string("XXX")) );
+  check_conversion_XXX( result_wrapper( std::string("xxx")) );
+  check_conversion_XXX( result_wrapper( std::string("XxX")) );
+  check_conversion_XXX( result_wrapper( std::string("xXx")) );
 }
 
 BOOST_AUTO_TEST_CASE( from_bool )
@@ -367,6 +375,8 @@ BOOST_AUTO_TEST_CASE( from_dynamic_bitset )
 
   check_conversion_1_in_8bit( result_wrapper(dynamic_bitset<>(8, 1)) );
   check_conversion_128_in_8bit( result_wrapper(dynamic_bitset<>(8, 128)) );
+  check_conversion_13_in_8bit( result_wrapper( dynamic_bitset<>(8,13)) );
+  check_conversion_0_in_8bit( result_wrapper( dynamic_bitset<>(8,0)) );
   check_conversion_true ( result_wrapper(dynamic_bitset<>(1, 1)) );
   check_conversion_false( result_wrapper(dynamic_bitset<>(1, 0)) );
 }
@@ -408,6 +418,9 @@ BOOST_AUTO_TEST_CASE( from_vector_bool )
   vec[3]=true;
   vec[7]=false;
   check_conversion_13_in_8bit( result_wrapper(vec) );
+
+  check_conversion_0_in_8bit( result_wrapper(vector<bool>(8, false)) );
+
   check_conversion_true ( result_wrapper(vector<bool>(1, true)) );
   check_conversion_false( result_wrapper(vector<bool>(1, false)) );
 }
@@ -435,6 +448,12 @@ BOOST_AUTO_TEST_CASE( from_vector_tribool )
   check_conversion_13_in_8bit( result_wrapper(vec) );
   check_conversion_true ( result_wrapper(vector<tribool>(1, true)) );
   check_conversion_false( result_wrapper(vector<tribool>(1, false)) );
+
+  vec.resize(3);
+  vec[0]=indeterminate;
+  vec[1]=indeterminate;
+  vec[2]=indeterminate;
+  check_conversion_XXX( result_wrapper(vec) );
 }
 
 BOOST_AUTO_TEST_CASE( from_integral_value_and_width )
@@ -449,6 +468,8 @@ BOOST_AUTO_TEST_CASE( from_integral_value_and_width )
 
   // check  for 8u/-8
   check_conversion_13_in_8bit( result_wrapper(13, 8) );
+
+  check_conversion_0_in_8bit( result_wrapper(0, 8) );
 
   check_conversion_true ( result_wrapper(1, 1) );
   check_conversion_false( result_wrapper(0, 1) );
