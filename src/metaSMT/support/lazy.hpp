@@ -73,8 +73,8 @@ namespace metaSMT {
         ));
       }
 
-      typename proto::result_of::deep_copy<Expr>::type e_;
       Context & ctx_;
+      typename proto::result_of::deep_copy<Expr>::type e_;
     };
     
   } /* detail */
