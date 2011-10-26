@@ -171,7 +171,6 @@ BOOST_AUTO_TEST_CASE( not_t )
 BOOST_AUTO_TEST_CASE( implies_t )
 {
   predicate x = new_variable();
-  predicate y = new_variable();
   bool xb;
 
   assumption( ctx, implies(False, False));
@@ -196,8 +195,6 @@ BOOST_AUTO_TEST_CASE( implies_t )
 BOOST_AUTO_TEST_CASE( ite_t )
 {
   predicate x = new_variable();
-  predicate y = new_variable();
-  predicate z = new_variable();
   bool xb;
 
   assumption( ctx, Ite(False, False, True));

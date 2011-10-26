@@ -391,7 +391,6 @@ BOOST_AUTO_TEST_CASE( bvneg_t )
   using namespace boost::logic;
 
   bitvector x = new_bitvector(8);
-  bitvector y = new_bitvector(8);
 
   BOOST_REQUIRE( solve(ctx) );
 
@@ -593,9 +592,8 @@ BOOST_AUTO_TEST_CASE( bvsub_2 )
 
   bitvector x = new_bitvector(w);
   bitvector y = new_bitvector(w);
-  bitvector z = new_bitvector(w);
 
-  unsigned xd, yd, zd;
+  unsigned xd, yd;
 
   BOOST_REQUIRE( solve(ctx) );
 
@@ -604,7 +602,6 @@ BOOST_AUTO_TEST_CASE( bvsub_2 )
 
   xd = read_value(ctx, x);
   yd = read_value(ctx, y);
-  zd = read_value(ctx, z);
 
   BOOST_CHECK_EQUAL( (xd-yd)+yd, xd );
 
@@ -1475,7 +1472,6 @@ BOOST_AUTO_TEST_CASE( keeps_small_assertions )
 {
    const char w = 32;
 
-   bitvector retval = new_bitvector(w);
    bitvector tmp0   = new_bitvector(w);
    bitvector tmp1   = new_bitvector(w);
    bitvector x      = new_bitvector(w);
@@ -1749,7 +1745,6 @@ BOOST_AUTO_TEST_CASE( read_value_constant )
 BOOST_AUTO_TEST_CASE( bvint_t )
 {
   const unsigned w = 32;
-  bitvector x = new_bitvector(w);
 
   BOOST_REQUIRE( solve(ctx) );
   metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(13,w), bvint(13u,w) ) );
@@ -1804,7 +1799,6 @@ BOOST_AUTO_TEST_CASE( bvuint_t )
 BOOST_AUTO_TEST_CASE( bvsint_t )
 {
   const unsigned w = 256;
-  bitvector x = new_bitvector(w);
 
   BOOST_REQUIRE( solve(ctx) );
 
