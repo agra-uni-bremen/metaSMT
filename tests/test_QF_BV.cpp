@@ -1798,8 +1798,6 @@ BOOST_AUTO_TEST_CASE( bvuint_t )
 
 BOOST_AUTO_TEST_CASE( bvsint_t )
 {
-  const unsigned w = 256;
-
   BOOST_REQUIRE( solve(ctx) );
 
   metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,8),

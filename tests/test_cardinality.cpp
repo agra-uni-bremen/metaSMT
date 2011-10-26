@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE( test_one_hot )
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);
   bd = read_value(ctx, b);
-  BOOST_REQUIRE(   (ad == 1 & bd == 0)
-                 | (ad == 0 & bd == 1) );
+  BOOST_REQUIRE(   (ad == 1 && bd == 0)
+                 | (ad == 0 && bd == 1) );
 
   // five predicates
   vec += evaluate(ctx, c);
@@ -48,11 +48,18 @@ BOOST_AUTO_TEST_CASE( test_one_hot )
   vec += evaluate(ctx, e);
   assumption(ctx, one_hot(ctx, vec) );
   BOOST_REQUIRE( solve(ctx) );
-  BOOST_REQUIRE(   (ad == 1 & bd == 0 & cd == 0 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 1 & cd == 0 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 1 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 0 & dd == 1 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 0 & dd == 0 & ed == 1) );
+
+  ad = read_value(ctx, a);
+  bd = read_value(ctx, b);
+  cd = read_value(ctx, c);
+  dd = read_value(ctx, d);
+  ed = read_value(ctx, e);
+
+  BOOST_REQUIRE(   (ad == 1 && bd == 0 && cd == 0 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 1 && cd == 0 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 1 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 0 && dd == 1 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 0 && dd == 0 && ed == 1) );
 }
 
 BOOST_AUTO_TEST_CASE( test_cardinality_eq )
@@ -82,8 +89,8 @@ BOOST_AUTO_TEST_CASE( test_cardinality_eq )
   bd = read_value(ctx, b);
   std::cout << "a = " << ad << std::endl;
   std::cout << "b = " << bd << std::endl;
-  BOOST_REQUIRE(   (ad == 1 & bd == 0)
-                 | (ad == 0 & bd == 1) );
+  BOOST_REQUIRE(   (ad == 1 && bd == 0)
+                 | (ad == 0 && bd == 1) );
 
   // five predicates
   vec += evaluate(ctx, c);
@@ -101,11 +108,11 @@ BOOST_AUTO_TEST_CASE( test_cardinality_eq )
   std::cout << "c = " << cd << std::endl;
   std::cout << "d = " << dd << std::endl;
   std::cout << "e = " << ed << std::endl;
-  BOOST_REQUIRE(   (ad == 1 & bd == 0 & cd == 0 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 1 & cd == 0 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 1 & dd == 0 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 0 & dd == 1 & ed == 0)
-                 | (ad == 0 & bd == 0 & cd == 0 & dd == 0 & ed == 1) );
+  BOOST_REQUIRE(   (ad == 1 && bd == 0 && cd == 0 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 1 && cd == 0 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 1 && dd == 0 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 0 && dd == 1 && ed == 0)
+                 | (ad == 0 && bd == 0 && cd == 0 && dd == 0 && ed == 1) );
 
   // 
   assumption(ctx, nequal(cardinality_eq(ctx, vec, 1), one_hot(ctx, vec)) );

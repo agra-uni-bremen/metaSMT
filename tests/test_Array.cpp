@@ -126,8 +126,6 @@ BOOST_AUTO_TEST_CASE( read_write_value2 )
 
   bitvector idx = new_bitvector(index_width);
 
-  unsigned xd, yd, idxd;
-
   BOOST_REQUIRE( solve(ctx) );
 
   assumption( ctx, equal( select(store(a, idx, x), idx), x) );
