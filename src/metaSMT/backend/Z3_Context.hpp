@@ -240,14 +240,14 @@ namespace metaSMT {
 
         // construct result sort
         sprintf(buf, "return_type_%u", var.id);
-        Z3_symbol result_name = Z3_mk_string_symbol(z3_, buf);
+        //Z3_symbol result_name = Z3_mk_string_symbol(z3_, buf);
         Z3_sort result_type = boost::apply_visitor(domain_type_visitor(z3_), var.result_type);
 
         // construct argument sorts
         Z3_sort *domain_type = new Z3_sort[num_args];
         for (unsigned u = 0; u < num_args; ++u) {
           sprintf(buf, "domain_%u_%u", var.id, u);
-          Z3_symbol dom_name = Z3_mk_string_symbol(z3_, buf);
+          //Z3_symbol dom_name = Z3_mk_string_symbol(z3_, buf);
           domain_type[u] = boost::apply_visitor(domain_type_visitor(z3_), var.args[u]);
         }
 
