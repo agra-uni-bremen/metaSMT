@@ -139,8 +139,6 @@ namespace metaSMT
 
       unsigned aiger_add_xnor ( aiger *aig, unsigned lhs, unsigned rhs )
       {
-        result_type t = new_var(); 
-
         result_type t1 = new_var ();
         result_type t2 = new_var ();
 
