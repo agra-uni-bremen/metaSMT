@@ -88,7 +88,7 @@ struct nqueens
   void rising(int row, int col)
   {
     std::vector<predicate> vec1;
-    while ( row >= 0 && col < field_size  )
+    while ( row >= 0 && col < static_cast<int>(field_size)  )
     {
       vec1.push_back(field[row][col]);
       row--;
