@@ -83,15 +83,16 @@ namespace metaSMT {
   : boost::proto::callable_context< Priority_Context<SolverContext1, SolverContext2>, boost::proto::null_context >
   {
     Priority_Context()
-      : ready(false)
-        , ctx1(new SolverContext1)
-        , ctx2(new SolverContext2)
-        , worker1( boost::shared_ptr<SolverContext1>(ctx1) )
-        , worker2( boost::shared_ptr<SolverContext2>(ctx2) )
-        , counter0(0)
-        , counter1(0)
-        , t_1(worker1)
-        , t_2(worker2)
+      : ctx1(new SolverContext1)
+      , ctx2(new SolverContext2)
+      , worker1( boost::shared_ptr<SolverContext1>(ctx1) )
+      , worker2( boost::shared_ptr<SolverContext2>(ctx2) )
+      , t_1(worker1)
+      , t_2(worker2)
+      , lastSAT(0)
+      , ready(false)
+      , counter0(0)
+      , counter1(0)
     {}
 
     /**
