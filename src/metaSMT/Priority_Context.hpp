@@ -4,11 +4,9 @@
 #include "frontend/Logic.hpp"
 #include "frontend/QF_BV.hpp"
 #include "Features.hpp"
-#include "API/Assertion.hpp"
-#include "API/Assumption.hpp"
-#include "support/concurrent_queue.hpp"
 #include "support/lazy.hpp"
 #include "support/protofy.hpp"
+#include "concurrent/Threaded_Worker.hpp"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
@@ -20,7 +18,6 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/proto/context.hpp>
-#include <boost/tr1/unordered_map.hpp>
 #include <boost/fusion/sequence/io.hpp>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 
@@ -29,47 +26,6 @@
 #include <pthread.h>
 
 namespace metaSMT {
-
-  template<typename Context>
-  struct ThreadedWorker {
-    typedef boost::function0<void> task_type;
-    typedef concurrent_queue< task_type > queue_type;
-
-    boost::shared_ptr<Context> ctx;
-    queue_type queue;
-
-    ThreadedWorker( boost::shared_ptr<Context> ctx )
-      : ctx(ctx)
-        , queue()
-    {}
-
-    void operator() () {
-      task_type task = NULL;
-      while(true) {
-        queue.wait_and_pop(task);
-        task();
-      }
-    }
-  };
-
-  template<typename Context>
-  struct ThreadedWorkerWrapper {
-    typedef ThreadedWorker<Context> worker_type;
-    boost::shared_ptr< worker_type > worker;
-
-    ThreadedWorkerWrapper( boost::shared_ptr<Context> ctx )
-      : worker( new worker_type(ctx))
-    {}
-
-    void operator() () {
-      (*worker)();
-    }
-
-    void push( typename worker_type::task_type const & task) {
-      worker->queue.push(task);
-    }
-  };
-
 
   /**
    * @brief Multi-multiple solver contexts and dispatches all calls
@@ -85,10 +41,10 @@ namespace metaSMT {
     Priority_Context()
       : ctx1(new SolverContext1)
       , ctx2(new SolverContext2)
-      , worker1( boost::shared_ptr<SolverContext1>(ctx1) )
-      , worker2( boost::shared_ptr<SolverContext2>(ctx2) )
-      , t_1(worker1)
-      , t_2(worker2)
+      , worker1(ctx1)
+      , worker2(ctx2)
+      , thread1(worker1)
+      , thread2(worker2)
       , lastSAT(0)
       , ready(false)
       , counter0(0)
@@ -103,12 +59,12 @@ namespace metaSMT {
      *
      */
     ~Priority_Context() {
-      t_1.interrupt();
-      t_2.interrupt();
-      //pthread_cancel(t_1.native_handle());
-      //pthread_cancel(t_2.native_handle());
-      //t_1.join();
-      //t_2.join();
+      thread1.interrupt();
+      thread2.interrupt();
+      //pthread_cancel(thread1.native_handle());
+      //pthread_cancel(thread2.native_handle());
+      //thread1.join();
+      //thread2.join();
 
     }
 
@@ -434,13 +390,13 @@ namespace metaSMT {
 
 
     private:
-    SolverContext1 *ctx1;
-    SolverContext2 *ctx2;
+    boost::shared_ptr<SolverContext1> ctx1;
+    boost::shared_ptr<SolverContext2> ctx2;
 
-    ThreadedWorkerWrapper<SolverContext1> worker1;
-    ThreadedWorkerWrapper<SolverContext2> worker2;
-    boost::thread t_1;
-    boost::thread t_2;
+    concurrent::ThreadedWorkerWrapper<SolverContext1> worker1;
+    concurrent::ThreadedWorkerWrapper<SolverContext2> worker2;
+    boost::thread thread1;
+    boost::thread thread2;
 
     // the id of the solver which returned the last SAT result in solve,
     // 0: UNSAT/invalid

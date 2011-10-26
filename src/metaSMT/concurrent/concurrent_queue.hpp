@@ -4,6 +4,8 @@
 #include <boost/thread/condition_variable.hpp>
 #include <queue>
 
+namespace metaSMT {
+namespace concurrent {
 
 /* taken from http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html */
 
@@ -55,3 +57,6 @@ public:
     }
 
 };
+
+} /* namespace concurrent */
+} /* namespace metaSMT */

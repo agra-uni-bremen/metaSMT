@@ -6,7 +6,7 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
-#include "support/concurrent_queue.hpp"
+#include "concurrent/Threaded_Worker.hpp"
 #include "support/lazy.hpp"
 #include "support/protofy.hpp"
 
@@ -42,307 +42,298 @@ namespace metaSMT {
     : boost::proto::callable_context< Threaded_Context<SolverContext1, SolverContext2>, boost::proto::null_context >
   { 
     Threaded_Context()
-    : t_1(worker, 1, boost::ref(queue1))
-    , t_2(worker, 2, boost::ref(queue2))
+    : ctx1(new SolverContext1)
+    , ctx2(new SolverContext2)
+    , worker1(ctx1)
+    , worker2(ctx2)
+    , thread1(worker1)
+    , thread2(worker2)
+    , lastSAT(0)
     {}
 
- /**
-   * \brief controls the running threads
-   *
-   * The destructor regulates the threads by interrupting and joining 
-   * the threads.
-   *
-   *
-   */
-
+    /**
+     * \brief controls the running threads
+     *
+     * The destructor regulates the threads by interrupting and joining 
+     * the threads.
+     *
+     *
+     */
     ~Threaded_Context() {
-      t_1.interrupt();
-      t_2.interrupt();
-      t_1.join();
-      t_2.join();
+      thread1.interrupt();
+      thread2.interrupt();
+      thread1.join();
+      thread2.join();
     }
 
-  /** \cond */
-  template<typename Result>
-  struct PTFunction {
-    PTFunction( boost::packaged_task<Result> * pt) : pt(pt) {}
-    boost::packaged_task<Result> * pt;
-    void operator() () {
-      (*pt)();
+    /** \cond */
+    template<typename Result>
+    struct PTFunction {
+      PTFunction( boost::packaged_task<Result> * pt) : pt(pt) {}
+      boost::packaged_task<Result> * pt;
+      void operator() () {
+        (*pt)();
+      }
+    };
+
+    template<typename Result>
+    static boost::function0<void> mkPT(boost::packaged_task<Result> * pt) {
+      return PTFunction<Result>(pt);
     }
-  };
-  
-  template<typename Result>
-  static boost::function0<void> mkPT(boost::packaged_task<Result> * pt) {
-    return PTFunction<Result>(pt);
-  }
 
     template<typename Context>
-  struct SolveCaller 
-  {
-    SolveCaller( Context & ctx)
-     : ctx(ctx) {}
-    bool operator() () 
+    struct SolveCaller 
     {
-      return metaSMT::solve(ctx);
-    }
-    Context & ctx;
-  };
-  
-  template<typename Context, typename Expr >
-  struct ReadCaller 
-  {
-    ReadCaller( Context & ctx, Expr e)
-     : ctx(ctx), e(e) {}
-    result_wrapper* operator() () 
+      SolveCaller( Context & ctx)
+        : ctx(ctx) {}
+      bool operator() () 
+      {
+        return metaSMT::solve(ctx);
+      }
+      Context & ctx;
+    };
+
+    template<typename Context, typename Expr >
+    struct ReadCaller 
     {
-      return new result_wrapper(metaSMT::read_value(ctx, e));
-    }
-    Context & ctx;
-    Expr e;
-  };
+      ReadCaller( Context & ctx, Expr e)
+        : ctx(ctx), e(e) {}
+      result_wrapper* operator() () 
+      {
+        return new result_wrapper(metaSMT::read_value(ctx, e));
+      }
+      Context & ctx;
+      Expr e;
+    };
 
-  template<typename Context, typename Command, typename Param1>
-  struct CommandCaller
-  {
-    CommandCaller( Context & ctx, Param1 param )
-     : ctx(ctx), param(param) {}
-    void operator() () 
+    template<typename Context, typename Command, typename Param1>
+    struct CommandCaller
     {
-      ctx.command(Command(), getValue(param) );
+      CommandCaller( Context & ctx, Param1 param )
+        : ctx(ctx), param(param) {}
+      void operator() () 
+      {
+        ctx.command(Command(), getValue(param) );
+      }
+
+      template <typename T>
+        T getValue( T const & t) {return t;} 
+
+      template <typename T>
+        T getValue( boost::shared_future<T> & t) {return t.get();} 
+      Context & ctx;
+      Param1 param;
+    };
+
+    template<typename Context, typename Command, typename Param1>
+    CommandCaller <Context, Command, Param1>
+    call_command( Context & ctx, Command const & cmd, Param1 param1) {
+      return CommandCaller <Context, Command, Param1>(ctx, param1);
     }
-
-    template <typename T>
-    T getValue( T const & t) {return t;} 
-
-    template <typename T>
-    T getValue( boost::shared_future<T> & t) {return t.get();} 
-    Context & ctx;
-    Param1 param;
-  };
-
-  template<typename Context, typename Command, typename Param1>
-  CommandCaller <Context, Command, Param1>
-  call_command( Context & ctx, Command const & cmd, Param1 param1) {
-    return CommandCaller <Context, Command, Param1>(ctx, param1);
-  }
 
 
     typedef boost::fusion::vector<
       boost::shared_future<typename SolverContext1::result_type>,
       boost::shared_future<typename SolverContext2::result_type>
-    > result_type;
-    
+      > result_type;
+
     template<int N>
     struct unpack_future 
     : proto::or_<
-        proto::when< 
-	  proto::terminal< result_type >
-        , proto::_make_terminal(
+      proto::when< 
+        proto::terminal< result_type >
+      , proto::_make_terminal(
+          //, boost::proto::terminal < 
+          //	typename boost::fusion::result_of::at<result_type, boost::mpl::int_<N> >::type
+          //  > ( boost::
+          proto::functional::at ( proto::_value, boost::mpl::int_<N> () )
+        )>
+          //  , proto::terminal< proto::_ >
+      , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
+    > {};
 
-	//, boost::proto::terminal < 
- 	  //	typename boost::fusion::result_of::at<result_type, boost::mpl::int_<N> >::type
-	  //  > ( boost::
-	  proto::functional::at ( proto::_value, boost::mpl::int_<N> () )
-	 )>
-     //  , proto::terminal< proto::_ >
-       , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
-       > {};
+    /** \endcond */
 
-    
-    static void worker ( int id, concurrent_queue<boost::function0<void> > & queue) {
-	 while(true) { 
-	  boost::function0<void> task = NULL;
-	  queue.wait_and_pop(task);
-          task();
- 	 }
-    }
-  /** \endcond */
-
-  /**
-   * \brief evaluate an expression in both contexts
-   *
-   * Takes the current expression and creates a task for each Context.
-   * The tasks are put into the respective queues and the future results 
-   * are returned as result_type.
-   * 
-   * \param e The expression to evaluate
-   * \return result_type - tuple of future results of the contexts
-   *
-   */
+    /**
+     * \brief evaluate an expression in both contexts
+     *
+     * Takes the current expression and creates a task for each Context.
+     * The tasks are put into the respective queues and the future results 
+     * are returned as result_type.
+     * 
+     * \param e The expression to evaluate
+     * \return result_type - tuple of future results of the contexts
+     *
+     */
     template<typename Expr>
     result_type evaluate(Expr const & e) {
-	
-	boost::packaged_task <typename SolverContext1::result_type>* pt1
-	  = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(ctx1, unpack_future<0>()(e) ));
-    
-    	boost::packaged_task <typename SolverContext2::result_type>* pt2
-	  = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(ctx2, unpack_future<1>()(e) ));
-           
-	queue1.push(mkPT(pt1));
-	queue2.push(mkPT(pt2));
- 
- 	boost::shared_future<typename SolverContext1::result_type> future1 ( pt1->get_future() );
-        boost::shared_future<typename SolverContext2::result_type> future2 ( pt2->get_future() );
 
-	result_type r(future1, future2);
-    	return r; 
+      boost::packaged_task <typename SolverContext1::result_type>* pt1
+        = new boost::packaged_task<typename SolverContext1::result_type>(metaSMT::lazy(*ctx1, unpack_future<0>()(e) ));
+
+      boost::packaged_task <typename SolverContext2::result_type>* pt2
+        = new boost::packaged_task<typename SolverContext2::result_type>(metaSMT::lazy(*ctx2, unpack_future<1>()(e) ));
+
+      worker1.push(mkPT(pt1));
+      worker2.push(mkPT(pt2));
+
+      boost::shared_future<typename SolverContext1::result_type> future1 ( pt1->get_future() );
+      boost::shared_future<typename SolverContext2::result_type> future2 ( pt2->get_future() );
+
+      result_type r(future1, future2);
+      return r; 
     }
 
-  /**
-   * \brief read the backend result from an expression of the last call of solve
-   *
-   * This method reads the result of the last call of solve for bitvectors
-   * and predicates. It takes an expression and creates a task for the 
-   * respective context. Dependent on the result of the solver, the task is 
-   * put into the respective queue and the result is returned as 
-   * result_wrapper. 
-   * 
-   * \param e The expression to read 
-   * \return result_wrapper 
-   *
-   */
+    /**
+     * \brief read the backend result from an expression of the last call of solve
+     *
+     * This method reads the result of the last call of solve for bitvectors
+     * and predicates. It takes an expression and creates a task for the 
+     * respective context. Dependent on the result of the solver, the task is 
+     * put into the respective queue and the result is returned as 
+     * result_wrapper. 
+     * 
+     * \param e The expression to read 
+     * \return result_wrapper 
+     *
+     */
     template<typename Expr>
     result_wrapper read_value (Expr const & e)
     {
-    	if( lastSAT == 1 )  {
-	  boost::packaged_task <result_wrapper*>* pt1
-	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext1, Expr>(ctx1, e) );
- 	  queue1.push(mkPT(pt1));
+      if( lastSAT == 1 )  {
+        boost::packaged_task <result_wrapper*>* pt1
+          = new boost::packaged_task<result_wrapper*>( 
+              ReadCaller<SolverContext1, Expr>(*ctx1, e) );
+        worker1.push(mkPT(pt1));
 
-	  std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
-	  std::cout << "read from 1: " <<  *ptr << std::endl;
-	  return  *ptr;
+        std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
+        std::cout << "read from 1: " <<  *ptr << std::endl;
+        return  *ptr;
 
-	} else if (lastSAT == 2) {
-	  boost::packaged_task <result_wrapper*>* pt2
-	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext2, Expr>(ctx2, e) );
- 	  queue2.push(mkPT(pt2));
+      } else if (lastSAT == 2) {
+        boost::packaged_task <result_wrapper*>* pt2
+          = new boost::packaged_task<result_wrapper*>( 
+              ReadCaller<SolverContext2, Expr>(*ctx2, e) );
+        worker2.push(mkPT(pt2));
 
-	  std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
-	  std::cout << "read from 2: " <<  *ptr << std::endl;
-	  return  *ptr;
-	} 
-	return result_wrapper("X");
+        std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
+        std::cout << "read from 2: " <<  *ptr << std::endl;
+        return  *ptr;
+      } 
+      return result_wrapper("X");
     }
-    
-  /**
-   * \brief read the value from a result_type of the last call of solve
-   *
-   * Reads the result of the call of solve only for result_types.
-   * Dependent to the result of the solver, the result_type is put 
-   * into a tasks and then pushed into the respective queue.
-   * This method returns a result_wrapper.  
-   * 
-   * \param e result_type to read 
-   * \return result_wrapper
-   *
-   */
+
+    /**
+     * \brief read the value from a result_type of the last call of solve
+     *
+     * Reads the result of the call of solve only for result_types.
+     * Dependent to the result of the solver, the result_type is put 
+     * into a tasks and then pushed into the respective queue.
+     * This method returns a result_wrapper.  
+     * 
+     * \param e result_type to read 
+     * \return result_wrapper
+     *
+     */
     result_wrapper read_value (result_type & e)
     {
-    	using boost::fusion::at_c;
-    	if( lastSAT == 1 )  {
-	  boost::packaged_task <result_wrapper*>* pt1
-	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext1, typename SolverContext1::result_type>(ctx1, at_c<0>(e).get()) );
- 	  queue1.push(mkPT(pt1));
+      using boost::fusion::at_c;
+      if( lastSAT == 1 )  {
+        boost::packaged_task <result_wrapper*>* pt1
+          = new boost::packaged_task<result_wrapper*>( 
+              ReadCaller<SolverContext1, typename SolverContext1::result_type>(*ctx1, at_c<0>(e).get()) );
+        worker1.push(mkPT(pt1));
 
-	  std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
-	  std::cout << "read from 1': " <<  *ptr << std::endl;
-	  return  *ptr;
-		
-	} else if (lastSAT == 2) {
-	  boost::packaged_task <result_wrapper*>* pt2
-	     = new boost::packaged_task<result_wrapper*>( 
-	     	ReadCaller<SolverContext2, typename SolverContext2::result_type>(ctx2, at_c<1>(e).get()) );
- 	  queue2.push(mkPT(pt2));
+        std::auto_ptr<result_wrapper> ptr( pt1->get_future().get() );
+        std::cout << "read from 1': " <<  *ptr << std::endl;
+        return  *ptr;
 
-	  std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
-	  std::cout << "read from 2': " <<  *ptr << std::endl;
-	  return  *ptr;
-	} 
-	  return result_wrapper("X");
-	
+      } else if (lastSAT == 2) {
+        boost::packaged_task <result_wrapper*>* pt2
+          = new boost::packaged_task<result_wrapper*>( 
+              ReadCaller<SolverContext2, typename SolverContext2::result_type>(*ctx2, at_c<1>(e).get()) );
+        worker2.push(mkPT(pt2));
+
+        std::auto_ptr<result_wrapper> ptr( pt2->get_future().get() );
+        std::cout << "read from 2': " <<  *ptr << std::endl;
+        return  *ptr;
+      } 
+      return result_wrapper("X");
+
     }
-  /**
-   * \brief insert a result_type into queues
-   *
-   * Takes a result_type and split it into the respective queues.
-   * 
-   * \param cmd  - a Command
-   * \param e - a result_type
-   * \return void
-   *
-   */
+
+    /**
+     * \brief insert a result_type into queues
+     *
+     * Takes a result_type and split it into the respective queues.
+     * 
+     * \param cmd  - a Command
+     * \param e - a result_type
+     * \return void
+     *
+     */
     template<typename Command>
     void command( Command const & cmd, result_type e) 
     {
-     queue1.push( call_command (ctx1, cmd, boost::fusion::at_c<0>(e)) );
-     queue2.push( call_command (ctx2, cmd, boost::fusion::at_c<1>(e)) );
+      worker1.push( call_command (*ctx1, cmd, boost::fusion::at_c<0>(e)) );
+      worker2.push( call_command (*ctx2, cmd, boost::fusion::at_c<1>(e)) );
     }
 
-  /**
-   * \brief insert an argument into queues
-   *
-   * This method takes an argument and push it into the two queues.
-   * 
-   * \param cmd - a Command
-   * \param a1 - an argument
-   * \return void
-   *
-   */
+    /**
+     * \brief insert an argument into queues
+     *
+     * This method takes an argument and push it into the two queues.
+     * 
+     * \param cmd - a Command
+     * \param a1 - an argument
+     * \return void
+     *
+     */
 
     template<typename Command, typename Arg1>
     void command( Command const & cmd, Arg1 a1) 
     {
-     queue1.push( call_command (ctx1, cmd, a1) );
-     queue2.push( call_command (ctx2, cmd, a1) );
+      worker1.push( call_command (*ctx1, cmd, a1) );
+      worker2.push( call_command (*ctx2, cmd, a1) );
     }
 
 
     bool solve()
     {
-	boost::packaged_task <bool>* pt1
-	   = new boost::packaged_task<bool>( SolveCaller<SolverContext1>(ctx1) );
-	boost::packaged_task <bool>* pt2
-	    = new boost::packaged_task<bool>( SolveCaller<SolverContext2>(ctx2) );
-	
-     
-	queue1.push(mkPT(pt1));
-  	queue2.push(mkPT(pt2));
+      boost::packaged_task <bool>* pt1
+        = new boost::packaged_task<bool>( SolveCaller<SolverContext1>(*ctx1) );
+      boost::packaged_task <bool>* pt2
+        = new boost::packaged_task<bool>( SolveCaller<SolverContext2>(*ctx2) );
 
-	boost::unique_future<bool> future1 = pt1->get_future();
-        boost::unique_future<bool> future2 = pt2->get_future();
-	
-        unsigned id = 1 + boost::wait_for_any(future1, future2);
-	lastSAT = id;
-    
-  	std::cout << "erster: " << id << std::endl;
-        if( id == 1 ) {
-         return future1.get();
-        }
-        
-	return future2.get();
+
+      worker1.push(mkPT(pt1));
+      worker2.push(mkPT(pt2));
+
+      boost::unique_future<bool> future1 = pt1->get_future();
+      boost::unique_future<bool> future2 = pt2->get_future();
+
+      unsigned id = 1 + boost::wait_for_any(future1, future2);
+      lastSAT = id;
+
+      std::cout << "erster: " << id << std::endl;
+      if( id == 1 ) {
+        return future1.get();
+      }
+
+      return future2.get();
     }
-    
 
-    
+
     private:
-    //  concurrent_queue<boost::packaged_task<bool>*> queue1;
-     // concurrent_queue<boost::packaged_task<bool>*> queue2;
-      
-      concurrent_queue<boost::function0<void> > queue1;
-      concurrent_queue<boost::function0<void> > queue2;
+      boost::shared_ptr<SolverContext1> ctx1;
+      boost::shared_ptr<SolverContext2> ctx2;
 
+      concurrent::ThreadedWorkerWrapper<SolverContext1> worker1;
+      concurrent::ThreadedWorkerWrapper<SolverContext2> worker2;
 
-      boost::thread t_1;
-      boost::thread t_2;
-      boost::condition_variable cvar;
+      boost::thread thread1;
+      boost::thread thread2;
 
-      SolverContext1 ctx1;
-      SolverContext2 ctx2;
 
       // the id of the solver which returned the last SAT result in solve,
       // 0: UNSAT/invalid
