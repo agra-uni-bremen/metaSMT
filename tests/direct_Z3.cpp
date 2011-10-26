@@ -1,12 +1,12 @@
 #define BOOST_TEST_MODULE direct_Z3
 #include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/backend/Z3_Context.hpp>
+#include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/API/Group.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture {
-  typedef DirectSolver_Context< Group< Z3_Context > >
+  typedef DirectSolver_Context< Group< Z3_Backend > >
     ContextType;
   ContextType ctx ;
 };

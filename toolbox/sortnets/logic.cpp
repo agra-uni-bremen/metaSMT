@@ -2,7 +2,7 @@
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/backend/SMT2.hpp>
 #include <metaSMT/backend/SWORD_Backend.hpp>
-#include <metaSMT/backend/Z3_Context.hpp>
+#include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/backend/MiniSAT.hpp>
 #include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/backend/CUDD_Context.hpp>
@@ -338,7 +338,7 @@ struct sortnet
 {
   typedef bool result_type;
 
-  typedef DirectSolver_Context< IgnoreComments<solver::Z3_Context> > VerifyerContext;
+  typedef DirectSolver_Context< IgnoreComments<solver::Z3_Backend> > VerifyerContext;
   unsigned size; 
   SynthNet<Solver> syn_net;
 
@@ -397,7 +397,7 @@ int main(int argc, const char *argv[])
 {
   typedef boost::mpl::vector < 
       DirectSolver_Context < IgnoreComments< solver::Boolector > > 
-    , DirectSolver_Context < IgnoreComments< solver::Z3_Context > >
+    , DirectSolver_Context < IgnoreComments< solver::Z3_Backend > >
     , DirectSolver_Context < IgnoreComments< solver::SWORD_Backend > >
     , DirectSolver_Context < solver::SMT2 >
     , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < MiniSAT > > > >

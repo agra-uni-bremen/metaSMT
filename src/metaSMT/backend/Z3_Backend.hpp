@@ -62,11 +62,11 @@ namespace metaSMT {
 
     /**
      * \ingroup Backend
-     * \class Z3_Context Z3_Context.hpp metaSMT/backend/Z3_Context.hpp
+     * \class Z3_Backend Z3_Backend.hpp metaSMT/backend/Z3_Backend.hpp
      *
      * \brief Backend for the Z3 SMT solver
      **/
-    class Z3_Context {
+    class Z3_Backend {
     public:
       struct result_type {
         boost::variant<Z3_ast, Z3_func_decl> internal;
@@ -104,7 +104,7 @@ namespace metaSMT {
       };
       // typedef Z3_ast result_type;
 
-      Z3_Context () {
+      Z3_Backend () {
         Z3_config cfg;
         cfg = Z3_mk_config();
         z3_ = Z3_mk_context(cfg);
@@ -113,7 +113,7 @@ namespace metaSMT {
         assumption_ = (*this)(predtags::true_tag(), boost::any());
       }
 
-      ~Z3_Context() {
+      ~Z3_Backend() {
         if (m_) {
           Z3_del_model(z3_, m_);
           m_ = 0;
@@ -687,7 +687,7 @@ namespace metaSMT {
 
   namespace features {
     template<>
-    struct supports< solver::Z3_Context, features::stack_api>
+    struct supports< solver::Z3_Backend, features::stack_api>
     : boost::mpl::true_ {};
   } /* features */
 

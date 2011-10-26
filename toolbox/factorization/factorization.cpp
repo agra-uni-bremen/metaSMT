@@ -1,6 +1,6 @@
 #include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/backend/SWORD_Backend.hpp>
-#include <metaSMT/backend/Z3_Context.hpp>
+#include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/support/run_algorithm.hpp>
 
@@ -72,7 +72,7 @@ int main(int argc, const char *argv[])
 {
   typedef mpl::vector2 < 
     DirectSolver_Context< SWORD_Backend >
-  , DirectSolver_Context< Z3_Context > 
+  , DirectSolver_Context< Z3_Backend > 
   > SolverVec;
 
   if( argc < 3) {
