@@ -36,7 +36,7 @@ void check_conversion_XXX( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL( i, 0);
 
   unsigned u = rw;
-  BOOST_REQUIRE_EQUAL( u, 0);
+  BOOST_REQUIRE_EQUAL( u, 0u);
 
   vector<bool> a, b(3, false);
   a = rw;
@@ -47,7 +47,7 @@ void check_conversion_XXX( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL_COLLECTIONS(ta.begin(), ta.end(), tb.begin(), tb.end());
 
   unsigned char uc = rw;
-  BOOST_REQUIRE_EQUAL( uc, 0);
+  BOOST_REQUIRE_EQUAL( uc, 0u);
 
   signed char sc = rw;
   BOOST_REQUIRE_EQUAL( sc, 0);
@@ -72,7 +72,7 @@ void check_conversion_0_in_8bit( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL( i, 0);
 
   unsigned u = rw;
-  BOOST_REQUIRE_EQUAL( u, 0);
+  BOOST_REQUIRE_EQUAL( u, 0u);
 
   vector<bool> a, b(8, false);
   a = rw;
@@ -82,7 +82,7 @@ void check_conversion_0_in_8bit( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
 
   unsigned char uc = rw;
-  BOOST_REQUIRE_EQUAL( uc, 0);
+  BOOST_REQUIRE_EQUAL( uc, 0u);
 
   signed char sc = rw;
   BOOST_REQUIRE_EQUAL( sc, 0);
@@ -107,7 +107,7 @@ void check_conversion_1_in_8bit( result_wrapper const & rw)
   BOOST_REQUIRE_EQUAL( i, 1);
 
   unsigned u = rw;
-  BOOST_REQUIRE_EQUAL( u, 1);
+  BOOST_REQUIRE_EQUAL( u, 1u);
 
   vector<bool> a, b(8, false);
   b[0] = true;
