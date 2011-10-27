@@ -88,7 +88,7 @@ namespace metaSMT {
         >
       {};
 
-      struct QF_BV_BitVector_Constrant
+      struct QF_BV_BitVector_Constant
         : proto::or_<
             proto::binary_expr < tag::bvuint_tag
               , proto::terminal< proto::convertible_to< unsigned long > >
@@ -117,7 +117,7 @@ namespace metaSMT {
             , proto::terminal< tag::bit1_tag >
             , proto::terminal< tag::var_tag > 
             , proto::terminal< SMT_Expression > 
-            , QF_BV_BitVector_Constrant
+            , QF_BV_BitVector_Constant
             , QF_BV_Binary_Function
             , QF_BV_Binary_Predicate
             , QF_BV_Unary_Function
