@@ -165,7 +165,7 @@ private:
     FILE *file = fopen(fileName.c_str(),"w");
 
     char **iname = (char**) malloc(sizeof(char *)*_manager.ReadSize());
-    for(unsigned i = 0; i < _manager.ReadSize(); ++i)
+    for(unsigned i = 0; i < (unsigned)_manager.ReadSize(); ++i)
     {
       char *name = (char*) malloc(256);
       sprintf(name,"v%d", _manager.bddVar(i).NodeReadIndex());
