@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( read_write_value )
   yd = read_value(ctx, y);
   std::cout << read_value(ctx, y) << std::endl;
 
-  BOOST_CHECK_EQUAL(idxd, 0);
+  BOOST_CHECK_EQUAL(idxd, 0u);
   BOOST_CHECK_EQUAL(xd, init_value);
   BOOST_CHECK_EQUAL(yd, init_value);
   BOOST_CHECK_EQUAL(xd, yd);

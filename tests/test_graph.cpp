@@ -31,7 +31,6 @@ BOOST_AUTO_TEST_CASE( write_smt_file )
   bitvector r = new_bitvector(4);
 
   predicate p = new_variable();
-  predicate q = new_variable();
 
   assertions += evaluate( ctx, equal(x, bvnot(y)) );
   assertions += evaluate( ctx, equal(z, bvnot(bvnot(z))) );

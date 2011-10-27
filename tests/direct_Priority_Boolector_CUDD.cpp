@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( no_smt_after_bdd )
    prev0 = current0;
 
   }
-  BOOST_REQUIRE_GT(prev0,0);
+  BOOST_REQUIRE_GT(prev0,0u);
 }
 
 BOOST_AUTO_TEST_CASE( no_smt_after_bdd_bvmul )
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( no_smt_after_bdd_bvmul )
    prev0 = current0;
 
   }
-  BOOST_REQUIRE_GT(prev0,0);
+  BOOST_REQUIRE_GT(prev0,0u);
 };
 
 

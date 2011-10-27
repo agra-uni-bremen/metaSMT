@@ -51,7 +51,6 @@ BOOST_AUTO_TEST_CASE( test1 )
    predicate x = new_variable();
    predicate y = new_variable();
    predicate z = new_variable();
-   bool xb;
 
    assumption( ctx, Ite(x, y, z));
    BOOST_CHECK( solve(ctx) );
@@ -80,7 +79,7 @@ BOOST_AUTO_TEST_CASE( dist_Or )
   std::cout << std::endl; 
   double expected = repeat/3.0;
   double tolerance = 5;
-  BOOST_CHECK_EQUAL( counter[0], 0);
+  BOOST_CHECK_EQUAL( counter[0], 0u);
   BOOST_CHECK_CLOSE((double)counter[1],expected, tolerance);
   BOOST_CHECK_CLOSE((double)counter[2],expected, tolerance);
   BOOST_CHECK_CLOSE((double)counter[3],expected, tolerance);
@@ -107,9 +106,9 @@ BOOST_AUTO_TEST_CASE( dist_And )
     std::cout << iter->first << " " << iter->second << std::endl; 
   }
   std::cout << std::endl; 
-  BOOST_CHECK_EQUAL( counter[0], 0);
-  BOOST_CHECK_EQUAL( counter[1], 0);
-  BOOST_CHECK_EQUAL( counter[2], 0);
+  BOOST_CHECK_EQUAL( counter[0], 0u);
+  BOOST_CHECK_EQUAL( counter[1], 0u);
+  BOOST_CHECK_EQUAL( counter[2], 0u);
   BOOST_CHECK_EQUAL( counter[3], repeat);
 }
 
@@ -136,8 +135,8 @@ BOOST_AUTO_TEST_CASE( dist_Xor)
   std::cout << std::endl; 
   double expected = repeat/2.0;
   double tolerance = 5;
-  BOOST_CHECK_EQUAL( counter[0], 0);
-  BOOST_CHECK_EQUAL( counter[3], 0);
+  BOOST_CHECK_EQUAL( counter[0], 0u);
+  BOOST_CHECK_EQUAL( counter[3], 0u);
   BOOST_CHECK_CLOSE((double)counter[1],expected, tolerance);
   BOOST_CHECK_CLOSE((double)counter[2],expected, tolerance);
 }
@@ -163,9 +162,9 @@ BOOST_AUTO_TEST_CASE( dist_Nor )
     std::cout << iter->first << " " << iter->second << std::endl; 
   }
   std::cout << std::endl; 
-  BOOST_CHECK_EQUAL(counter[1],0);
-  BOOST_CHECK_EQUAL(counter[2],0);
-  BOOST_CHECK_EQUAL(counter[3],0);
+  BOOST_CHECK_EQUAL(counter[1],0u);
+  BOOST_CHECK_EQUAL(counter[2],0u);
+  BOOST_CHECK_EQUAL(counter[3],0u);
   BOOST_CHECK_EQUAL(counter[0],repeat);
 }
 
@@ -191,10 +190,10 @@ BOOST_AUTO_TEST_CASE( dist_Nand )
     std::cout << iter->first << " " << iter->second << std::endl; 
   }
   std::cout << std::endl; 
-  BOOST_CHECK_NE(counter[0],0);
-  BOOST_CHECK_NE(counter[1],0);
-  BOOST_CHECK_NE(counter[2],0);
-  BOOST_CHECK_EQUAL(counter[3],0);
+  BOOST_CHECK_NE(counter[0],0u);
+  BOOST_CHECK_NE(counter[1],0u);
+  BOOST_CHECK_NE(counter[2],0u);
+  BOOST_CHECK_EQUAL(counter[3],0u);
 }
 
 BOOST_AUTO_TEST_CASE( dist_Xnor )
@@ -220,8 +219,8 @@ BOOST_AUTO_TEST_CASE( dist_Xnor )
   std::cout << std::endl; 
   double expected = repeat/2.0;
   double tolerance = 5;
-  BOOST_CHECK_EQUAL( counter[1], 0);
-  BOOST_CHECK_EQUAL( counter[2], 0);
+  BOOST_CHECK_EQUAL( counter[1], 0u);
+  BOOST_CHECK_EQUAL( counter[2], 0u);
   BOOST_CHECK_CLOSE((double)counter[0],expected, tolerance);
   BOOST_CHECK_CLOSE((double)counter[3],expected, tolerance);
 

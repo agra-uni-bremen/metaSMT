@@ -290,23 +290,23 @@ BOOST_AUTO_TEST_CASE( read_value_eq_t )
   vector<bool> xvb = read_value(ctx, x);
   vector<bool> yvb = read_value(ctx, y);
 
-  BOOST_CHECK( xvb.size() == 1 );
-  BOOST_CHECK( yvb.size() == 1 );
+  BOOST_CHECK( xvb.size() == 1u );
+  BOOST_CHECK( yvb.size() == 1u );
   BOOST_CHECK_EQUAL( xvb.at(0), yvb.at(0) );
 
   // vector tribool
   vector<tribool> xvt = read_value(ctx, x);
   vector<tribool> yvt = read_value(ctx, y);
  
-  BOOST_CHECK_EQUAL( xvt.size(), 1 );
-  BOOST_CHECK_EQUAL( yvt.size(), 1 );
+  BOOST_CHECK_EQUAL( xvt.size(), 1u );
+  BOOST_CHECK_EQUAL( yvt.size(), 1u );
   BOOST_CHECK_EQUAL( xvt.at(0), yvt.at(0) );
   
   // dynamic_bitset
   dynamic_bitset<> xd = read_value(ctx, x);
   dynamic_bitset<> yd = read_value(ctx, y);
-  BOOST_CHECK_EQUAL( xd.size(), 1 );
-  BOOST_CHECK_EQUAL( yd.size(), 1 );
+  BOOST_CHECK_EQUAL( xd.size(), 1u );
+  BOOST_CHECK_EQUAL( yd.size(), 1u );
   BOOST_CHECK_EQUAL( xd[0], yvt[0] );
 
   // string
@@ -338,23 +338,23 @@ BOOST_AUTO_TEST_CASE( read_value_t )
   vector<bool> xvb = read_value(ctx, x);
   vector<bool> yvb = read_value(ctx, y);
 
-  BOOST_CHECK_EQUAL( xvb.size(), 1 );
-  BOOST_CHECK_EQUAL( yvb.size(), 1 );
+  BOOST_CHECK_EQUAL( xvb.size(), 1u );
+  BOOST_CHECK_EQUAL( yvb.size(), 1u );
   BOOST_CHECK_NE( xvb.at(0), yvb.at(0) );
 
   // vector tribool
   vector<tribool> xvt = read_value(ctx, x);
   vector<tribool> yvt = read_value(ctx, y);
  
-  BOOST_CHECK_EQUAL( xvt.size(), 1 );
-  BOOST_CHECK_EQUAL( yvt.size(), 1 );
+  BOOST_CHECK_EQUAL( xvt.size(), 1u );
+  BOOST_CHECK_EQUAL( yvt.size(), 1u );
   BOOST_CHECK_NE( xvt.at(0), yvt.at(0) );
 
   // dynamic_bitset
   dynamic_bitset<> xd = read_value(ctx, x);
   dynamic_bitset<> yd = read_value(ctx, y);
-  BOOST_CHECK_EQUAL( xd.size(), 1 );
-  BOOST_CHECK_EQUAL( yd.size(), 1 );
+  BOOST_CHECK_EQUAL( xd.size(), 1u );
+  BOOST_CHECK_EQUAL( yd.size(), 1u );
   BOOST_CHECK_NE( xd[0], yvt[0] );
 
   // string
@@ -1463,9 +1463,9 @@ BOOST_AUTO_TEST_CASE( keeps_tiny_assertions )
    unsigned tmp0d = read_value(ctx, tmp0);
    unsigned tmp1d = read_value(ctx, tmp1);
 
-   BOOST_CHECK_EQUAL(xd, 3);
-   BOOST_CHECK_EQUAL(tmp0d, 3);
-   BOOST_CHECK_EQUAL(tmp1d, 3);
+   BOOST_CHECK_EQUAL(xd, 3u);
+   BOOST_CHECK_EQUAL(tmp0d, 3u);
+   BOOST_CHECK_EQUAL(tmp1d, 3u);
 }
 
 BOOST_AUTO_TEST_CASE( keeps_small_assertions )
@@ -1487,9 +1487,9 @@ BOOST_AUTO_TEST_CASE( keeps_small_assertions )
    unsigned tmp0d = read_value(ctx, tmp0);
    unsigned tmp1d = read_value(ctx, tmp1);
 
-   BOOST_CHECK_EQUAL(xd, 3);
-   BOOST_CHECK_EQUAL(tmp0d, 3);
-   BOOST_CHECK_EQUAL(tmp1d, 3);
+   BOOST_CHECK_EQUAL(xd, 3u);
+   BOOST_CHECK_EQUAL(tmp0d, 3u);
+   BOOST_CHECK_EQUAL(tmp1d, 3u);
 }
 
 BOOST_AUTO_TEST_CASE( negative_multiply_t2 )
@@ -1642,7 +1642,7 @@ BOOST_AUTO_TEST_CASE( bvshl_all )
     assertion( ctx, Nand( equal(x, bvuint(xd,w)), equal(y, bvuint(yd, w)) ) );
     
   }
-  BOOST_REQUIRE_EQUAL(limit,1);
+  BOOST_REQUIRE_EQUAL(limit,1u);
 }
 
 BOOST_AUTO_TEST_CASE( bvshl_128_30 )
