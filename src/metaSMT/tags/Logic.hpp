@@ -32,6 +32,7 @@ namespace metaSMT {
     // constants
     TAG(true)
     TAG(false)
+    TAG(bool)
 
     // unary
     TAG(not)
@@ -57,6 +58,7 @@ namespace metaSMT {
       typedef boost::mpl::vector<
           false_tag
         , true_tag
+        , bool_tag
         , not_tag
         , equal_tag
         , nequal_tag

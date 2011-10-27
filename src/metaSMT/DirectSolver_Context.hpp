@@ -97,6 +97,19 @@ namespace metaSMT {
       }
     }
 
+    template< typename Expr1>
+    result_type operator() (logic::tag::bool_tag tag
+        , Expr1 value
+    )
+    {
+      const bool val = proto::value(value);
+      if (val) {
+        return SolverContext::operator() ( logic::tag::true_tag(), boost::any() );
+      } else {
+        return SolverContext::operator() ( logic::tag::false_tag(), boost::any() );
+      }
+    }
+
     /**
      * @brief result retrieval for logic::predicate (boolean variables)
      *

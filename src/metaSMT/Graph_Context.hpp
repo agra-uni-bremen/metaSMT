@@ -284,6 +284,19 @@ namespace metaSMT {
     }
     
     template< typename Expr1>
+    result_type operator() (logic::tag::bool_tag tag
+        , Expr1 value
+    )
+    {
+      const bool val = proto::value(value);
+      if (val) {
+        return (*this)(proto::tag::terminal(), logic::tag::true_tag() );
+      } else {
+        return (*this)(proto::tag::terminal(), logic::tag::false_tag() );
+      }
+    }
+
+    template< typename Expr1>
     result_type operator() (logic::QF_BV::tag::bvhex_tag tag
         , Expr1 value
     ) {

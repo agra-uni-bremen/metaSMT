@@ -367,6 +367,32 @@ BOOST_AUTO_TEST_CASE( read_result_type ) {
   BOOST_REQUIRE_EQUAL( xb, rb );
 }
 
+BOOST_AUTO_TEST_CASE( predicate_constant )
+{
+  assumption( ctx, equal(True, predicate_const(true)) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption( ctx, nequal(True, predicate_const(true)) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  assumption( ctx, equal(False, predicate_const(false)) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption( ctx, nequal(False, predicate_const(false)) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  assumption( ctx, equal(True, predicate_const(false)) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  assumption( ctx, nequal(True, predicate_const(false)) );
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption( ctx, equal(False, predicate_const(true)) );
+  BOOST_REQUIRE( !solve(ctx) );
+
+  assumption( ctx, nequal(False, predicate_const(true)) );
+  BOOST_REQUIRE( solve(ctx) );
+}
 
 BOOST_AUTO_TEST_SUITE_END() //Solver
 
