@@ -88,7 +88,10 @@ namespace metaSMT {
 
         bool solve ( )
         {
-          if ( !solver_.okay()) { std::cout << "Okay? failed." << std::endl; return false;  }
+          if ( !solver_.okay()) {
+            //std::cout << "Okay? failed." << std::endl;
+            return false;
+          }
            
           bool r = solver_.solve ( assumption_ ); 
 
