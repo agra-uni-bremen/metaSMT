@@ -356,7 +356,7 @@ namespace metaSMT {
       typedef boost::make_variant_over<result_types_list>::type result_type;
 
     public:
-      result_wrapper() : r ("x") { }
+      result_wrapper() : r (std::string("X")) { }
       result_wrapper( result_type r ) : r (r) { }
       result_wrapper( boost::logic::tribool t ) : r (t) { }
       result_wrapper( bool b ) : r (boost::logic::tribool(b)) { }
