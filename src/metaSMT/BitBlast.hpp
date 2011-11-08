@@ -868,14 +868,24 @@ namespace metaSMT {
           
          
         }
-         
-              
+
+        struct bv_getter : public boost::static_visitor<bv_result> {
+          bv_result operator() (bv_result const & bv) const {
+            return bv;
+          }
+          template <typename T>
+          bv_result operator() (T) const {
+            assert(false && "expected bitvector here.");
+            return bv_result();
+          }
+        };
+
         result_type operator() (bvtags::extract_tag const & 
             , unsigned long upper, unsigned long lower
             , result_type e
         ) {
           bv_result ret(upper-lower+1);
-          bv_result const & bv = get<bv_result>(e);
+          bv_result bv = boost::apply_visitor(bv_getter(), e);
           std::copy(bv.begin()+lower, bv.begin()+upper+1, ret.begin());
           return ret;
         }
@@ -883,8 +893,8 @@ namespace metaSMT {
         result_type operator() (bvtags::concat_tag const & 
             , result_type e1, result_type e2
         ) {
-          bv_result const & bv1 = get<bv_result>(e1);
-          bv_result const & bv2 = get<bv_result>(e2);
+          bv_result bv1 = boost::apply_visitor(bv_getter(), e1);
+          bv_result bv2 = boost::apply_visitor(bv_getter(), e2);
           bv_result ret(bv1.size()+bv2.size());
           typename bv_result::iterator iter = ret.begin();
           std::copy(bv1.begin(), bv1.end(), iter);
