@@ -276,4 +276,38 @@ INSTALL( FILES
 
 Feature_Summary(WHAT ALL)
 
+
+############################################################
+##                CPack settings                          ##
+############################################################
+
+
+# CPack version numbers for release tarball name.
+set(CPACK_PACKAGE_VERSION_MAJOR ${metaSMT_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR 0)
+set(CPACK_PACKAGE_VERSION_PATCH 0)
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "SMT programming library")
+set(CPACK_PACKAGE_VENDOR "metaSMT development team")
+set(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_CURRENT_SOURCE_DIR}/README)
+set(CPACK_GENERATOR TGZ)
+set(
+CPACK_SOURCE_PACKAGE_FILE_NAME
+"metaSMT-${metaSMT_VERSION}"
+CACHE INTERNAL "tarball basename"
+)
+set(CPACK_SOURCE_GENERATOR TGZ TBZ2)
+
+set(CPACK_SOURCE_IGNORE_FILES
+"/\\\\.git"
+"/deps"
+"/build"
+"/root"
+)
+include(CPack)
+
+
+############################################################
+############################################################
+
 # vim: ft=cmake:ts=2:sw=2:expandtab
