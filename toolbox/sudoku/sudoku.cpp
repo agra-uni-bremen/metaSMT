@@ -32,7 +32,7 @@ struct sudoku
   sudoku ( string problem ) 
   {
     field_size = 16; 
-    bit_width = ceil ( log ( field_size ) / log ( 2 ) ); 
+    bit_width = int(ceil ( log ( field_size ) / log ( 2 ) )); 
     block_width = bit_width; 
     
     init_field (); 
@@ -195,6 +195,6 @@ main(int argc, const char *argv[])
 
   std::cout << "Sudoku valid? " << (val ? "yes" : "no") << std::endl;
 
-  return 0;
+  return val? 0 : 1;
 }
 
