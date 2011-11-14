@@ -15,8 +15,8 @@ namespace metaSMT {
    *  assertion(ctx,  True);
    *  solve(ctx) == true;
    *
-   *  assertion(ctx, False)
-   *  solve(ctx) == true;
+   *  assertion(ctx, equal(False, False))
+   *  solve(ctx) == false;
    * \endcode
    * \ingroup API
    * \defgroup Assertion Assertion

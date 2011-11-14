@@ -38,7 +38,7 @@ namespace metaSMT {
      *
      * \endcode
      * \ingroup type
-     * \defgroup TypedSymbol
+     * \defgroup TypedSymbol TypedSymbol
      * @{
      */
 
@@ -48,6 +48,7 @@ namespace metaSMT {
     template < typename Context >
     struct TypedSymbol;
 
+    /** \cond **/
     namespace detail {
 
       template < typename Context >
@@ -88,6 +89,7 @@ namespace metaSMT {
       /**
        * \brief Evaluates an Expr and returns Context::result_type
        * \param expr The expression
+       * \param ctx The metaSMT Context
        * \return the evaluated expression
        *
        */
@@ -210,6 +212,7 @@ namespace metaSMT {
       }
 
     } /* detail */
+    /** \endcond **/
 
     template < typename Context >
     struct TypedSymbol {
