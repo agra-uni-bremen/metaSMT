@@ -22,6 +22,8 @@ function (add_tool_executable name )
     if(_req_PROPERTIES)
       set_target_properties(${name} PROPERTIES ${_req_PROPERTIES})
     endif()
+
+    set(${name}_ENABLED TRUE PARENT_SCOPE)
   endif(_req_all)
 endfunction(add_tool_executable)
 
