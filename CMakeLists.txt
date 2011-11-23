@@ -61,6 +61,11 @@ option(metaSMT_ENABLE_TOOLBOX "build toolbox projects" on)
 set(metaSMT_CONFIG_DIR "share/metaSMT" CACHE PATH 
   "where to install CMake and Make Config files")
 
+if ( NOT TIMEOUT )
+  set(TIMEOUT 5 CACHE STRING "The timeout for tests")
+endif()
+
+
 if(metaSMT_USE_SWORD)
   find_package(SWORD QUIET)
 else(metaSMT_USE_SWORD)

@@ -1,9 +1,5 @@
 include(CMakeParseArguments)
 
-if ( NOT TIMEOUT )
-  set(TIMEOUT 5 CACHE STRING "The timeout for tests")
-endif()
-
 include_directories(../src ${metaSMT_INCLUDES})
 
 add_library(boost_test boost_test.cpp)
