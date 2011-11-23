@@ -1,12 +1,33 @@
-== ChangeLog ==
+ChangeLog
+===========
 
-== metaSMT 1 -> 2 ==
+metaSMT 2 -> 3
+----------------
+
+* Better integration with CMake find_package
+* Extended API support 
+  * SymbolTable: Custom names for variables (SMT2 output)
+  * AssignRandomBits: select a random subset of bits from BitVector
+    variables and assign a random value
+  * SAT API (add_clause): directly add clauses to the backend
+* Type Descriptors and TypedSymbols (Boolean, BitVector)
+* Preliminary support for QF_UF (only unary functions)
+* Portfolio and Priority Multi-Threaded solving
+* toolbox example N-Queens using cardinality constraints
+* toolbox contains a CNF solver
+
+
+metaSMT 1 -> 2
+----------------
+
 Bugfixes:
+
 * Fixed 2 bug in BitBlast constant handling (wrong bit order, overflow)
 * Fixed memory leak in Boolector backend
 * Disabled Copy Constructor of DirectSolver
 
 Other changes:
+
 * further work on the FMI frontend
 * Refactored assertion, assumption to use "command"-API, moved to separate
   headers
