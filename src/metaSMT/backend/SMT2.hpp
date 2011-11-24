@@ -401,7 +401,7 @@ namespace metaSMT {
           P p = boost::any_cast<P>(arg);
           unsigned value = boost::get<0>(p);
           unsigned width = boost::get<1>(p);
-          return boost::str( boost::format("bv%u[%u]")%value%width);
+          return boost::str( boost::format("(_ bv%u %u)")%value%width);
         }
 
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
@@ -409,7 +409,7 @@ namespace metaSMT {
           P p = boost::any_cast<P>(arg);
           long value = boost::get<0>(p);
           unsigned width = boost::get<1>(p);
-          return boost::str( boost::format("bv%u[%u]")
+          return boost::str( boost::format("(_ bv%u %u)")
             % static_cast<unsigned long>(value)
             % width
             );
