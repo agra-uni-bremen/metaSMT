@@ -272,6 +272,17 @@ namespace metaSMT {
       );
     }
 
+    template< typename Tag, typename Expr1, typename Expr2, typename Expr3, typename Expr4>
+    result_type operator() (Tag t, Expr1 e1, Expr2 e2, Expr3 e3, Expr4 e4) {
+      return SolverContext::operator() ( t,
+          boost::proto::eval(e1, *this)
+        , boost::proto::eval(e2, *this)
+        , boost::proto::eval(e3, *this)
+        , boost::proto::eval(e4, *this)
+      );
+    }
+
+
     result_type operator() (boost::proto::tag::terminal, result_type r) {
       return r;
     }

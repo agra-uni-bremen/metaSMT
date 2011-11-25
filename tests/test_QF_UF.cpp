@@ -59,16 +59,26 @@ BOOST_AUTO_TEST_CASE( functional_consistency ) {
   BOOST_REQUIRE( solve(ctx) );
 }
 
-BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( multi_arguments, 1 )
-BOOST_AUTO_TEST_CASE( multi_arguments ) {
+BOOST_AUTO_TEST_CASE( two_arguments ) {
   using namespace type;
-  /*
-    Uninterpreted_Function f = declare_function(Boolean())(BitVector(w))(BitVector(w))(BitVector(w));
-    bitvector x = new_bitvector(w);
-    assertion(ctx, equal(f(x,x,x), f(x,x,x)));
-    BOOST_REQUIRE( solve(ctx) );
-  */
-  BOOST_FAIL("Uninterpreted functions with more than two arguments are yet not supported by DirectContext");
+  unsigned const w = 8;
+
+  Uninterpreted_Function f = declare_function(Boolean())(BitVector(w))(BitVector(w));
+  bitvector x = new_bitvector(w);
+
+  assertion(ctx, equal(f(x,x), f(x,x)));
+  BOOST_REQUIRE( solve(ctx) );
+}
+
+BOOST_AUTO_TEST_CASE( three_arguments ) {
+  using namespace type;
+  unsigned const w = 8;
+
+  Uninterpreted_Function f = declare_function(Boolean())(BitVector(w))(BitVector(w))(BitVector(w));
+  bitvector x = new_bitvector(w);
+
+  assertion(ctx, equal(f(x,x,x), f(x,x,x)));
+  BOOST_REQUIRE( solve(ctx) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() // QF_UF
