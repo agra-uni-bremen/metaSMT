@@ -30,31 +30,37 @@ CMAKE_ARGS=""
 
 
 
-if ! [[ "$1" ]]; then
+usage() {
   cat << EOF
-$0 sets up a metaSMT build folder.
+$0 sets up a metaSMT build directory.
 usage: $0 [--free] [--non-free] build
+  --help          show this help
   --free          include free backends (Aiger, Boolector, CUDD, PicoSat)
   --non-free      include non-free backends (SWORD, Z3)
-  --clean         delete build folder before creating a new one
-  --deps <dir>    build dependencies in this folder
+  --clean         delete build directory before creating a new one
+  --deps <dir>    build dependencies in this directory
    -d <dir>       can be shared in different projects
-  --install <dir> configure cmake to install to this directory
+  --install <dir> configure to install to this directory
    -i <dir>
   --mode <type>   the CMake build type to configure, types are
    -m <type>      RELEASE, MINSIZEREL, RELWITHDEBINFO, DEBUG
-   -Dvar=val      pass options to cmake
-  --cmake=/p/t/c  use this version of cmake
-  --cmake         build a custom cmake version
-  <build>         the folder to setup the build environment in
+   -Dvar=val      pass options to CMake
+  --cmake=/p/t/c  use this version of CMake
+  --cmake         build a custom CMake version
+  <build>         the directory to setup the build environment in
 EOF
   exit 1
+}
+
+if ! [[ "$1" ]]; then
+  usage
 fi
 
 
 
 while [[ "$@" ]]; do
   case $1 in
+    --help|-h)    usage;;
     --free)       REQUIRES="$REQUIRES $FREE" ;;
     --non-free)   REQUIRES="$REQUIRES $NONFREE" ;;
     --deps|-d)    DEPS="$2"; shift;;
