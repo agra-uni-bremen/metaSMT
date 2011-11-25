@@ -10,13 +10,13 @@
  * extend documentation of available commands (SMT expressions, other)
 
 == features for metaSMT 3 (next release)==
- * CNF-Parser /Solver Frontend [done?]
+ * CNF-Parser /Solver Frontend [done]
  * extend documentation of available commands (SMT expressions, other)
- * Portfolio Solver (2 Threads) [done, cleanup needed]
+ * Portfolio Solver (2 Threads) [done]
  * SMT-Lib 2 File output [done, for Z3 2.18]
- * Typed Expression [WIP]
+ * Typed Expression -> TypedSymbol [done]
  * Explicit Features [partial]
- * API declaration an checking
+ * API declaration an checking [done]
 
 == Future versions (maybe) ==
  * Solver independent Syntax Trees
@@ -29,8 +29,8 @@
 
 == Finished Features ==
  * support for Boolector (QF_BV, Core Logic) [done]
- * supoort for Z3 (QF_BV, Core Logic) [done]
- * supoort for MiniSAT (Core Logic) [done]
+ * support for Z3 (QF_BV, Core Logic) [done]
+ * support for MiniSAT (Core Logic) [done]
  * support for SWORD (QF_BV, Logic) [done]
  * support for Picosat (Logic) [done]
  * support for BitBlastig QF_BV to Logic [done]
