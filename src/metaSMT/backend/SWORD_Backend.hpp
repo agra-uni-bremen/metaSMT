@@ -33,7 +33,7 @@ namespace metaSMT {
         typedef SWORD::PSignal result_type;
 
         SWORD_Backend () {
-          _sword.recordTo("/tmp/sword.log");
+          //_sword.recordTo("/tmp/sword.log");
         }
 
         /********************
