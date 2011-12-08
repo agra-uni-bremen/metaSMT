@@ -1,5 +1,5 @@
 PROJECT(metaSMT)
-SET(metaSMT_VERSION 3)
+SET(metaSMT_VERSION 4)
 
 cmake_minimum_required(VERSION 2.8.2)
 include(CheckIncludeFileCXX)
