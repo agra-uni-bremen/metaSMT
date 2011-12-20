@@ -5,6 +5,7 @@
 #include <string>
 
 #include <metaSMT/frontend/Logic.hpp>
+#include <metaSMT/API/Assumption.hpp>
 
 using namespace std;
 using namespace metaSMT;
