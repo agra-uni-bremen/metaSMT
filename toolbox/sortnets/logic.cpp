@@ -400,9 +400,9 @@ int main(int argc, const char *argv[])
     , DirectSolver_Context < IgnoreComments< solver::Z3_Backend > >
     , DirectSolver_Context < IgnoreComments< solver::SWORD_Backend > >
     , DirectSolver_Context < solver::SMT2 >
-    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < MiniSAT > > > >
-    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < PicoSAT > > > >
-    , DirectSolver_Context < IgnoreComments<BitBlast < CUDD_Context > > >
+    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < solver::MiniSAT > > > >
+    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < solver::PicoSAT > > > >
+    , DirectSolver_Context < IgnoreComments<BitBlast < solver::CUDD_Context > > >
   > SolverVec;
 
   if( argc < 3) {
