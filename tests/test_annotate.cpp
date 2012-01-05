@@ -10,6 +10,8 @@ using namespace logic;
 using namespace logic::QF_BV;
 namespace proto = boost::proto;
 
+BOOST_FIXTURE_TEST_SUITE(annotate_t, Solver_Fixture )
+
 struct Lookup {
   std::map<unsigned, std::string> map_;
 
@@ -21,8 +23,6 @@ struct Lookup {
     map_.insert(std::make_pair(boost::proto::value(p).id, name));
   }
 };
-
-BOOST_FIXTURE_TEST_SUITE(annotate_t, Solver_Fixture )
 
 BOOST_AUTO_TEST_CASE( comment1 )
 {
