@@ -2,10 +2,6 @@
 
 #include <metaSMT/frontend/Logic.hpp>
 
-using namespace metaSMT;
-using namespace metaSMT::solver;
-using namespace metaSMT::logic;
-
 namespace metaSMT {
 
   template<typename Context, typename Boolean>
@@ -14,7 +10,7 @@ namespace metaSMT {
     assert(ps.size() > 0 && "One hot encoding requires at least one input variable");
 
     if (ps.size() == 1) {
-      return evaluate(ctx, equal(ps[0], True));
+      return evaluate(ctx, logic::equal(ps[0], logic::True));
     }
 
     typename Context::result_type zero_rail = evaluate(ctx, ps[0]);
@@ -22,7 +18,7 @@ namespace metaSMT {
 
     for (unsigned u = 1; u < ps.size() - 1; ++u) {
       zero_rail = evaluate(ctx, Ite(ps[u], one_rail, zero_rail));
-      one_rail = evaluate(ctx, Ite(ps[u], False, one_rail));
+      one_rail = evaluate(ctx, Ite(ps[u], logic::False, one_rail));
     }
 
     return evaluate(ctx, Ite(ps[ps.size()-1], one_rail, zero_rail));
@@ -109,20 +105,20 @@ namespace metaSMT {
     assert(ps.size() > 0 && "Equality cardinality constraint requires at least one input variable");
 
     if (cardinality == 0) {
-      typename Context::result_type res = evaluate(ctx, True);
+      typename Context::result_type res = evaluate(ctx, logic::True);
       for (unsigned u = 0; u < ps.size(); ++u)
         res = evaluate(ctx, And(res, Not(ps[u])));
       return res;
     }
 
     if (ps.size() == cardinality) {
-      typename Context::result_type res = evaluate(ctx, True);
+      typename Context::result_type res = evaluate(ctx, logic::True);
       for (unsigned u = 0; u < ps.size(); ++u)
         res = evaluate(ctx, And(res, ps[u]));
       return res;
     }
 
-    return cardinality_any(ctx, ps, cardinality, False, True, False);
+    return cardinality_any(ctx, ps, cardinality, logic::False, logic::True, logic::False);
   }
 
   template <typename Context, typename Boolean>
@@ -131,21 +127,21 @@ namespace metaSMT {
     assert(ps.size() > 0 && "Greater equal cardinality constraint requires at least one input variable");
 
     if (ps.size() < cardinality) {
-      return evaluate(ctx, False);
+      return evaluate(ctx, logic::False);
     }
 
     if (cardinality == 0) {
-      return evaluate(ctx, True);
+      return evaluate(ctx, logic::True);
     }
 
     if (ps.size() == cardinality) {
-      typename Context::result_type res = evaluate(ctx, True);
+      typename Context::result_type res = evaluate(ctx, logic::True);
       for (unsigned u = 0; u < ps.size(); ++u)
         res = evaluate(ctx, And(res, ps[u]));
       return res;
     }
 
-    return cardinality_any(ctx, ps, cardinality, False, True, True);
+    return cardinality_any(ctx, ps, cardinality, logic::False, logic::True, logic::True);
   }
 
   template <typename Context, typename Boolean>
@@ -154,21 +150,21 @@ namespace metaSMT {
     assert(ps.size() > 0 && "Lower equal cardinality constraint requires at least one input variable");
 
     if (ps.size() < cardinality) {
-      return evaluate(ctx, True);
+      return evaluate(ctx, logic::True);
     }
 
     if (ps.size() == cardinality) {
-      return evaluate(ctx, True);
+      return evaluate(ctx, logic::True);
     }
 
     if (cardinality == 0) {
-      typename Context::result_type res = evaluate(ctx, True);
+      typename Context::result_type res = evaluate(ctx, logic::True);
       for (unsigned u = 0; u < ps.size(); ++u)
         res = evaluate(ctx, And(res, Not(ps[u])));
       return res;
     }
 
-    return cardinality_any(ctx, ps, cardinality, True, True, False);
+    return cardinality_any(ctx, ps, cardinality, logic::True, logic::True, logic::False);
   }
 
   template <typename Context, typename Boolean>
