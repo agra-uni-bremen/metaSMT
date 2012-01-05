@@ -44,7 +44,7 @@ namespace metaSMT {
 
     , mpl::pair<bvtags::bvuge_tag,     mpl::string<'b', 'v', 'u', 'g', 'e'> >
     , mpl::pair<bvtags::bvugt_tag,     mpl::string<'b', 'v', 'u', 'g', 't'> >
-    , mpl::pair<predtags::implies_tag, mpl::string<'i', 'm', 'p', 'l', 'i', 'e', 's'> >
+    , mpl::pair<predtags::implies_tag, mpl::string<'=', '>'> >
     , mpl::pair<predtags::equal_tag,   mpl::string<'='> >
     , mpl::pair<predtags::xor_tag,     mpl::string<'x', 'o', 'r'> >
 
