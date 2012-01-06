@@ -158,26 +158,26 @@ find_program(Z3_EXECUTABLE z3)
 
 if (Z3_EXECUTABLE)
   execute_process(
-   COMMAND echo "(set-logic QF_BV) "
+   COMMAND echo "(check-sat) "
    COMMAND ${Z3_EXECUTABLE} -smt2 -in
    OUTPUT_VARIABLE _Z3_OUTPUT
  )
- if( _Z3_OUTPUT STREQUAL "success\n") 
-   set( Z3_PRINTS_SUCCESS 1)
+ if( _Z3_OUTPUT STREQUAL "sat\n")
+   set( Z3_IS_INTERACTIVE 1)
  else()
-   set( Z3_PRINTS_SUCCESS 0)
+   set( Z3_IS_INTERACTIVE 0)
  endif()
 endif()
 
 add_test_executable( direct_SMT2 direct_SMT2.cpp
   ARGS "--log_level=nothing"
-  REQUIRES Z3_EXECUTABLE Z3_PRINTS_SUCCESS
+  REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
   LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
   ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
 )
 add_test_executable( graph_SMT2 graph_SMT2.cpp
   ARGS "--log_level=nothing"
-  REQUIRES Z3_EXECUTABLE Z3_PRINTS_SUCCESS
+  REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
   LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
   ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
 )
