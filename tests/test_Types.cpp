@@ -95,11 +95,11 @@ BOOST_AUTO_TEST_CASE( conversion ) {
   TypedSymbol<ContextType> p(p_primitive);
   TypedSymbol<ContextType> bv(bv_primitive, w);
 
-  assertion(ctx, equal(type::detail::to_bool(ctx, bv), p_primitive));
-  assertion(ctx, equal(zero_extend(31, type::detail::to_bitvector(ctx, p)), bv_primitive));
+  assertion(ctx, logic::equal(type::detail::to_bool(ctx, bv), p_primitive));
+  assertion(ctx, logic::equal(zero_extend(31, type::detail::to_bitvector(ctx, p)), bv_primitive));
   
-  assertion(ctx, equal(bv.toBool(ctx), p_primitive));
-  assertion(ctx, equal(p.toBV(ctx, w), bv_primitive));
+  assertion(ctx, logic::equal(bv.toBool(ctx), p_primitive));
+  assertion(ctx, logic::equal(p.toBV(ctx, w), bv_primitive));
 
   solve( ctx );
 }
