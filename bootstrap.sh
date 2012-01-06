@@ -18,7 +18,7 @@ FREE="
 "
 
 NONFREE="
-  Z3-2.19
+  Z3-3.2
   SWORD-1.1
 "
 

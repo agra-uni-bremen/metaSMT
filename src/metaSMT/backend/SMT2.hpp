@@ -5,15 +5,20 @@
 #include "../tags/Array.hpp"
 #include "../support/SMT_Tag_Mapping.hpp"
 #include "../support/find_executable.hpp"
+#include "../io/SMT2_ResultParser.hpp"
+#include "../API/SymbolTable.hpp"
 
 #include "../result_wrapper.hpp"
+
+#include "../expression/expression.hpp"
+#include "../expression/pretty_printing.hpp"
+#include "../expression/simplify.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <boost/mpl/map/map40.hpp>
 #include <boost/any.hpp>
 #include <boost/function.hpp>
-#include <boost/format.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -23,73 +28,30 @@
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>
+#include <boost/assign.hpp>
 
 namespace metaSMT {
-
   struct set_symbol_table_cmd;
-
-  inline std::string default_symbol_table(unsigned id) {
-    char buf[64];
-    sprintf(buf, "var_%u", id);
-    return buf;
-  }
-
+  struct simplify_cmd;
   struct write_comment;
+
   namespace features {
     struct comment_api;
-  } /* features */
-  namespace solver {
+  } // features
 
+  namespace solver {
     namespace predtags = ::metaSMT::logic::tag;
     namespace bvtags = ::metaSMT::logic::QF_BV::tag;
     namespace arraytags = ::metaSMT::logic::Array::tag;
     namespace uftags = ::metaSMT::logic::QF_UF::tag;
-  
-    struct lazy_string {
-      
-      lazy_string ()
-        : dirty(false), _str(), _concats()
-      {}
-
-      lazy_string (std::string const & s)
-        : dirty(false), _str(s), _concats()
-      {}
-      
-      //operator std::string {
-      //  _eval();
-      //  return _str;
-      //}
-
-      size_t size() const {
-        size_t ret = _str.size();
-        BOOST_FOREACH( lazy_string const & ls, _concats ) {
-          ret += ls.size();
-        }
-        return ret;
-      }
-
-      void _eval( std::string & str) {
-        if( dirty ) {
-          str.reserve(size());
-          // BOOST_FOREACH( lazy_string const & ls, _concats ) {
-          //   str += (std::string) ls;
-          // }
-        }
-        dirty = false;
-      }
-
-      bool dirty;
-      std::string _str;
-      std::list<lazy_string> _concats;
-    };
+    namespace expr = ::metaSMT::expression;
 
     struct smt2_solver_pipe {
-      smt2_solver_pipe(std::ofstream &os, std::ofstream &solution_os) 
+      smt2_solver_pipe(std::ofstream &os, std::ofstream &solution_os)
         : os_(os)
         , solution_os_(solution_os)
         , _solver(NULL)
-        , _result(NULL)
-      {
+        , _result(NULL) {
         int toSolver[2];
         int fromSolver[2];
         if ( pipe(toSolver) == -1 || pipe(fromSolver) == -1 ) {
@@ -113,8 +75,8 @@ namespace metaSMT {
           dup2(fromSolver[1],1);
           //execlp("cat", "cat", NULL);
           std::string z3 = support::find_executable("z3", "Z3_EXECUTABLE");
-          //std::cerr << "using Z3: " << z3 << std::endl;
-          execlp(z3.c_str(), z3.c_str(), "-smt2", "-in", NULL);
+          // std::cerr << "[DBG] Using Z3: " << z3 << std::endl;
+          execlp(z3.c_str(), z3.c_str(), "-smt2", "-m", "-in", NULL);
           perror("exec");
           exit(1);
         } else {
@@ -131,19 +93,18 @@ namespace metaSMT {
         delete _solver;
         delete _result;
       }
-      
-      std::ostream & solver() {
+
+      std::ostream &solver() {
         assert( _solver->is_open());
         return *_solver;
       }
 
-      std::istream & result() {
+      std::istream &result() {
         assert( _result->is_open());
-        return *_result;
-      }
+	 return *_result;
+       }
 
-      void get_response(std::string & response)
-      {
+      void get_response( std::string  &response ) {
         //std::cout << "; " << _result->rdbuf()->in_avail() << std::endl;
         std::getline(*_result, response);
         os_ << ";; " << response << std::endl;
@@ -155,32 +116,24 @@ namespace metaSMT {
       void check_response() {
         std::string response;
         std::getline(*_result, response);
-        os_ << ";; " << response << std::endl;
-        if( response != "success" ) {
-
-          throw std::runtime_error(
-              boost::str(boost::format("expected successful responsem instead got '%s'") % response).c_str());
-        }
       }
 
-      void print_response()
-      {
+      void print_response() {
         //std::cout << "; " << _result->rdbuf()->in_avail() << std::endl;
         std::string response;
         std::getline(*_result, response);
         os_ << ";; " << response << std::endl;
       }
 
-      private:
-        std::ofstream &os_;
-        std::ofstream &solution_os_;
+    private:
+      std::ofstream &os_;
+      std::ofstream &solution_os_;
 
-        typedef boost::iostreams::stream<boost::iostreams::file_descriptor_sink> solver_stream;
-        solver_stream *_solver;
+      typedef boost::iostreams::stream<boost::iostreams::file_descriptor_sink> solver_stream;
+      solver_stream *_solver;
 
-        typedef boost::iostreams::stream<boost::iostreams::file_descriptor_source> result_stream;
-        result_stream *_result;
-
+      typedef boost::iostreams::stream<boost::iostreams::file_descriptor_source> result_stream;
+      result_stream *_result;
 
       template<typename Obj>
       friend
@@ -189,364 +142,525 @@ namespace metaSMT {
         smt.solver() << o << std::flush;
         return smt;
       }
-    };
-
-    struct type_visitor : boost::static_visitor<std::string> {
-      type_visitor() {}
-
-      std::string operator() (type::BitVector const &arg) const {
-        return boost::str( boost::format("(_ BitVec %u)") % arg.width );
-      }
-
-      std::string operator() (type::Boolean const &arg) const {
-        return "Bool";
-      }
-    };
+    }; // smt2_solver_pipe
 
     /**
      * @ingroup Backend
-     * @class SMT2 SMT2.hpp metaSMT/include/SMT2.hpp
-     * @brief SMT version 2 backend
+     * @class SMT2 SMT2.hpp metaSMT/backend/SMT2.hpp
+     * @brief SMT2 backend
      */
     class SMT2 {
+    public:
+      typedef expression::logic_expression result_type;
 
-      public:
-        typedef std::string result_type;
+      SMT2()
+        : out_file_("meta.smt2")
+        , sol_file_("meta.sol")
+        , out_(out_file_, sol_file_)
+        , pushed_(false)
+	, table_( default_symbol_table ) {
+        out_ << ";; Generated by metaSMT\n";
+        out_ << "(set-logic QF_AUFBV)\n";
+      }
 
-        SMT2 () 
-        : _pushed(false)
-        , _outfile("meta.smt2")
-        , _solution_file("meta.sol")
-        , out(_outfile, _solution_file)
-        , table_(default_symbol_table)
-        {
-          //out << "(set-option interactive-mode true)\n";
-          out << "(set-logic QF_ABV)\n";
-          out.check_response();
+      ~SMT2() {
+        out_ << "(exit)\n";
+	out_.check_response();
+        out_file_.close();
+        sol_file_.close();
+      }
 
-          // for Z3
-          out << "(set-option MODEL true)\n";
-          out.check_response();
+      void command( write_comment const &, std::string const &message) {
+        out_ << ";; " << message << '\n';
+      }
 
-          out << ";; Generated by metaSMT\n"; 
-        }
+      void command( set_symbol_table_cmd const &,
+                    boost::function<std::string(unsigned)> const &table ) {
+        table_ = table;
+      }
 
-        ~SMT2() {
-          out << "(exit)\n";
-          out.print_response();
-          _outfile.close();
-        }
+      result_type command( simplify_cmd const &, result_type e ) {
+	return expr::simplify( e );
+      }
 
-        void command ( write_comment const &, std::string message) {
-          out << ";; " << message << '\n';
-        }
-
-        void command ( set_symbol_table_cmd const &, boost::function<std::string(unsigned)> const &table) {
-          table_ = table;
-        }
-
-        void assertion( result_type e ) { 
-            restore_stack();
-            out << "(assert " << e << ")\n";
-            out.check_response();
-        }
-
-        void assumption( result_type e ) { 
-          _assumptions.push_back(e);
-        }
-
-        void restore_stack () {
-          if (_pushed) {
-            out << "(pop 1)\n";
-            out.check_response();
-            _pushed = false;
+      void dump_decls( result_type e ) {
+        typedef std::set< std::string > Declarations;
+        Declarations decls;
+        collect_decls(decls, e, table_);
+        for (Declarations::const_iterator it = decls.begin(), ie = decls.end();
+             it != ie; ++it) {
+          // write decls only the first time
+          if ( global_decls_.find(*it) == global_decls_.end() ) {
+            if ( local_decls_.find(*it) == local_decls_.end() ) {
+              out_ << *it;
+              if (pushed_) {
+                local_decls_.insert(*it);
+              }
+              else {
+                global_decls_.insert(*it);
+              }
+            }
           }
         }
-        
-        bool solve() {
-          restore_stack();
-          out << "(push 1)\n";
-          _pushed = true;
-          out.check_response();
-          BOOST_FOREACH( result_type const & r, _assumptions) {
-            out << "(assert " << r << ")\n";
-            out.check_response();
-            
+      }
+
+      void push() {
+        out_ << "(push 1)\n";
+        pushed_ = true;
+      }
+
+      void pop() {
+        if (pushed_) {
+          out_ << "(pop 1)\n";
+          pushed_ = false;
+          local_decls_.clear();
+        }
+      }
+
+      void assertion( result_type e ) {
+        pop();
+        dump_decls( e );
+        out_ << "(assert " << to_string(e, table_) << ")\n";
+      }
+
+      void assumption( result_type e ) {
+        assumptions_.push_back( e );
+      }
+
+      bool solve() {
+        pop();
+        push();
+
+        BOOST_FOREACH( result_type const &e, assumptions_ ) {
+          dump_decls( e );
+          out_ << "(assert " << to_string(e, table_) << ")\n";
+        }
+        assumptions_.clear();
+
+        std::string response;
+        out_ << "(check-sat)\n";
+        out_.get_response(response);
+        if ( response != "sat" && response != "unsat" ) {
+          std::string message = "unknown solver result: ";
+          message += response;
+          throw std::runtime_error(message);
+        }
+
+        return ( response == "sat" );
+      }
+
+      result_wrapper read_value( result_type const var ) {
+        out_ << "(get-value (" << to_string(var, table_) << "))\n";
+
+        std::string response;
+        out_.get_response(response);
+
+        // parse smt2 response
+        typedef std::string::const_iterator ConstIterator;
+        io::smt2_response_grammar<ConstIterator> parser;
+        ConstIterator it = response.begin(), ie = response.end();
+
+        std::string result;
+        if (boost::spirit::qi::parse(it, ie, parser, result)) {
+          assert( it == ie && "Expression not completely consumed" );
+          if ( result == "true" ) {
+            return result_wrapper( true );
           }
-          _assumptions.clear();
-          out << "(check-sat)\n";
-          std::string s;
-          out.get_response(s);
-
-          if ( s!= "sat" && s != "unsat" ) {
-            std::string message ="unknown solver result: ";
-            message += s;
-            throw std::runtime_error(message);
+          else if ( result == "false" ) {
+            return result_wrapper( false );
           }
-
-          return s== "sat";
         }
 
-        result_wrapper read_value(result_type var)
-        { 
-          out << boost::format("(get-value (%s))\n") % var;
-          std::string s;
-          out.get_response(s);
+        // bit-vector
+        static boost::spirit::qi::rule< ConstIterator, unsigned() > binary_rule
+          = boost::spirit::qi::lit("#b") >> boost::spirit::qi::bin
+          ;
 
-          // predicate
-          if (s == "(true)") {
-            return result_wrapper(true);
-          } else if (s == "(false)") {
-            return result_wrapper(false);
-          }
+        static boost::spirit::qi::rule< ConstIterator, unsigned() > hex_rule
+          = boost::spirit::qi::lit("#x") >> boost::spirit::qi::hex
+          ;
 
-          // bitvector
-          typedef std::string::const_iterator ConstIterator;
-          typedef boost::tuple<unsigned, unsigned> BitvectorTuple;
-          static boost::spirit::qi::rule<ConstIterator, BitvectorTuple()> bitvector_rule
-            = "((_ bv" >> boost::spirit::qi::uint_ >> " " >> boost::spirit::qi::uint_ >> "))"
-            ;
-
-          BitvectorTuple bv;
-          ConstIterator it = s.begin();
-          ConstIterator ie = s.end();
-
-          if (boost::spirit::qi::parse(it, ie, bitvector_rule, bv)) {
-            assert( it == ie && "Expression not completely consumed" );
-            return result_wrapper(bv.get<0>(), bv.get<1>());
-          }
-
-          // else
-          return result_wrapper("X"); 
+        unsigned value;
+        it = result.begin(), ie = result.end();
+        if ( boost::spirit::qi::parse(it, ie, binary_rule, value) ) {
+          assert( it == ie && "Expression not completely consumed" );
+          unsigned const width = result.size() - 2;
+          return result_wrapper( value, width );
         }
 
-        result_type operator() (predtags::var_tag const & var, boost::any args )
-        {
-          std::string buf = table_(var.id);
-          restore_stack();
-          out << boost::format( "(declare-fun %s () Bool)\n") % buf;
-          out.check_response();
-          return buf;
+        it = result.begin(), ie = result.end();
+        if ( boost::spirit::qi::parse(it, ie, hex_rule, value) ) {
+          assert( it == ie && "Expression not completely consumed" );
+          unsigned const width = (result.size() - 2)*4;
+          return result_wrapper( value, width );
         }
 
-        result_type operator() (uftags::function_var_tag const & var, boost::any args) {
-          std::string buf = table_(var.id);
-          restore_stack();
-          out << boost::str( boost::format( "(declare-fun %s (" ) % buf );
-          unsigned const num_args = var.args.size();
-          for (unsigned u = 0; u < num_args; ++u) {
-            out << boost::apply_visitor(type_visitor(), var.args[u]) << ' ';
-          }
-          out << boost::str( boost::format(") %s)\n") % boost::apply_visitor(type_visitor(), var.result_type) );
-          out.check_response();
-          return buf;
-        }
+        return result_wrapper("X");
+      }
 
-        result_type operator() (proto::tag::function,
-                                result_type func_decl) {
-          return boost::str( boost::format("(%s)") );
-        }
+      // logic::tag
+      result_type operator() ( predtags::false_tag, boost::any arg ) {
+        return expr::logic_expression(false);
+      }
 
-        result_type operator() (proto::tag::function,
-                                result_type func_decl,
-                                result_type arg) {
-          return boost::str( boost::format("(%s %s)") % func_decl % arg );
-        }
+      result_type operator() ( predtags::true_tag, boost::any arg ) {
+        return expr::logic_expression(true);
+      }
 
-        result_type operator() (proto::tag::function,
-                                result_type func_decl,
-                                result_type arg1,
-                                result_type arg2) {
-          return boost::str( boost::format("(%s %s %s)") % func_decl % arg1 % arg2 );
-        }
+      result_type operator() ( predtags::not_tag, result_type arg ) {
+        return expr::unary_expression<expr::logic_tag, predtags::not_tag>(arg);
+      }
 
-        result_type operator() (proto::tag::function,
-                                result_type func_decl,
-                                result_type arg1,
-                                result_type arg2,
-                                result_type arg3) {
-          return boost::str( boost::format("(%s %s %s %s)") % func_decl % arg1 % arg2 % arg3 );
-        }
+      result_type operator() ( predtags::equal_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::equal_tag>(a, b);
+      }
 
-        result_type operator() (predtags::false_tag , boost::any arg ) {
-          return "false";
-        }
+      result_type operator() ( predtags::nequal_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::nequal_tag>(a, b);
+      }
 
-        result_type operator() (predtags::true_tag , boost::any arg ) {
-          return "true";
-        }
+      result_type operator() ( predtags::and_tag, result_type a, result_type b ) {
+	using namespace boost::assign;
+	typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
+	Expr::ContainerType v;
+	v += a, b;
+	return Expr(v);
 
-        result_type operator() (bvtags::var_tag const & var, boost::any args )
-        {
-          assert ( var.width != 0 );
-          std::string buf = table_(var.id);
-          restore_stack();
-          out << boost::format( "(declare-fun %s () (_ BitVec %d))\n") % buf % var.width;
-          out.check_response();
-          return buf;
-        }
+      }
 
-        //result_type operator() (bvtags::bit0_tag , boost::any arg ) {
-        //  //return boolector_false(_btor);
-        //  return "#b0";
-        //}
+      result_type operator() ( predtags::nand_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::nand_tag>(a, b);
+      }
 
-        //result_type operator() (bvtags::bit1_tag , boost::any arg ) {
-        //  //return boolector_true(_btor);
-        //  return "#b1";
-        //}
+      result_type operator() ( predtags::or_tag, result_type a, result_type b ) {
+	using namespace boost::assign;
+	typedef expr::nary_expression<expr::logic_tag, predtags::or_tag> Expr;
+	Expr::ContainerType v;
+	v += a, b;
+	return Expr(v);
+      }
 
-        result_type operator() (bvtags::bvuint_tag , boost::any arg ) {
-          typedef boost::tuple<unsigned long, unsigned long> P;
-          P p = boost::any_cast<P>(arg);
-          unsigned value = boost::get<0>(p);
-          unsigned width = boost::get<1>(p);
-          return boost::str( boost::format("(_ bv%u %u)")%value%width);
-        }
+      result_type operator() ( predtags::nor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::nor_tag>(a, b);
+      }
 
-        result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
-          typedef boost::tuple<long, unsigned long> P;
-          P p = boost::any_cast<P>(arg);
-          long value = boost::get<0>(p);
-          unsigned width = boost::get<1>(p);
-          return boost::str( boost::format("(_ bv%u %u)")
-            % static_cast<unsigned long>(value)
-            % width
-            );
-        }
+      result_type operator() ( predtags::xor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::xor_tag>(a, b);
+      }
 
-        result_type operator() (bvtags::bvbin_tag , boost::any arg ) {
-          std::string val = boost::any_cast<std::string>(arg);
-          return boost::str( boost::format("bvbin%s")%val);
-          //return boost::str( boost::format("#b%s")%val);
-        }
+      result_type operator() ( predtags::xnor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::xnor_tag>(a, b);
+      }
 
-        result_type operator() (bvtags::bvhex_tag , boost::any arg ) {
-          std::string hex = boost::any_cast<std::string>(arg);
-          return boost::str( boost::format("bvhex%s")%hex);
-          //return boost::str( boost::format("#x%s")%hex);
-        }
+      result_type operator() ( predtags::implies_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::implies_tag>(a, b);
+      }
 
-        result_type operator() (bvtags::extract_tag const & 
-            , unsigned long upper, unsigned long lower
-            , result_type e)
-        {
-          return boost::str( boost::format( 
-              "( (_ extract %u %u) %s )") %upper %lower %e );
-        }
+      result_type operator() ( predtags::ite_tag, result_type a, result_type b, result_type c ) {
+        return expr::ternary_expression<expr::logic_tag, predtags::ite_tag>(a, b, c);
+      }
 
-        result_type operator() (bvtags::zero_extend_tag const & 
-            , unsigned long width
-            , result_type e)
-        {
-          return boost::str( boost::format( 
-              "( (_ zero_extend %u) %s )") % width% e);
-        }
+      result_type operator() ( predtags::var_tag const &tag, boost::any a ) {
+	if ( tag.id == 0 ) {
+	  throw std::exception();
+	}
+        return proto::make_expr< proto::tag::terminal, logic::Predicate_Domain >( tag );
+      }
 
-        result_type operator() (bvtags::sign_extend_tag const & 
-            , unsigned long width
-            , result_type e)
-        {
-          return boost::str( boost::format( 
-              "( (_ sign_extend %u) %s )") % width% e);
-        }
+      // logic::QF_BV::tag
+      result_type operator() ( bvtags::bit0_tag , boost::any arg ) {
+        return logic::QF_BV::bit0;
+      }
 
-        result_type operator() (arraytags::array_var_tag const & var
-                                , boost::any args )
-        {
-          //return boolector_array(_btor, var.elem_width, var.index_width, NULL);
-          std::string buf = table_(var.id);
-          restore_stack();
-          out << boost::format( "(declare-fun %s () (Array (_ BitVec %d) (_ BitVec %d)))\n")
-            % buf % var.index_width % var.elem_width;
-          out.check_response();
-          return buf;
-        }
- 
-        result_type operator() (arraytags::select_tag const &
-                                , result_type array
-                                , result_type index)
-        {
-          //return boolector_read(_btor, array, index);
-          return boost::str( boost::format(
-              "(select %s %s)") % array % index);
-        }
+      result_type operator() ( bvtags::bit1_tag , boost::any arg ) {
+        return logic::QF_BV::bit1;
+      }
 
-        result_type operator() (arraytags::store_tag const &
-                                , result_type array
-                                , result_type index
-                                , result_type value)
-        {
-          //return boolector_write(_btor, array, index, value);
-          return boost::str( boost::format(
-              "(store %s %s %s)") % array % index % value);
-        }
+      result_type operator() ( bvtags::var_tag const &tag, boost::any a ) {
+	if ( tag.id == 0 ) {
+	  throw std::exception();
+	}
+        return proto::make_expr< proto::tag::terminal, logic::QF_BV::QF_BV_Domain >( tag );
+      }
 
-        ////////////////////////
-        // Fallback operators //
-        ////////////////////////
+      result_type operator() ( bvtags::bvnot_tag, result_type a ) {
+        return expr::unary_expression<expr::bv_tag, bvtags::bvnot_tag>(a);
+      }
 
-        template <typename TagT>
-        result_type operator() (TagT tag, boost::any args ) {
-          //return boolector_false(_btor);
-          return get_tag_name(tag);
-        }
+      result_type operator() ( bvtags::bvneg_tag, result_type a ) {
+        return expr::unary_expression<expr::bv_tag, bvtags::bvneg_tag>(a);
+      }
 
+      result_type operator() ( bvtags::bvand_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvand_tag>(a, b);
+      }
 
-        template <typename TagT>
-        result_type operator() (TagT tag, result_type a ) {
-          //return boolector_false(_btor);
-          return std::string("(") + get_tag_name(tag) + " " + a + ")";
-        }
+      result_type operator() ( bvtags::bvnand_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvnand_tag>(a, b);
+      }
 
-        template <typename TagT>
-        typename boost::enable_if<
-          typename mpl::has_key< SMT_Negated_Map, TagT>::type
-        , result_type
-        >::type
-        operator() (TagT tag, result_type a, result_type b) {
-          typedef typename mpl::at< SMT_Negated_Map, TagT >::type p;
+      result_type operator() ( bvtags::bvor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvor_tag>(a, b);
+      }
 
-          return (*this)( typename p::first(), (*this)( typename p::second(), a, b)); 
-        } 
+      result_type operator() ( bvtags::bvnor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvnor_tag>(a, b);
+      }
 
-        template <typename TagT>
-        typename boost::disable_if<
-          typename mpl::has_key< SMT_Negated_Map, TagT>::type
-        , result_type
-        >::type
-        operator() (TagT tag, result_type a, result_type b) {
-          return std::string("(") + get_tag_name(tag) + " " + a + " " + b + ")";
-        }
+      result_type operator() ( bvtags::bvxor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvxor_tag>(a, b);
+      }
 
+      result_type operator() ( bvtags::bvxnor_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvxnor_tag>(a, b);
+      }
 
-        template <typename TagT>
-        result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
-          return std::string("(") + get_tag_name(tag) + " " + a 
-            + " " + b + " " + c + ")";
-        }
+      result_type operator() ( bvtags::bvshl_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvshl_tag>(a, b);
+      }
 
-      private:
-        bool _pushed;
-        std::ofstream _outfile;
-        std::ofstream _solution_file;
-        smt2_solver_pipe out;
-        std::list<result_type> _assumptions;
-        boost::function<std::string(unsigned)> table_;
-    };
+      result_type operator() ( bvtags::bvshr_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvshr_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvashr_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvashr_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvcomp_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvcomp_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvadd_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvadd_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvmul_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvmul_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsub_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvsub_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsrem_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvsrem_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsdiv_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvsdiv_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvurem_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvurem_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvudiv_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::bvudiv_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvuint_tag , boost::any arg ) {
+        typedef boost::tuple<unsigned long, unsigned long> Tuple;
+        Tuple tuple = boost::any_cast<Tuple>(arg);
+        unsigned long value = boost::get<0>(tuple);
+        unsigned long width = boost::get<1>(tuple);
+	return expr::bv_const<bvtags::bvuint_tag>(value, width);
+      }
+
+      result_type operator() ( bvtags::bvsint_tag , boost::any arg ) {
+        typedef boost::tuple<long, unsigned long> Tuple;
+        Tuple tuple = boost::any_cast<Tuple>(arg);
+        long value = boost::get<0>(tuple);
+        unsigned long width = boost::get<1>(tuple);
+	return expr::bv_const<bvtags::bvsint_tag>(static_cast<unsigned long>(value), width);
+      }
+
+      result_type operator() ( bvtags::bvbin_tag , boost::any arg ) {
+        std::string val = boost::any_cast<std::string>(arg);
+	return expr::bv_const<bvtags::bvbin_tag>::bin(val);
+      }
+
+      result_type operator() ( bvtags::bvhex_tag , boost::any arg ) {
+        std::string val = boost::any_cast<std::string>(arg);
+	return expr::bv_const<bvtags::bvhex_tag>::hex(val);
+      }
+
+      result_type operator() ( bvtags::bvslt_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvslt_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsgt_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvsgt_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsle_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvsle_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvsge_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvsge_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvult_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvult_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvugt_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvugt_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvule_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvule_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::bvuge_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, bvtags::bvuge_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::concat_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::bv_tag, bvtags::concat_tag>(a, b);
+      }
+
+      result_type operator() ( bvtags::extract_tag const &,
+                               unsigned long upper,
+                               unsigned long lower,
+                               result_type e ) {
+        unsigned long const width = upper - lower;
+        return expr::extract_expression<bvtags::extract_tag>(upper, width, e);
+      }
+      result_type operator() ( bvtags::zero_extend_tag const &,
+                               unsigned long width,
+                               result_type e ) {
+        return expr::extend_expression<bvtags::zero_extend_tag>(width, e);
+      }
+
+      result_type operator() ( bvtags::sign_extend_tag const &,
+                               unsigned long width,
+                               result_type e ) {
+        return expr::extend_expression<bvtags::sign_extend_tag>(width, e);
+      }
+
+      // logic::Array::tag
+      result_type operator() ( arraytags::array_var_tag const &tag,
+                               boost::any args ) {
+	if ( tag.id == 0 ) {
+	  throw std::exception();
+	}
+        return proto::make_expr< proto::tag::terminal, logic::Array::Array_Domain >( tag );
+      }
+
+      result_type operator() ( arraytags::select_tag const &,
+                               result_type array,
+                               result_type index ) {
+        return expr::select_expression( array, index );
+      }
+
+      result_type operator() ( arraytags::store_tag const &,
+                               result_type array,
+                               result_type index,
+                               result_type value ) {
+        return expr::store_expression( array, index, value );
+      }
+
+      // logic::QF_UF::tag
+      result_type operator() ( uftags::function_var_tag const &tag,
+                               boost::any args ) {
+	if ( tag.id == 0 ) {
+	  throw std::exception();
+	}
+	return proto::make_expr< proto::tag::terminal, logic::QF_UF::UninterpretedFunction_Domain >( tag );
+      }
+
+      result_type operator() ( proto::tag::function const &,
+                               result_type func_decl ) {
+        using namespace boost::assign;
+        typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
+        Func::ContainerType v;
+        v += func_decl;
+        return Func(v);
+      }
+
+      result_type operator() ( proto::tag::function const &,
+                               result_type func_decl,
+                               result_type arg) {
+        using namespace boost::assign;
+        typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
+        Func::ContainerType v;
+        v += func_decl, arg;
+        return Func(v);
+      }
+      
+      result_type operator() ( proto::tag::function const &,
+                               result_type func_decl,
+                               result_type arg1,
+                               result_type arg2) {
+        using namespace boost::assign;
+        typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
+        Func::ContainerType v;
+        v += func_decl, arg1, arg2;
+        return Func(v);
+      }
+
+      result_type operator() ( proto::tag::function const &,
+                               result_type func_decl,
+                               result_type arg1,
+                               result_type arg2,
+                               result_type arg3) {
+        using namespace boost::assign;
+        typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
+        Func::ContainerType v;
+        v += func_decl, arg1, arg2, arg3;
+        return Func(v);
+      }
+
+      // Fallback operators
+      template <typename TagT>
+      result_type operator() (TagT tag, boost::any args ) {
+        assert( false );
+      }
+
+      template <typename TagT>
+      result_type operator() (TagT tag, result_type a ) {
+        assert( false );
+      }
+
+      template <typename TagT>
+      result_type operator() (TagT tag, result_type a, result_type b) {
+        assert( false );
+      }
+
+      template <typename TagT>
+      result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
+        assert( false );
+      }
+
+      std::ofstream out_file_;
+      std::ofstream sol_file_;
+      smt2_solver_pipe out_;
+      std::list< result_type > assumptions_;
+      std::set< std::string > global_decls_;
+      std::set< std::string > local_decls_;
+      bool pushed_;
+      boost::function<std::string(unsigned)> table_;
+    }; // SMT2
     /**@}*/
-	
-  } // namespace solver
+
+  } // solver
 
   namespace features {
     template<>
-    struct supports< solver::SMT2, features::comment_api>
+    struct supports< solver::SMT2, features::comment_api >
     : boost::mpl::true_ {};
 
     template<>
-    struct supports< solver::SMT2, set_symbol_table_cmd>
+    struct supports< solver::SMT2, simplify_cmd>
     : boost::mpl::true_ {};
-  } /* features */
-} // namespace metaSMT
+
+    template<>
+    struct supports< solver::SMT2, set_symbol_table_cmd >
+    : boost::mpl::true_ {};
+  } // features
+
+} // metaSMT
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab

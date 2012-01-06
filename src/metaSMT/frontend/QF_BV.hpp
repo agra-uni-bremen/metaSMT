@@ -345,16 +345,6 @@ namespace metaSMT {
 	return true;
       }
 
-      template < typename RHS >
-      bool operator==(QF_BV<proto::terminal<tag::bit0_tag>::type> const &lhs, RHS const &rhs ) {
-	return false;
-      }
-
-      template < typename RHS >
-      bool operator==(QF_BV<proto::terminal<tag::bit1_tag>::type> const &lhs, RHS const &rhs ) {
-	return false;
-      }
-
       bool operator==( bitvector const &lhs, bitvector const &rhs ) {
 	return proto::value(lhs).id == proto::value(rhs).id &&
 	       proto::value(lhs).width == proto::value(rhs).width;

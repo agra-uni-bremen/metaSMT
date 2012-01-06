@@ -19,4 +19,6 @@ struct Solver_Fixture
 //#include "test_unsat.cpp"
 //#include "test_lazy.cpp"
 #include "test_Types.cpp"
+#include "test_cardinality.cpp"
 #include "test_expression.cpp"
+#include "test_simplify.cpp"

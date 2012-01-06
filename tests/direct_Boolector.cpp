@@ -28,3 +28,4 @@ struct Solver_Fixture {
 #include "test_Types.cpp"
 #include "test_random_bits.cpp"
 #include "test_expression.cpp"
+#include "test_simplify.cpp"
