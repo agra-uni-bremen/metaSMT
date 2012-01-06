@@ -11,7 +11,6 @@
 #include <string>
 
 
-
 namespace proto = boost::proto;
 
 namespace metaSMT {
@@ -111,8 +110,9 @@ namespace metaSMT {
       // real Grammar
       struct QF_BV_Grammar 
         : proto::and_<
-            proto::not_< proto::address_of< proto::_> >,
-            proto::or_<
+            proto::not_< proto::address_of< proto::_ > >
+	  , proto::not_< proto::equal_to< proto::_, proto::_ > >
+	  , proto::or_<
               proto::terminal< tag::bit0_tag >
             , proto::terminal< tag::bit1_tag >
             , proto::terminal< tag::var_tag > 
@@ -121,7 +121,7 @@ namespace metaSMT {
             , QF_BV_Binary_Function
             , QF_BV_Binary_Predicate
             , QF_BV_Unary_Function
-          > >
+	  > >
       {};
 
       template<typename Expr>
@@ -334,6 +334,31 @@ namespace metaSMT {
         tag.width= width;
         return proto::make_expr< proto::tag::terminal, QF_BV_Domain >( tag );
       } 
+
+      bool operator==(QF_BV<proto::terminal<tag::bit0_tag>::type> const &lhs,
+		      QF_BV<proto::terminal<tag::bit0_tag>::type> const &rhs) {
+	return true;
+      }
+
+      bool operator==(QF_BV<proto::terminal<tag::bit1_tag>::type> const &lhs,
+		      QF_BV<proto::terminal<tag::bit1_tag>::type> const &rhs) {
+	return true;
+      }
+
+      template < typename RHS >
+      bool operator==(QF_BV<proto::terminal<tag::bit0_tag>::type> const &lhs, RHS const &rhs ) {
+	return false;
+      }
+
+      template < typename RHS >
+      bool operator==(QF_BV<proto::terminal<tag::bit1_tag>::type> const &lhs, RHS const &rhs ) {
+	return false;
+      }
+
+      bool operator==( bitvector const &lhs, bitvector const &rhs ) {
+	return proto::value(lhs).id == proto::value(rhs).id &&
+	       proto::value(lhs).width == proto::value(rhs).width;
+      }
       
       /** @} */
 

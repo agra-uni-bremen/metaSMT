@@ -81,6 +81,24 @@ BOOST_AUTO_TEST_CASE( three_arguments ) {
   BOOST_REQUIRE( solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( variable_equality ) {
+  using namespace type;
+
+  unsigned const w = 8;
+  Uninterpreted_Function f = declare_function(Boolean())(BitVector(w));
+  Uninterpreted_Function g = declare_function(Boolean())(BitVector(w));
+  bitvector x = new_bitvector(w);
+
+  bool cmp = (f == f);
+  BOOST_CHECK( cmp );
+
+  cmp = (g == f);
+  BOOST_CHECK( !cmp );
+
+  cmp = (f == g);
+  BOOST_CHECK( !cmp );
+}
+
 BOOST_AUTO_TEST_SUITE_END() // QF_UF
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab

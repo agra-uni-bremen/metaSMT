@@ -197,6 +197,25 @@ BOOST_AUTO_TEST_CASE( uninitialized_select )
   BOOST_CHECK_THROW( assertion(ctx, equal(val, select(mem, idx))), std::exception);
 }
 
+
+BOOST_AUTO_TEST_CASE( variable_equality )
+{
+  unsigned const elem_width = 8;
+  unsigned const index_width = 4;
+
+  array x = new_array(elem_width, index_width);
+  array y = new_array(elem_width, index_width);
+
+  bool cmp = (x == x);
+  BOOST_CHECK( cmp );
+
+  cmp = (x == y);
+  BOOST_CHECK( !cmp );
+
+  cmp = (y == x);
+  BOOST_CHECK( !cmp );
+}
+
 BOOST_AUTO_TEST_SUITE_END() //Array
 
 

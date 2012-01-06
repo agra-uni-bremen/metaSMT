@@ -21,13 +21,15 @@ namespace metaSMT {
 
       // real Grammar
       struct Array_Grammar
-      : proto::or_<
-          proto::terminal< tag::array_var_tag > 
-        , proto::terminal< SMT_Expression > 
-        , proto::binary_expr<tag::select_tag, Array_Grammar, Array_Grammar>
-        //, proto::ternary_expr<tag::store_tag, Array_Grammar, Array_Grammar, Array_Grammar>
-        , proto::nary_expr<tag::store_tag, proto::vararg<proto::_> >
-        >
+      : proto::and_<
+	  proto::not_< proto::equal_to< proto::_, proto::_ > >
+	, proto::or_<
+	    proto::terminal< tag::array_var_tag >
+	  , proto::terminal< SMT_Expression >
+	  , proto::binary_expr<tag::select_tag, Array_Grammar, Array_Grammar>
+	//, proto::ternary_expr<tag::store_tag, Array_Grammar, Array_Grammar, Array_Grammar>
+	  , proto::nary_expr<tag::store_tag, proto::vararg<proto::_> >
+	> >
       {};
 
       template<typename Expr>
@@ -94,7 +96,15 @@ namespace metaSMT {
         tag.index_width = index_width;
         return proto::make_expr< proto::tag::terminal, Array_Domain >( tag );
       }
-   
+
+      bool operator==( array const &lhs, array const &rhs ) {
+	tag::array_var_tag const lhs_tag = proto::value(lhs);
+	tag::array_var_tag const rhs_tag = proto::value(rhs);
+	return lhs_tag.id == rhs_tag.id &&
+	  lhs_tag.elem_width == rhs_tag.elem_width &&
+	  lhs_tag.index_width == rhs_tag.index_width;
+      }
+
       /**@}*/
 
     } // namespace Array

@@ -20,13 +20,14 @@ namespace metaSMT {
     struct Predicate_Grammar 
     : proto::and_<
         proto::not_< proto::address_of< proto::_> >
-			, proto::or_<
-            proto::terminal< tag::true_tag >
-          , proto::terminal< tag::false_tag >
-          , proto::terminal< tag::bool_tag >
-          , Binary_Predicate
-          , proto::_   // any other grammar
-        >
+      , proto::not_< proto::equal_to< proto::_, proto::_ > >
+      , proto::or_<
+          proto::terminal< tag::true_tag >
+        , proto::terminal< tag::false_tag >
+        , proto::terminal< tag::bool_tag >
+        , Binary_Predicate
+        , proto::_   // any other grammar
+      >
     > {};
 
     template<typename Expr>
@@ -118,6 +119,10 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, Predicate_Domain >( tag );
       } 
 
+      bool operator==( predicate const &lhs, predicate const &rhs ) {
+	return proto::value(lhs).id == proto::value(rhs).id;
+      }
+
       template<typename E1>
       typename proto::result_of::make_expr< 
           tag::not_tag, Predicate_Domain, E1 const &
@@ -137,11 +142,12 @@ namespace metaSMT {
         return proto::make_expr< tag::ite_tag, Predicate_Domain >(
             boost::cref(e1), boost::cref(e2), boost::cref(e3) 
         );
-      } 
+      }
 
    /**@}*/
 
   }// namespace logic
+
 }// namespace metaSMT
 	
 //  vim: ft=cpp:ts=2:sw=2:expandtab

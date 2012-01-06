@@ -394,6 +394,21 @@ BOOST_AUTO_TEST_CASE( predicate_constant )
   BOOST_REQUIRE( solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( variable_equality )
+{
+  predicate x = new_variable();
+  predicate y = new_variable();
+
+  bool cmp = (x == x);
+  BOOST_CHECK( cmp );
+
+  cmp = (x == y);
+  BOOST_CHECK( !cmp );
+
+  cmp = (y == x);
+  BOOST_CHECK( !cmp );
+}
+
 BOOST_AUTO_TEST_SUITE_END() //Solver
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab

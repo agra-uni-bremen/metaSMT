@@ -20,9 +20,11 @@ namespace metaSMT {
 
       // real Grammar
       struct UninterpretedFunction_Grammar
-        : proto::or_<
-            proto::nary_expr<tag::function_var_tag, proto::vararg<proto::_> >
-          >
+        : proto::and_<
+            proto::not_< proto::equal_to< proto::_, proto::_ > >
+	  , proto::or_<
+	      proto::nary_expr<tag::function_var_tag, proto::vararg<proto::_> >
+	  > >
       {};
 
       template <typename Expr>
@@ -53,7 +55,10 @@ namespace metaSMT {
         BOOST_MPL_ASSERT_NOT((proto::matches<Expr, UninterpretedFunction_Grammar>));
       }
 
-      typedef boost::proto::terminal< tag::function_var_tag >::type Uninterpreted_Function;
+      typedef
+      proto::result_of::make_expr< proto::tag::terminal, UninterpretedFunction_Domain
+        , tag::function_var_tag
+      > ::type Uninterpreted_Function;
 
       struct declare_function {
         declare_function(type::any_type t) {
@@ -84,12 +89,29 @@ namespace metaSMT {
         }
 
         operator Uninterpreted_Function() {
-          Uninterpreted_Function uf = { f_ };
-          return uf;
+	  return proto::make_expr< proto::tag::terminal, UninterpretedFunction_Domain >( f_ );
         }
 
         tag::function_var_tag f_;
       };
+
+      bool operator==( Uninterpreted_Function const &lhs, Uninterpreted_Function const &rhs ) {
+	tag::function_var_tag const lhs_tag = proto::value(lhs);
+	tag::function_var_tag const rhs_tag = proto::value(rhs);
+	if ( lhs_tag.id != rhs_tag.id ||
+	     !(lhs_tag.result_type == rhs_tag.result_type) ||
+	     lhs_tag.args.size() != rhs_tag.args.size() ) {
+	  return false;
+	}
+
+	for (unsigned u = 0; u < lhs_tag.args.size(); ++u) {
+	  if ( !(lhs_tag.args[u] == rhs_tag.args[u]) )
+	    return false;
+	}
+
+	return true;
+      }
+
       // replicate code above for more args
     } // namespace QF_UF
   } // namepace logic

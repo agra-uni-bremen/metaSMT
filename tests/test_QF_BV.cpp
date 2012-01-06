@@ -1826,6 +1826,22 @@ BOOST_AUTO_TEST_CASE( bvsint_t )
   BOOST_REQUIRE( solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( variable_equality )
+{
+  unsigned const width = 8;
+  bitvector x = new_bitvector(width);
+  bitvector y = new_bitvector(width);
+
+  bool cmp = (x == x);
+  BOOST_CHECK( cmp );
+
+  cmp = (x == y);
+  BOOST_CHECK( !cmp );
+
+  cmp = (y == x);
+  BOOST_CHECK( !cmp );
+}
+
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
