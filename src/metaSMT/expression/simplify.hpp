@@ -633,6 +633,7 @@ namespace metaSMT {
       template < typename T >
       logic_expression operator() ( T const & ) const {
         assert(false);
+        return false;
       }
 
       boost::function<std::string(unsigned)> table_;

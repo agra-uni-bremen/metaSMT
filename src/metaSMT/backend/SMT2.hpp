@@ -617,21 +617,25 @@ namespace metaSMT {
       template <typename TagT>
       result_type operator() (TagT tag, boost::any args ) {
         assert( false );
+        return false;
       }
 
       template <typename TagT>
       result_type operator() (TagT tag, result_type a ) {
         assert( false );
+        return false;
       }
 
       template <typename TagT>
       result_type operator() (TagT tag, result_type a, result_type b) {
         assert( false );
+        return false;
       }
 
       template <typename TagT>
       result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
         assert( false );
+        return false;
       }
 
       std::ofstream out_file_;

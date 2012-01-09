@@ -203,6 +203,7 @@ namespace metaSMT {
       template < typename OtherTag >
       unsigned char operator() ( OtherTag const & ) const {
 	assert( false && "Type has no defined arity" );
+	return 0;
       }
     }; // get_arity_visitor
 
