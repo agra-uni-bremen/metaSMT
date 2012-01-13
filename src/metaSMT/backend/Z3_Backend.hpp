@@ -13,6 +13,7 @@ extern "C" {
 #include <iostream>
 #include <string>
 #include <map>
+#include <limits>
 #include <boost/mpl/map.hpp>
 #include <boost/mpl/map/map40.hpp>
 #include <boost/dynamic_bitset.hpp>
@@ -334,8 +335,9 @@ namespace metaSMT {
       result_type operator() (bvtags::bvuint_tag , boost::any arg) {
         typedef boost::tuple<unsigned long, unsigned long> P;
         P p = boost::any_cast<P>(arg);
-        unsigned value = boost::get<0>(p);
-        unsigned width = boost::get<1>(p);
+        unsigned long const value = boost::get<0>(p);
+        assert( value <=  std::numeric_limits<unsigned int>::max() );
+        unsigned const width = boost::get<1>(p);
         Z3_sort ty = Z3_mk_bv_sort(z3_, width);
         return Z3_mk_unsigned_int(z3_, value, ty);
       }
@@ -343,8 +345,9 @@ namespace metaSMT {
       result_type operator() (bvtags::bvsint_tag , boost::any arg) {
         typedef boost::tuple<long, unsigned long> P;
         P p = boost::any_cast<P>(arg);
-        unsigned value = boost::get<0>(p);
-        unsigned width = boost::get<1>(p);
+        unsigned long const value = boost::get<0>(p);
+        assert( value <=  std::numeric_limits<unsigned int>::max() );
+        unsigned const width = boost::get<1>(p);
         Z3_sort ty = Z3_mk_bv_sort(z3_, width);
         return Z3_mk_int(z3_, value, ty);
       }
@@ -352,13 +355,15 @@ namespace metaSMT {
       result_type operator() (bvtags::bvbin_tag , boost::any arg) {
         std::string s = boost::any_cast<std::string>(arg);
         boost::dynamic_bitset<> bv(s);
+        unsigned long const value = bv.to_ulong();
+        assert( value <=  std::numeric_limits<unsigned int>::max() );
         Z3_sort ty = Z3_mk_bv_sort(z3_, bv.size());
-        return Z3_mk_unsigned_int(z3_, bv.to_ulong(), ty);
+        return Z3_mk_unsigned_int(z3_, value, ty);
       }
 
       // XXX will be removed in a later revision
       result_type operator() (bvtags::bvhex_tag , boost::any arg) {
-        std::string hex = boost::any_cast<std::string>(arg);
+        std::string const hex = boost::any_cast<std::string>(arg);
         std::string bin (hex.size()*4,'\0');
 
         for (unsigned i = 0; i < hex.size(); ++i) {

@@ -272,15 +272,15 @@ namespace metaSMT {
         }
 
         // bit-vector
-        static boost::spirit::qi::rule< ConstIterator, unsigned() > binary_rule
-          = boost::spirit::qi::lit("#b") >> boost::spirit::qi::bin
+        static boost::spirit::qi::rule< ConstIterator, unsigned long() > binary_rule
+          = boost::spirit::qi::lit("#b") >> boost::spirit::qi::uint_parser<unsigned long, 2, 1, 64>()
           ;
 
-        static boost::spirit::qi::rule< ConstIterator, unsigned() > hex_rule
-          = boost::spirit::qi::lit("#x") >> boost::spirit::qi::hex
+        static boost::spirit::qi::rule< ConstIterator, unsigned long() > hex_rule
+          = boost::spirit::qi::lit("#x") >> boost::spirit::qi::uint_parser<unsigned long, 16, 1, 16>()
           ;
 
-        unsigned value;
+        unsigned long value;
         it = result.begin(), ie = result.end();
         if ( boost::spirit::qi::parse(it, ie, binary_rule, value) ) {
           assert( it == ie && "Expression not completely consumed" );

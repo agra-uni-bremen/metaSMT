@@ -4,6 +4,7 @@
 #include <boost/proto/debug.hpp>
 #include <boost/test/unit_test.hpp>
 #include <string>
+#include <limits>
 
 using namespace std;
 using namespace metaSMT;
@@ -37,6 +38,9 @@ void check_conversion_XXX( result_wrapper const & rw)
 
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 0u);
+
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 0ul);
 
   vector<bool> a, b(3, false);
   a = rw;
@@ -74,6 +78,9 @@ void check_conversion_0_in_8bit( result_wrapper const & rw)
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 0u);
 
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 0ul);
+
   vector<bool> a, b(8, false);
   a = rw;
   BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
@@ -108,6 +115,9 @@ void check_conversion_1_in_8bit( result_wrapper const & rw)
 
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 1u);
+
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 1ul);
 
   vector<bool> a, b(8, false);
   b[0] = true;
@@ -159,9 +169,41 @@ void check_conversion_128_in_8bit( result_wrapper const & rw)
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 128u);
 
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 128ul);
+
   dynamic_bitset<> bs = rw;
   BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(8, 128u));
 
+}
+
+void check_conversion_ULONG_MAX_in_64bit( result_wrapper const &rw ) {
+  unsigned long const value = std::numeric_limits<unsigned long>::max();
+
+  tribool tri = rw;
+  BOOST_REQUIRE_EQUAL( tri, true );
+
+  bool boolean = rw;
+  BOOST_REQUIRE_EQUAL( boolean, true );
+
+  std::string s = rw;
+  BOOST_REQUIRE_EQUAL( s, "1111111111111111111111111111111111111111111111111111111111111111" );
+
+  vector<bool> a, b(64, true);
+  a = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+
+  vector<tribool> tb = rw;
+  BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
+
+  unsigned u = rw;
+  BOOST_REQUIRE_EQUAL( u, value );
+
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, value );
+
+  dynamic_bitset<> bs = rw;
+  BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(64, value));
 }
 
 void check_conversion_13_in_8bit( result_wrapper const & rw)
@@ -197,6 +239,9 @@ void check_conversion_13_in_8bit( result_wrapper const & rw)
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 13u);
 
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 13ul);
+
   dynamic_bitset<> bs = rw;
   BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(8, 13u));
 
@@ -227,6 +272,9 @@ void check_conversion_true( result_wrapper const & rw)
 
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 1u);
+
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 1l);
 
   unsigned char uc = rw;
   BOOST_REQUIRE_EQUAL( uc, 1u);
@@ -270,6 +318,9 @@ void check_conversion_false( result_wrapper const & rw)
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL( u, 0u);
 
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL( ul, 0ul);
+
   dynamic_bitset<> bs = rw;
   BOOST_REQUIRE_EQUAL(bs, dynamic_bitset<>(1, 0u));
 }
@@ -286,6 +337,9 @@ BOOST_AUTO_TEST_CASE( from_string )
 
   unsigned u = rw;
   BOOST_REQUIRE_EQUAL(u, 13);
+
+  unsigned long ul = rw;
+  BOOST_REQUIRE_EQUAL(ul, 13ul);
 
   signed int i = rw;
   BOOST_REQUIRE_EQUAL(i, -3);
@@ -372,6 +426,9 @@ BOOST_AUTO_TEST_CASE( from_dynamic_bitset )
 
   unsigned i = rw;
   BOOST_REQUIRE_EQUAL(i, 255);
+
+  unsigned long il = rw;
+  BOOST_REQUIRE_EQUAL(il, 255);
 
   check_conversion_1_in_8bit( result_wrapper(dynamic_bitset<>(8, 1)) );
   check_conversion_128_in_8bit( result_wrapper(dynamic_bitset<>(8, 128)) );
@@ -473,6 +530,8 @@ BOOST_AUTO_TEST_CASE( from_integral_value_and_width )
 
   check_conversion_true ( result_wrapper(1, 1) );
   check_conversion_false( result_wrapper(0, 1) );
+
+  check_conversion_ULONG_MAX_in_64bit( result_wrapper(std::numeric_limits<unsigned long>::max(),64) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() // result_wrapper
