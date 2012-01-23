@@ -180,5 +180,5 @@ private:
       BDD previous;
     }; // class CUDD_Distribuded
 
-  } //namespace metaSMT
-}//  namespace solver
+  }//  namespace solver
+} //namespace metaSMT
