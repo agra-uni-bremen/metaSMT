@@ -3,20 +3,14 @@
 
 #include <string>
 
-#include <boost/mpl/vector/vector50.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/variant.hpp>
 
 #include <metaSMT/frontend/QF_BV.hpp>
+#include <metaSMT/support/boost_mpl_vector60.hpp>
 
 namespace proto = boost::proto;
 namespace tag = metaSMT::logic::tag;
-
-namespace boost { namespace mpl {
-#define BOOST_PP_ITERATION_PARAMS_1 \
-    (3, (51, 60, "boost/mpl/vector/aux_/numbered.hpp"))
-#include BOOST_PP_ITERATE()
-}}
 
 // frontend Logic
 struct logic_tag {};

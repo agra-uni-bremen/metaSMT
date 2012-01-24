@@ -2,7 +2,6 @@
 #include <string>
 #include <bitset>
 
-#include <boost/mpl/vector/vector50.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
@@ -15,12 +14,7 @@
 #include <metaSMT/frontend/Array.hpp>
 #include <metaSMT/frontend/QF_UF.hpp>
 #include <metaSMT/support/SMT_Tag_Mapping.hpp>
-
-namespace boost { namespace mpl {
-#define BOOST_PP_ITERATION_PARAMS_1 \
-    (3, (51, 60, "boost/mpl/vector/aux_/numbered.hpp"))
-#include BOOST_PP_ITERATE()
-}}
+#include <metaSMT/support/boost_mpl_vector60.hpp>
 
 namespace metaSMT {
   namespace expression {
