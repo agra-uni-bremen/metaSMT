@@ -88,6 +88,8 @@ namespace metaSMT {
           return *this;
         }
 
+	// replicate code above for more args
+
         operator Uninterpreted_Function() {
 	  return proto::make_expr< proto::tag::terminal, UninterpretedFunction_Domain >( f_ );
         }
@@ -112,7 +114,6 @@ namespace metaSMT {
 	return true;
       }
 
-      // replicate code above for more args
     } // namespace QF_UF
   } // namepace logic
 } // namespace metaSMT

@@ -8,6 +8,8 @@
 #include "Array.hpp"
 #include <boost/proto/core.hpp>
 #include <boost/type_traits/is_signed.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <string>
 
 
@@ -335,21 +337,22 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, QF_BV_Domain >( tag );
       } 
 
-      bool operator==(QF_BV<proto::terminal<tag::bit0_tag>::type> const &lhs,
-		      QF_BV<proto::terminal<tag::bit0_tag>::type> const &rhs) {
+      bool operator==(QF_BV<typename proto::terminal< tag::bit0_tag >::type> const &,
+		      QF_BV<typename proto::terminal< tag::bit0_tag >::type> const &) {
 	return true;
       }
 
-      bool operator==(QF_BV<proto::terminal<tag::bit1_tag>::type> const &lhs,
-		      QF_BV<proto::terminal<tag::bit1_tag>::type> const &rhs) {
+      bool operator==(QF_BV<typename proto::terminal< tag::bit1_tag >::type> const &,
+		      QF_BV<typename proto::terminal< tag::bit1_tag >::type> const &) {
 	return true;
       }
 
       bool operator==( bitvector const &lhs, bitvector const &rhs ) {
-	return proto::value(lhs).id == proto::value(rhs).id &&
-	       proto::value(lhs).width == proto::value(rhs).width;
+	tag::var_tag const lhs_tag = proto::value(lhs);
+	tag::var_tag const rhs_tag = proto::value(rhs);
+	return boost::tie(lhs_tag.id, lhs_tag.width) == boost::tie(rhs_tag.id, rhs_tag.width);
       }
-      
+
       /** @} */
 
     } // namespace QF_BV

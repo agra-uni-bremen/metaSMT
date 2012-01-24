@@ -6,6 +6,8 @@
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
 #include <boost/proto/core.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <string>
 
 
@@ -100,9 +102,8 @@ namespace metaSMT {
       bool operator==( array const &lhs, array const &rhs ) {
 	tag::array_var_tag const lhs_tag = proto::value(lhs);
 	tag::array_var_tag const rhs_tag = proto::value(rhs);
-	return lhs_tag.id == rhs_tag.id &&
-	  lhs_tag.elem_width == rhs_tag.elem_width &&
-	  lhs_tag.index_width == rhs_tag.index_width;
+	return boost::tie(lhs_tag.id, lhs_tag.elem_width, lhs_tag.index_width) ==
+	  boost::tie(rhs_tag.id, rhs_tag.elem_width, rhs_tag.index_width);
       }
 
       /**@}*/

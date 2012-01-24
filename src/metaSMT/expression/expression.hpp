@@ -7,19 +7,18 @@
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 #include <metaSMT/frontend/Logic.hpp>
 #include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/frontend/Array.hpp>
 #include <metaSMT/frontend/QF_UF.hpp>
+#include <metaSMT/support/SMT_Tag_Mapping.hpp>
 
 namespace boost { namespace mpl {
 #define BOOST_PP_ITERATION_PARAMS_1 \
     (3, (51, 60, "boost/mpl/vector/aux_/numbered.hpp"))
-#include BOOST_PP_ITERATE()
-
-#define BOOST_PP_ITERATION_PARAMS_1 \
-    (3, (61, 70, "boost/mpl/vector/aux_/numbered.hpp"))
 #include BOOST_PP_ITERATE()
 }}
 
@@ -127,6 +126,7 @@ namespace metaSMT {
       bool operator==( RHS const & ) const {
         return false;
       }
+
     }; // bv_const
 
     struct select_expression;
@@ -253,7 +253,7 @@ namespace metaSMT {
       {}
 
       bool operator==( binary_expression<ReturnTag, OpTag> const &rhs ) const {
-        return (rhs == left && rhs == right);
+        return boost::tie(left, right) == boost::tie(rhs.left, rhs.right);
       }
 
       template < typename RHS >
@@ -281,9 +281,7 @@ namespace metaSMT {
       {}
 
       bool operator==( ternary_expression<ReturnTag, OpTag> const &rhs ) const {
-        return (expr1 == rhs.expr1 &&
-                expr2 == rhs.expr2 &&
-                expr3 == rhs.expr3);
+        return boost::tie(expr1, expr2, expr3) == boost::tie(rhs.expr1, rhs.expr2, rhs.expr3);
       }
 
       template < typename RHS >
@@ -357,7 +355,7 @@ namespace metaSMT {
       {}
 
       bool operator==( extend_expression const &rhs ) const {
-        return (by == rhs.by && expr == rhs.expr);
+        return boost::tie(by, expr) == boost::tie(rhs.by, rhs.expr);
       }
 
       template < typename RHS >
@@ -382,7 +380,7 @@ namespace metaSMT {
       {}
 
       bool operator==( extract_expression const &rhs ) const {
-        return (from == rhs.from && width == rhs.width && expr == rhs.expr);
+        return boost::tie(from, width, expr) == boost::tie(rhs.from, rhs.width, rhs.expr);
       }
 
       template < typename RHS >
@@ -403,7 +401,7 @@ namespace metaSMT {
       {}
 
       bool operator==( select_expression const &rhs ) const {
-        return (array == rhs.array && index == rhs.index);
+        return boost::tie(array, index) == boost::tie(rhs.array, rhs.index);
       }
 
       template < typename RHS >
@@ -427,9 +425,7 @@ namespace metaSMT {
       {}
 
       bool operator==( store_expression const &rhs ) const {
-        return (array == rhs.array &&
-                index == rhs.index &&
-                value == rhs.value);
+        return boost::tie(array, index, value) == boost::tie(rhs.array, rhs.index, rhs.value);
       }
 
       template < typename RHS >
