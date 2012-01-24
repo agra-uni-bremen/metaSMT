@@ -32,8 +32,8 @@ typedef metaSMT::DirectSolver_Context<metaSMT::solver::Boolector> boolector_solv
 #endif
 
 #if ENABLE_SOLVER_Z3
-#include <metaSMT/backend/Z3_Context.hpp>
-typedef metaSMT::DirectSolver_Context<metaSMT::solver::Z3_Context> z3_solver;
+#include <metaSMT/backend/Z3_Backend.hpp>
+typedef metaSMT::DirectSolver_Context<metaSMT::solver::Z3_Backend> z3_solver;
 #endif
 
 #if ENABLE_SOLVER_CUDD
@@ -75,7 +75,7 @@ typedef metaSMT::DirectSolver_Context<metaSMT::solver::SMT2> smt2_solver;
  */
 typedef
   metaSMT::DirectSolver_Context< metaSMT::UnpackFuture_Context<
-    metaSMT::solver::Z3_Context
+    metaSMT::solver::Z3_Backend
   > > z3_constraint_solver;
 typedef
   metaSMT::DirectSolver_Context< metaSMT::UnpackFuture_Context<
