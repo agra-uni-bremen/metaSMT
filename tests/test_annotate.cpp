@@ -24,13 +24,16 @@ struct Lookup {
   }
 };
 
-BOOST_AUTO_TEST_CASE( comment1 )
+BOOST_AUTO_TEST_CASE( comment_t )
 {
   predicate x = new_variable();
   assertion( ctx, True);
-  comment( ctx, "jetzt kommt eine variable");
+  comment( ctx, "an assertion");
   assertion( ctx, x);
-  comment( ctx, "jetzt kommt solve");
+  comment( ctx, "an assertion with a comment string\n"
+                "which uses more than one line" );
+  assertion( ctx, x);
+  comment( ctx, "finally call solve");
   BOOST_REQUIRE( solve(ctx) );
 }
 

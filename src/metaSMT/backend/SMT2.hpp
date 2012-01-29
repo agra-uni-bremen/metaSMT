@@ -29,6 +29,7 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>
 #include <boost/assign.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 namespace metaSMT {
   struct set_symbol_table_cmd;
@@ -171,7 +172,7 @@ namespace metaSMT {
       }
 
       void command( write_comment const &, std::string const &message) {
-        out_ << ";; " << message << '\n';
+        out_ << ";; " << boost::algorithm::replace_all_copy(message, "\n", "\n;; ") << '\n';
       }
 
       void command( set_symbol_table_cmd const &,
