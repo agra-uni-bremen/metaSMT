@@ -629,6 +629,11 @@ namespace metaSMT {
         return expr;
       }
 
+      template < typename T >
+      logic_expression operator() ( extend_expression<T> expr ) const {
+        return expr;
+      }
+
       // Fallback
       template < typename T >
       logic_expression operator() ( T const & ) const {

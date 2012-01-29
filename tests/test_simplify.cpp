@@ -405,6 +405,31 @@ BOOST_AUTO_TEST_CASE( bv_comparison ) {
   }
 }
 
+BOOST_AUTO_TEST_CASE( extend_expression_t ) {
+  Lookup lookup;
+
+  unsigned const w = 8;
+  bitvector x = new_bitvector(8);
+  bitvector y = new_bitvector(32);
+  lookup.insert(x, "x");
+  lookup.insert(y, "y");
+  set_symbol_table( ctx, lookup);
+
+  std::list<ContextType::result_type> Expr;
+
+  Expr.push_back( evaluate(ctx, equal(y, sign_extend(24, x))) );
+  Expr.push_back( evaluate(ctx, equal(x,  sign_extend(0, x))) );
+  Expr.push_back( evaluate(ctx, equal(y, zero_extend(24, x))) );
+  Expr.push_back( evaluate(ctx, equal(x,  zero_extend(0, x))) );
+
+  for (std::list<ContextType::result_type>::const_iterator
+	 it = Expr.begin(), ie = Expr.end();
+       it != ie; ++it) {
+    assumption(ctx, nequal(*it, simplify(ctx, *it)));
+    BOOST_REQUIRE( !solve(ctx) );
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END() //Solver
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
