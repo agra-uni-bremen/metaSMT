@@ -25,15 +25,30 @@ namespace metaSMT {
         using qi::space;
         using qi::alnum;
 
-        start =
-          lit("((") >> omit[ +( alnum | '_' ) ] >> omit[ *space ] >> +( char_('#') | alnum ) >> lit("))")
+        // See: SMT-LIB 2 - Section 3.1: Symbol
+        quotted_symbol =
+          omit[ lit('|') >> *( char_-lit('|') ) >> lit('|') ]
           ;
-  
-        //start.name("start");
 
+        simple_symbol =
+          omit[ +(alnum | '~' | '!' | '@' | '$' | '%' | '^' | '&' | '*' | '_' | '-' | '+' | '=' | '<' | '>' | '.' | '?' | '/') ]
+          ;
+
+        symbol_name =
+          omit[ quotted_symbol | simple_symbol ]
+          ;
+
+        start =
+          lit("((") >> symbol_name >> omit[ *space ] >> +( char_('#') | alnum ) >> lit("))")
+          ;
+
+        //start.name("start");
         //debug(start);
       }
 
+      boost::spirit::qi::rule<Iterator> quotted_symbol;
+      boost::spirit::qi::rule<Iterator> simple_symbol;
+      boost::spirit::qi::rule<Iterator> symbol_name;
       boost::spirit::qi::rule<Iterator, std::string()> start;
     }; // smt2_response_grammar
 

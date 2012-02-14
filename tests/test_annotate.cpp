@@ -47,6 +47,51 @@ BOOST_AUTO_TEST_CASE( symbol_table )
   BOOST_REQUIRE( solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( read_value_t )
+{
+  Lookup lookup;
+  unsigned const w = 17;
+  predicate x[w];
+  for ( unsigned u = 0; u < w; ++u ) {
+    x[u] = new_variable();
+  }
+
+  // weird (but syntactically legal) names with respect to SMT-LIB 2
+  // taken from the SMT-LIB 2 standard document
+  lookup.insert(x[0], "+");
+  lookup.insert(x[1], "<=");
+  lookup.insert(x[2], "x");
+  lookup.insert(x[3], "plus");
+  lookup.insert(x[4], "**");
+  lookup.insert(x[5], "$");
+  lookup.insert(x[6], "<sas");
+  lookup.insert(x[7], "<adf>");
+  lookup.insert(x[8], "abc77");
+  lookup.insert(x[9], "*$s&6");
+  lookup.insert(x[10], ".kkk");
+  lookup.insert(x[11], ".8");
+  lookup.insert(x[12], "+34");
+  lookup.insert(x[13], "-32");
+  lookup.insert(x[14], "|this is a single quoted symbol|");
+  lookup.insert(x[15], "||");
+  lookup.insert(x[16], "| af klj ^ * ( 0 asfsfe2(&*)&(#^$ > > >?\" \']]984|");
+  set_symbol_table( ctx, lookup);
+
+  BOOST_REQUIRE( solve(ctx) );
+  bool xd;
+  for ( unsigned u = 0; u < w; ++u ) {
+    assumption( ctx, equal(x[u], True) );
+    BOOST_REQUIRE( solve(ctx) );
+    xd = read_value(ctx, x[u]);
+    BOOST_REQUIRE_EQUAL( xd, true );
+
+    assumption( ctx, equal(x[u], False) );
+    BOOST_REQUIRE( solve(ctx) );
+    xd = read_value(ctx, x[u]);
+    BOOST_REQUIRE_EQUAL( xd, false );
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END() //lazy_t
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
