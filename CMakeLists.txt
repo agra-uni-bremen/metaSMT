@@ -138,8 +138,18 @@ else(NOT OMP_FOUND)
 endif(NOT OMP_FOUND)
 
 if(Z3_FOUND)
-  set(Z3_LIBRARIES ${Z3_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES} ${OMP_LIBRARIES})
-endif(Z3_FOUND)
+  if( GMPXX_LIBRARIES )
+    set(Z3_LIBRARIES ${Z3_LIBRARIES} ${GMPXX_LIBRARIES})
+  endif()
+
+  if( GMP_LIBRARIES )
+    set(Z3_LIBRARIES ${Z3_LIBRARIES} ${GMP_LIBRARIES})
+  endif()
+
+  if( GMP_LIBRARIES )
+    set(Z3_LIBRARIES ${Z3_LIBRARIES} ${OMP_LIBRARIES})
+  endif()
+endif()
 
 if (metaSMT_USE_mathsat)
   find_package(mathsat QUIET)
