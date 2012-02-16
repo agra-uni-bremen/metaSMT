@@ -86,9 +86,6 @@ add_test_executable( direct_Z3 direct_Z3.cpp REQUIRES Z3_FOUND )
 add_test_executable( graph_Z3 graph_Z3.cpp REQUIRES Z3_FOUND )
 
 
-add_test_executable( direct_mathsat direct_mathsat.cpp
-  REQUIRES mathsat_FOUND )
-
 add_test_executable( direct_MiniSAT direct_MiniSAT.cpp
   REQUIRES MiniSat_FOUND
   PROPERTIES COMPILE_FLAGS "${MiniSat_CXXFLAGS}"
