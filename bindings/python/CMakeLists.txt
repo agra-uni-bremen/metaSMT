@@ -1,4 +1,7 @@
-find_package( PythonLibs REQUIRED )
+find_package( PythonLibs )
+
+if( PythonLibs_FOUND ) 
+
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 include_directories( ../../src )
 include_directories( ${metaSMT_INCLUDES} )
@@ -83,3 +86,5 @@ install(FILES ${PYMETASMT}
   DESTINATION python
   PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE 
 )
+
+endif()
