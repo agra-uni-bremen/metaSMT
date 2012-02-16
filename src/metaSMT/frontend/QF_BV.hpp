@@ -337,13 +337,13 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, QF_BV_Domain >( tag );
       } 
 
-      inline bool operator==(QF_BV<typename proto::terminal< tag::bit0_tag >::type> const &,
-		      QF_BV<typename proto::terminal< tag::bit0_tag >::type> const &) {
+      inline bool operator==(QF_BV< proto::terminal< tag::bit0_tag >::type> const &,
+		      QF_BV< proto::terminal< tag::bit0_tag >::type> const &) {
 	return true;
       }
 
-      inline bool operator==(QF_BV<typename proto::terminal< tag::bit1_tag >::type> const &,
-		      QF_BV<typename proto::terminal< tag::bit1_tag >::type> const &) {
+      inline bool operator==(QF_BV< proto::terminal< tag::bit1_tag >::type> const &,
+		      QF_BV< proto::terminal< tag::bit1_tag >::type> const &) {
 	return true;
       }
 
