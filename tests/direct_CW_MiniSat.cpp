@@ -2,7 +2,6 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/ClauseWriter.hpp>
 #include <metaSMT/backend/SAT_Clause.hpp>
-#include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/API/Group.hpp>
 #include <metaSMT/BitBlast.hpp>
 
