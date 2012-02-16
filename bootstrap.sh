@@ -99,12 +99,13 @@ else
   fi
 fi
 
-./build "$DEPS" $REQUIRES &&
 if [ "$BUILD_CMAKE" = "yes" ]; then
   ./build "$DEPS" $CMAKE_PACKAGE &&
   CMAKE=$DEPS/$CMAKE_PACKAGE/bin/cmake
+  export PATH="$DEPS/$CMAKE_PACKAGE/bin:$PATH"
 fi
 
+./build "$DEPS" $REQUIRES &&
 cd $BUILD_DIR && 
 
 PREFIX_PATH=$(echo $REQUIRES| sed "s@[ ^] *@;$DEPS/@g")
