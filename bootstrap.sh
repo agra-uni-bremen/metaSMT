@@ -24,7 +24,7 @@ NONFREE="
 
 CMAKE=cmake
 BUILD_CMAKE="no"
-CMAKE_PACKAGE=cmake-2.8.4
+CMAKE_PACKAGE=cmake-2.8.7
 
 CMAKE_ARGS=""
 
