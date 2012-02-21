@@ -52,9 +52,7 @@ bool cmp_vec(std::vector<unsigned> const &a, std::vector<unsigned> const &b)
 	} else {
 		return a.size() < b.size();
 	}
-	
-
-
+  return false;
 }
 
 //sortieren
