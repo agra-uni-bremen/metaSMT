@@ -10,7 +10,9 @@ namespace proto = boost::proto;
 #include "python_config.hxx"
 
 #include <metaSMT/backend/ClauseWriter.hpp>
+#if ENABLE_SOLVER_AIGER
 #include <metaSMT/backend/SAT_Aiger.hpp>
+#endif
 #include <metaSMT/backend/SAT_Clause.hpp>
 #include <metaSMT/backend/SMT2.hpp>
 
