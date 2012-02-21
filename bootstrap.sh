@@ -66,7 +66,8 @@ while [[ "$@" ]]; do
     --deps|-d)    DEPS="$2"; shift;;
     --install|-i) INSTALL="$2"; shift;;
     --mode|-m)    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_BUILD_TYPE=$2"; shift;;
-     -D*)         CMAKE_ARGS="$CMAKE_ARGS $1";;
+     -D*)         CMAKE_ARGS="$CMAKE_ARGS '$1'";;
+     -G*)         CMAKE_ARGS="$CMAKE_ARGS '$1'";;
     --clean|-c)   CLEAN="rm -rf";;
     --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
