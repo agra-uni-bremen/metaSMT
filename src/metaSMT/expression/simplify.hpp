@@ -9,7 +9,7 @@
 
 namespace metaSMT {
   namespace expression {
-    logic_expression simplify( logic_expression e );
+    inline logic_expression simplify( logic_expression e );
 
     struct simplify_visitor : public boost::static_visitor< logic_expression > {
       simplify_visitor() {}
@@ -644,7 +644,7 @@ namespace metaSMT {
       boost::function<std::string(unsigned)> table_;
     }; // simplify_visitor
 
-    logic_expression simplify( logic_expression e ) {
+    inline logic_expression simplify( logic_expression e ) {
       return boost::apply_visitor( simplify_visitor(), e );
     }
   } // expression
