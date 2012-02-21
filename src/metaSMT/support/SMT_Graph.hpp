@@ -6,7 +6,10 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #undef _BACKWARD_BACKWARD_WARNING_H
+#pragma GCC push_options
 #include <boost/function.hpp>
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#pragma GCC pop_options
 #include <boost/any.hpp>
 
 namespace boost {
