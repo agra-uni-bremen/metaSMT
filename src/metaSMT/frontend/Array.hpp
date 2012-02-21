@@ -99,7 +99,7 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, Array_Domain >( tag );
       }
 
-      bool operator==( array const &lhs, array const &rhs ) {
+      inline bool operator==( array const &lhs, array const &rhs ) {
 	tag::array_var_tag const lhs_tag = proto::value(lhs);
 	tag::array_var_tag const rhs_tag = proto::value(rhs);
 	return boost::tie(lhs_tag.id, lhs_tag.elem_width, lhs_tag.index_width) ==

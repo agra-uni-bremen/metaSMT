@@ -97,7 +97,7 @@ namespace metaSMT {
         tag::function_var_tag f_;
       };
 
-      bool operator==( Uninterpreted_Function const &lhs, Uninterpreted_Function const &rhs ) {
+      inline bool operator==( Uninterpreted_Function const &lhs, Uninterpreted_Function const &rhs ) {
 	tag::function_var_tag const lhs_tag = proto::value(lhs);
 	tag::function_var_tag const rhs_tag = proto::value(rhs);
 	if ( lhs_tag.id != rhs_tag.id ||

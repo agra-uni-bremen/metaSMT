@@ -119,7 +119,7 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, Predicate_Domain >( tag );
       } 
 
-      bool operator==( predicate const &lhs, predicate const &rhs ) {
+      inline bool operator==( predicate const &lhs, predicate const &rhs ) {
 	return proto::value(lhs).id == proto::value(rhs).id;
       }
 
