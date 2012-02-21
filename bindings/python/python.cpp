@@ -1,4 +1,6 @@
+#include <metaSMT/support/disable_warnings.hpp>
 #include <boost/python.hpp>
+#include <metaSMT/support/enable_warnings.hpp>
 
 #include "expressions.hpp"
 #include "solvers.hpp"

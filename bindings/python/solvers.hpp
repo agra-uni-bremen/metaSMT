@@ -1,8 +1,10 @@
 #ifndef SOLVERS_HPP
 #define SOLVERS_HPP
 
+#include <metaSMT/support/disable_warnings.hpp>
 #include <boost/variant.hpp>
 #include <boost/proto/core.hpp>
+#include <metaSMT/support/enable_warnings.hpp>
 
 namespace proto = boost::proto;
 

@@ -2,10 +2,12 @@
 
 #include "Features.hpp"
 
+#include "support/disable_warnings.hpp"
 #include <boost/any.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/proto/context.hpp>
 #include <boost/thread/future.hpp>
+#include "support/enable_warnings.hpp"
 
 namespace metaSMT {
 
