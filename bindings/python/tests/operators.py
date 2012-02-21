@@ -204,6 +204,37 @@ class BitvectorTest( object ):
     def testSignExtend( self ):
         pass
 
+    def testAndPrecedence(self):
+        solver = self.solver()
+        a = new_bitvector(8);
+        solver &=   bv_uint(1)[8] < a < bv_uint(8)[8]
+        self.assertTrue( solver.solve() )
+        v = solver[a]
+        self.assertLess(1,v)
+        self.assertLess(v,8)
+
+        solver &=    bv_uint(1)[8] < a & a < bv_uint(8)[8]
+        self.assertTrue( solver.solve() )
+        v = solver[a]
+        self.assertLess(1,v)
+        self.assertLess(v,8)
+
+        solver &=   a > bv_uint(1)[8]  &  a < bv_uint(8)[8]
+        self.assertTrue( solver.solve() )
+        v = solver[a]
+        self.assertLess(1,v)
+        self.assertLess(v,8)
+
+        solver &=   (a > bv_uint(1)[8])  &  (bv_uint(8)[8] > a)
+        self.assertTrue( solver.solve() )
+        v = solver[a]
+        self.assertLess(1,v)
+        self.assertLess(v,8)
+
+        # interpreted  as: a > (bv_uint(1)[8]  &  bv_uint(8)[8]) > a
+        solver &=          a > bv_uint(1)[8]   &  bv_uint(8)[8]  > a
+        self.assertFalse( solver.solve() )
+
 # instanciate the tests for all available solvers
 for name, solver in available_solvers().items():
   logic_name = 'LogicTest_'+name
