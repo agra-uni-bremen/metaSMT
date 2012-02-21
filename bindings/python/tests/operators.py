@@ -212,8 +212,18 @@ for name, solver in available_solvers().items():
   globals()[logic_name] = type(logic_name, (LogicTest, unittest.TestCase), dict(solver=solver_fun ))
   globals()[bitvec_name] = type('BitvectorTest_'+name, (BitvectorTest, unittest.TestCase), dict(solver=solver_fun))
 
+def print_tests(test):
+  if isinstance(test, unittest.suite.TestSuite):
+    map(print_tests, test)
+  else:
+    print test
 
 if __name__ == "__main__":
     random.seed()
-    unittest.main()
+    if len(sys.argv) == 2 and sys.argv[1] == '--discover':
+      import os
+      tests = unittest.defaultTestLoader.discover(os.path.dirname(__file__), pattern='*.py')
+      print_tests(tests)
+    else:
+      unittest.main()
 
