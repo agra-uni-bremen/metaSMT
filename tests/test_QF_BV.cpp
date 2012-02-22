@@ -1848,14 +1848,51 @@ BOOST_AUTO_TEST_CASE( constant_64bit )
   unsigned long const value = std::numeric_limits<unsigned long>::max();
   bitvector x = new_bitvector(w);
 
-  //assertion(ctx, bvuge(x, bvuint(1, w)));
-  //assertion(ctx, bvule(x, bvuint(9223372036854775808ul, w)));
   assumption(ctx, equal(x, bvuint(value, w)));
   BOOST_REQUIRE( solve(ctx) );
 
   unsigned long xd = read_value(ctx, x);
-  std::cout << xd << '\n';
   BOOST_CHECK_EQUAL(xd, value);
+
+  assumption(ctx, equal(x, bvuint(value-123, w)));
+  BOOST_REQUIRE( solve(ctx) );
+
+  xd = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xd, value-123);
+}
+
+BOOST_AUTO_TEST_CASE( signed_constant_64bit )
+{
+  unsigned const w = 64;
+  long value = std::numeric_limits<long>::max();
+  bitvector x = new_bitvector(w);
+
+  assumption(ctx, equal(x, bvsint(value, w)));
+  BOOST_REQUIRE( solve(ctx) );
+
+  long xd = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xd, value);
+
+  assumption(ctx, equal(x, bvsint(value-123, w)));
+  BOOST_REQUIRE( solve(ctx) );
+
+  xd = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xd, value-123);
+
+  value = std::numeric_limits<long>::min();
+
+  assumption(ctx, equal(x, bvsint(value, w)));
+  BOOST_REQUIRE( solve(ctx) );
+
+  xd = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xd, value);
+
+  assumption(ctx, equal(x, bvsint(value+123, w)));
+  BOOST_REQUIRE( solve(ctx) );
+
+  xd = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xd, value+123);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
