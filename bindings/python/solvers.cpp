@@ -248,7 +248,7 @@ void export_solvers()
 #if ENABLE_SOLVER_BOOLECTOR
   def( "boolector_solver", &make_solver<boolector_solver> );
 #endif
-#if ENABLE_SOLVER_CONSTRAINT
+#if ENABLE_SOLVER_Z3
   def( "z3_solver", &make_solver<z3_solver> );
 #endif
 #if ENABLE_SOLVER_CUDD
@@ -256,7 +256,7 @@ void export_solvers()
 #endif
 #if ENABLE_SOLVER_MINISAT
   def( "minisat_solver", &make_solver<minisat_solver> );
-#if ENABLE_SOLVER_AIGER && E
+#if ENABLE_SOLVER_AIGER
   def( "minisat_aiger_solver", &make_solver<minisat_aiger_solver> );
 #endif
 #endif
