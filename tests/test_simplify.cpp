@@ -408,7 +408,6 @@ BOOST_AUTO_TEST_CASE( bv_comparison ) {
 BOOST_AUTO_TEST_CASE( extend_expression_t ) {
   Lookup lookup;
 
-  unsigned const w = 8;
   bitvector x = new_bitvector(8);
   bitvector y = new_bitvector(32);
   lookup.insert(x, "x");

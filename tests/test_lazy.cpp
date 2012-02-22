@@ -1,6 +1,10 @@
 #include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/support/lazy.hpp>
+
+#include <metaSMT/support/disable_warnings.hpp>
 #include <boost/test/unit_test.hpp>
+#include <metaSMT/support/enable_warnings.hpp>
+
 #include <numeric>
 
 // lazy headers
