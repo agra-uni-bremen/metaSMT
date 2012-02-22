@@ -1,0 +1,10 @@
+set(metaSMT_FOUND 1)
+
+@_metaSMT_EXTERNAL_FIND@
+
+set(metaSMT_INCLUDE_DIR  @metaSMT_INCLUDES@)
+set(metaSMT_INCLUDE_DIRS ${metaSMT_INCLUDE_DIR})
+
+get_filename_component(metaSMT_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include("${metaSMT_CONFIG_DIR}/metaSMT.cmake" )
+set(metaSMT_CXXFLAGS "@metaSMT_CXXFLAGS@")

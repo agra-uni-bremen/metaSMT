@@ -1,0 +1,5 @@
+Name: metaSMT
+Description: SMT Solver library
+Cflags: -I@metaSMT_INCLUDES@
+Libs: @metaSMT_MLIBS@ 
+

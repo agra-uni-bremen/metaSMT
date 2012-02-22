@@ -18,29 +18,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
 
-SET( CMAKE_CXX_FLAGS_PROFILING "-O0 -g -Wall -fprofile-arcs -ftest-coverage" CACHE STRING
-  "Flags used by the C++ compiler during maintainer builds."
-  FORCE )
-SET( CMAKE_C_FLAGS_PROFILING "-O0 -g -Wall -fprofile-arcs -ftest-coverage" CACHE STRING
-  "Flags used by the C compiler during maintainer builds."
-  FORCE )
-SET( CMAKE_EXE_LINKER_FLAGS_PROFILING
-  "-fprofile-arcs -ftest-coverage" CACHE STRING
-  "Flags used for linking binaries during maintainer builds."
-  FORCE )
-SET( CMAKE_SHARED_LINKER_FLAGS_PROFILING
-  "-fprofile-arcs -ftest-coverage" CACHE STRING
-  "Flags used by the shared libraries linker during maintainer builds."
-  FORCE )
-MARK_AS_ADVANCED(
-  CMAKE_CXX_FLAGS_PROFILING
-  CMAKE_C_FLAGS_PROFILING
-  CMAKE_EXE_LINKER_FLAGS_PROFILING
-  CMAKE_SHARED_LINKER_FLAGS_PROFILING )
-# Update the documentation string of CMAKE_BUILD_TYPE for GUIs
-SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
-  "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel Profiling."
-  FORCE )
+include(cmake/build_type.cmake)
+include(cmake/config_file.cmake)
 
 ###  
 # Options to force disable certain solvers. 
@@ -158,11 +137,6 @@ else (metaSMT_DOC_Doxygen)
 endif (metaSMT_DOC_Doxygen)
 
 
-set(EXTERNAL_FIND "")
-macro( config_find package path)
-  set(EXTERNAL_FIND "${EXTERNAL_FIND}
-find_package(${package} QUIET PATHS ${path})")
-endmacro(config_find)
 
 if(SWORD_FOUND)
   config_find(SWORD ${SWORD_DIR})
@@ -211,28 +185,7 @@ endif (PicoSAT_FOUND)
 ############# RPATH ########################################
 ############################################################
 
-# Generate an RPATH from all the libraries used by metaSMT.
-# If the library is a file use its directory,
-# if the library is a target use its location and recurse on
-# its dependencies.
-
-macro(add_dependent_libraries)
-  foreach( lib ${ARGN})
-    if(EXISTS ${lib})
-      get_filename_component(libdir ${lib} PATH)
-      list(APPEND CMAKE_INSTALL_RPATH ${libdir})
-    elseif(lib)
-      get_target_property(libpath ${lib} LOCATION)
-      get_filename_component(libdir ${libpath} PATH)
-      list(APPEND CMAKE_INSTALL_RPATH ${libdir})
-      get_target_property(dependent ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES)
-      add_dependent_libraries(${dependent})
-      get_target_property(dependent ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE)
-      add_dependent_libraries(${dependent})
-    endif()
-  endforeach(lib)
-endmacro(add_dependent_libraries)
-
+include(cmake/library_rpath.cmake)
 add_dependent_libraries(${metaSMT_LIBS})
 
 
@@ -251,57 +204,17 @@ endif(metaSMT_ENABLE_TESTS)
 if(metaSMT_ENABLE_BINDINGS)
   add_subdirectory(bindings)
 endif(metaSMT_ENABLE_BINDINGS)
+
 if(metaSMT_ENABLE_TOOLBOX)
   add_subdirectory(toolbox)
 endif()
 
 ############################################################
+########## generate cmake config files #####################
+############################################################
 
-list(INSERT metaSMT_LIBS 0 ${CMAKE_INSTALL_PREFIX}/lib/libmetaSMT.a)
-list(INSERT metaSMT_INCLUDES 0 ${CMAKE_INSTALL_PREFIX}/include)
-## create metaSMT CMake config file
-file(WRITE ${PROJECT_BINARY_DIR}/metaSMTConfig.cmake 
-"set(metaSMT_FOUND 1)
-${EXTERNAL_FIND}
+generate_config_files()
 
-set(metaSMT_INCLUDE_DIR ${metaSMT_INCLUDES})
-get_filename_component(metaSMT_CONFIG_DIR "\${CMAKE_CURRENT_LIST_FILE}" PATH)
-include("\${metaSMT_CONFIG_DIR}/metaSMT.cmake" )
-set(metaSMT_CXXFLAGS \"${metaSMT_CXXFLAGS}\")
-")
-## create libmetaSMT config file for internal use
-file(WRITE ${PROJECT_BINARY_DIR}/metaSMT.cmake 
-"set(metaSMT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src;${metaSMT_INCLUDES})\n"
-)
-
-## export target with install
-INSTALL( FILES
-  ${PROJECT_BINARY_DIR}/metaSMTConfig.cmake
-	DESTINATION share/metaSMT)
-install(EXPORT metaSMT DESTINATION share/metaSMT)
-
-string(REPLACE ";" " " metaSMT_MLIBS "${metaSMT_LIBS}")
-string(REPLACE ";" " -I" metaSMT_MINCLUDES "${metaSMT_INCLUDES}")
-## create metaSMT CMake make config file
-file(WRITE ${PROJECT_BINARY_DIR}/metaSMT.makefile
-"metaSMT_INCLUDES := ${metaSMT_MINCLUDES}
-metaSMT_LIBRARIES := ${metaSMT_MLIBS} 
-")
-INSTALL( FILES 
-  ${PROJECT_BINARY_DIR}/metaSMT.makefile
-	DESTINATION ${metaSMT_CONFIG_DIR})
-
-## create metaSMT pkgconfig make config file
-string(REPLACE ";" " " metaSMT_MLIBS "${metaSMT_LIBS}")
-file(WRITE ${PROJECT_BINARY_DIR}/metaSMT.pc
-"Name: metaSMT
-Description: SMT Solver library
-Cflags: -I${metaSMT_INCLUDES}
-Libs: ${metaSMT_MLIBS} 
-")
-INSTALL( FILES 
-  ${PROJECT_BINARY_DIR}/metaSMT.pc
-	DESTINATION lib/pkgconfig/)
 
 Feature_Summary(WHAT ALL)
 
