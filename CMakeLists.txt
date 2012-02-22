@@ -131,6 +131,7 @@ endif(NOT GMP_FOUND)
 
 find_package(OMP QUIET)
 set_package_info(OMP "optional, required by some backends")
+## later versions of GMP link against libomp
 if(NOT OMP_FOUND)
   find_library(OMP_LIBRARIES gomp PATHS ${OMP_DIR})
 else(NOT OMP_FOUND)
@@ -146,7 +147,7 @@ if(Z3_FOUND)
     set(Z3_LIBRARIES ${Z3_LIBRARIES} ${GMP_LIBRARIES})
   endif()
 
-  if( GMP_LIBRARIES )
+  if( OMP_LIBRARIES )
     set(Z3_LIBRARIES ${Z3_LIBRARIES} ${OMP_LIBRARIES})
   endif()
 endif()
