@@ -118,15 +118,45 @@ namespace metaSMT {
           typedef boost::tuple<unsigned long, unsigned long> P;
           P p = boost::any_cast<P>(arg);
           //std::cout << "bvuint "<< p << std::endl;
-          unsigned value = boost::get<0>(p);
-          unsigned width = boost::get<1>(p);
-          return ptr(boolector_unsigned_int(_btor, value , width ));
+          unsigned long value = boost::get<0>(p);
+          unsigned long width = boost::get<1>(p);
+
+          if ( value > std::numeric_limits<unsigned>::max() ) {
+            std::string val (width, '0');
+
+            std::string::reverse_iterator sit = val.rbegin();
+
+            for (unsigned long i = 0; i < width; i++, ++sit) {
+              *sit = (value & 1ul) ? '1':'0';
+              value >>= 1;
+            }
+            return ptr( boolector_const(_btor, val.c_str()) );
+          } else {
+            return ptr(boolector_unsigned_int(_btor, value , width ));
+          }
         }
 
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
           typedef boost::tuple<long, unsigned long> P;
           P p = boost::any_cast<P>(arg);
-          return ptr(boolector_int(_btor, boost::get<0>(p), boost::get<1>(p)));
+          long value = boost::get<0>(p);
+          unsigned long width = boost::get<1>(p);
+
+          if (  value > std::numeric_limits<int>::max()
+             || value < std::numeric_limits<int>::min()
+          ) {
+            std::string val (width, '0');
+
+            std::string::reverse_iterator sit = val.rbegin();
+
+            for (unsigned long i = 0; i < width; i++, ++sit) {
+              *sit = (value & 1l) ? '1':'0';
+              value >>= 1;
+            }
+            return ptr( boolector_const(_btor, val.c_str()) );
+          } else {
+            return ptr(boolector_int(_btor, boost::get<0>(p), boost::get<1>(p)));
+          }
         }
 
         result_type operator() (bvtags::bvbin_tag , boost::any arg ) {
