@@ -1,6 +1,6 @@
 find_package( PythonLibs )
 
-if( PythonLibs_FOUND ) 
+if( PYTHONLIBS_FOUND ) 
 
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 include_directories( ../../src )
@@ -87,4 +87,6 @@ install(FILES ${PYMETASMT}
   PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE 
 )
 
+else()
+  message(WARNING "Python support requested but Python libraries not found.")
 endif()
