@@ -251,7 +251,7 @@ namespace metaSMT {
       std::string operator() ( nary_expression<uf_tag, proto::tag::function> op ) const {
         typedef nary_expression<uf_tag, proto::tag::function>::ContainerType ContainerTy;
         std::string s = "(";
-        for ( typename ContainerTy::const_iterator it = op.begin(), ie = op.end();
+        for ( ContainerTy::const_iterator it = op.begin(), ie = op.end();
               it != ie; ++it ) {
           s += to_string(*it, table_);
           s += ' ';
