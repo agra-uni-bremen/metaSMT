@@ -27,14 +27,14 @@ BOOST_AUTO_TEST_CASE( test_one_hot )
   std::vector<ContextType::result_type> vec;
 
   // one predicate
-  vec += evaluate(ctx, a);
+  vec.push_back( evaluate(ctx, a) );
   assumption(ctx, one_hot(ctx, vec) );
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);
   BOOST_CHECK_EQUAL(ad, true);
 
   // two predicate
-  vec += evaluate(ctx, b);
+  vec.push_back( evaluate(ctx, b) );
   assumption(ctx, one_hot(ctx, vec) );
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);
@@ -43,9 +43,9 @@ BOOST_AUTO_TEST_CASE( test_one_hot )
                  | (ad == 0 && bd == 1) );
 
   // five predicates
-  vec += evaluate(ctx, c);
-  vec += evaluate(ctx, d);
-  vec += evaluate(ctx, e);
+  vec.push_back( evaluate(ctx, c) );
+  vec.push_back( evaluate(ctx, d) );
+  vec.push_back( evaluate(ctx, e) );
   assumption(ctx, one_hot(ctx, vec) );
   BOOST_REQUIRE( solve(ctx) );
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( test_cardinality_eq )
   std::vector<ContextType::result_type> vec;
 
   // one predicate
-  vec += evaluate(ctx, a);
+  vec.push_back( evaluate(ctx, a) );
   assumption(ctx, cardinality_eq(ctx, vec, 1) );;
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( test_cardinality_eq )
   BOOST_CHECK_EQUAL(ad, true);
 
   // two predicate
-  vec += evaluate(ctx, b);
+  vec.push_back( evaluate(ctx, b) );
   assumption(ctx, cardinality_eq(ctx, vec, 1) );
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);
@@ -93,9 +93,9 @@ BOOST_AUTO_TEST_CASE( test_cardinality_eq )
                  | (ad == 0 && bd == 1) );
 
   // five predicates
-  vec += evaluate(ctx, c);
-  vec += evaluate(ctx, d);
-  vec += evaluate(ctx, e);
+  vec.push_back( evaluate(ctx, c) );
+  vec.push_back( evaluate(ctx, d) );
+  vec.push_back( evaluate(ctx, e) );
   assumption(ctx, cardinality_eq(ctx, vec, 1) );
   BOOST_REQUIRE( solve(ctx) );
   ad = read_value(ctx, a);

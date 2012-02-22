@@ -324,7 +324,8 @@ namespace metaSMT {
 	using namespace boost::assign;
 	typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
 	Expr::ContainerType v;
-	v += a, b;
+	v.push_back(a);
+  v.push_back(b);
 	return Expr(v);
 
       }
@@ -337,7 +338,8 @@ namespace metaSMT {
 	using namespace boost::assign;
 	typedef expr::nary_expression<expr::logic_tag, predtags::or_tag> Expr;
 	Expr::ContainerType v;
-	v += a, b;
+	v.push_back(a);
+  v.push_back(b);
 	return Expr(v);
       }
 
@@ -577,7 +579,7 @@ namespace metaSMT {
         using namespace boost::assign;
         typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
         Func::ContainerType v;
-        v += func_decl;
+        v.push_back( func_decl );
         return Func(v);
       }
 
@@ -587,7 +589,8 @@ namespace metaSMT {
         using namespace boost::assign;
         typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
         Func::ContainerType v;
-        v += func_decl, arg;
+        v.push_back(func_decl);
+        v.push_back( arg );
         return Func(v);
       }
       
@@ -598,7 +601,9 @@ namespace metaSMT {
         using namespace boost::assign;
         typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
         Func::ContainerType v;
-        v += func_decl, arg1, arg2;
+        v.push_back( func_decl );
+        v.push_back( arg1 );
+        v.push_back( arg2 );
         return Func(v);
       }
 
@@ -610,7 +615,10 @@ namespace metaSMT {
         using namespace boost::assign;
         typedef expr::nary_expression<expr::uf_tag, proto::tag::function> Func;
         Func::ContainerType v;
-        v += func_decl, arg1, arg2, arg3;
+        v.push_back( func_decl );
+        v.push_back( arg1 );
+        v.push_back( arg2 );
+        v.push_back( arg3 );
         return Func(v);
       }
 
