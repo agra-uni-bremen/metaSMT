@@ -90,15 +90,9 @@ BOOST_AUTO_TEST_CASE( one_true )
 {
   BOOST_REQUIRE( solve(ctx) );
 
-  predicate b = new_variable();
-  predicate c = new_variable();
-  predicate d = new_variable();
-  
   vector< vector<unsigned> > result =
      contradiction_analysis(ctx, boost::make_tuple( True ) );
 
-  cout << result << endl;
-  //std::cout << result.size() << std::endl;
   BOOST_REQUIRE_EQUAL(result.size(), 0);
 }
 
@@ -115,9 +109,6 @@ BOOST_AUTO_TEST_CASE( one_true_vec )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
 
-  cout << result << endl;
-
-  //std::cout << result.size() << std::endl;
   BOOST_REQUIRE_EQUAL(result.size(), 0);
 }
 
@@ -125,15 +116,8 @@ BOOST_AUTO_TEST_CASE( one_false )
 {
   BOOST_REQUIRE( solve(ctx) );
 
-  predicate b = new_variable();
-  predicate c = new_variable();
-  predicate d = new_variable();
-  
   vector< vector<unsigned> > result =
      contradiction_analysis(ctx, boost::make_tuple( False ));
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 1);
 
@@ -162,10 +146,6 @@ BOOST_AUTO_TEST_CASE( two_false )
 {
   BOOST_REQUIRE( solve(ctx) );
 
-  predicate b = new_variable();
-  predicate c = new_variable();
-  predicate d = new_variable();
-  
   vector< vector<unsigned> > result =
       contradiction_analysis(ctx, boost::make_tuple( False, False ));
 
@@ -211,10 +191,6 @@ BOOST_AUTO_TEST_CASE( three_false )
 {
   BOOST_REQUIRE( solve(ctx) );
 
-  predicate b = new_variable();
-  predicate c = new_variable();
-  predicate d = new_variable();
-  
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple(False, False, False) );
 
@@ -265,7 +241,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_1 )
   BOOST_REQUIRE( solve(ctx) );
 
   predicate b = new_variable();
-  predicate c = new_variable();
   predicate d = new_variable();
   
   vector< vector<unsigned> > result =
@@ -392,7 +367,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_3 )
   BOOST_REQUIRE( solve(ctx) );
 
   predicate b = new_variable();
-  predicate c = new_variable();
   predicate d = new_variable();
   
   vector< vector<unsigned> > result =
@@ -418,7 +392,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_3_vec )
   
   predicate a = new_variable();
   predicate b = new_variable();
-  predicate c = new_variable();
  
   result_type x1 = evaluate(ctx,True);
   result_type x2 = evaluate(ctx,nequal(a,b));
@@ -453,7 +426,6 @@ BOOST_AUTO_TEST_CASE( double_conflict_1 )
   BOOST_REQUIRE( solve(ctx) );
   
   predicate b = new_variable();
-  predicate c = new_variable();
   predicate d = new_variable();
   
   vector< vector<unsigned> > result =
@@ -483,7 +455,6 @@ BOOST_AUTO_TEST_CASE( double_conflict_1_vec )
   
   predicate a = new_variable();
   predicate b = new_variable();
-  predicate c = new_variable();
  
   result_type x1 = evaluate(ctx,True);
   result_type x2 = evaluate(ctx,nequal(a,b));
