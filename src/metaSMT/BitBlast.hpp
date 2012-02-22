@@ -741,13 +741,13 @@ namespace metaSMT {
           typedef boost::tuple<unsigned long, unsigned long> P;
           P p = boost::any_cast<P>(arg);
           //std::cout << "bvuint "<< p << std::endl;
-          unsigned value = boost::get<0>(p);
-          unsigned width = boost::get<1>(p);
+          unsigned long value = boost::get<0>(p);
+          unsigned long width = boost::get<1>(p);
         
           bv_result ret (width);
           result_base one  = _solver(predtags::true_tag (), boost::any());
           result_base zero = _solver(predtags::false_tag(), boost::any());
-          for (unsigned i = 0; i < width; ++i) {
+          for (unsigned long i = 0; i < width; ++i) {
             ret[i] = (value & 1) ? one : zero;
             value >>=1;
           }
@@ -757,13 +757,13 @@ namespace metaSMT {
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
           typedef boost::tuple< long, unsigned long> P;
           P p = boost::any_cast<P>(arg);
-          signed value = boost::get<0>(p);
-          unsigned width = boost::get<1>(p);
+          signed long value = boost::get<0>(p);
+          unsigned long width = boost::get<1>(p);
         
           bv_result ret (width);
           result_base one  = _solver(predtags::true_tag (), boost::any());
           result_base zero = _solver(predtags::false_tag(), boost::any());
-          for (unsigned i = 0; i < width; ++i) {
+          for (unsigned long i = 0; i < width; ++i) {
             ret[i] = (value & (1l << i )) ? one : zero;
           }
           return ret;
