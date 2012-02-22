@@ -2,7 +2,7 @@
 *.swp
 build*
 root*
-cmake
+cmake/*.Config.cmake
 *.aux
 *.bbl
 *.blg
