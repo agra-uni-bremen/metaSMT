@@ -51,7 +51,6 @@ option(metaSMT_USE_SWORD      "try to use SWORD solver" on)
 option(metaSMT_USE_Boolector  "try to use Boolector solver" on)
 option(metaSMT_USE_Z3         "try to use Z3 solver" on)
 option(metaSMT_USE_CUDD       "try to use CUDD BDD package" on )
-option(metaSMT_USE_mathsat    "try to use mathsat solver (incomplete)" off)
 option(metaSMT_USE_MiniSat    "try to use minisat SAT solver" on)  
 option(metaSMT_USE_picosat    "try to use picosat SAT solver" on)
 option(metaSMT_USE_Aiger      "try to use aiger" on)
@@ -152,30 +151,6 @@ if(Z3_FOUND)
   endif()
 endif()
 
-if (metaSMT_USE_mathsat)
-  find_package(mathsat QUIET)
-  if(NOT mathsat_FOUND)
-    find_library(mathsat_LIBRARIES mathsat 
-      DOC "path to mathsat library"
-    )
-    find_file(mathsat_H mathsat.h 
-      HINTS include
-      DOC "path to mathsat.h"
-    )
-    if(NOT mathsat_LIBRARIES OR NOT mathsat_H) 
-      message(WARNING "mathsat was not found!")
-    else(NOT mathsat_LIBRARIES OR NOT mathsat_H) 
-      set(mathsat_FOUND 1)
-    endif(NOT mathsat_LIBRARIES OR NOT mathsat_H) 
-  
-    set(mathsat_LIBRARIES ${mathsat_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
-  
-    get_filename_component(mathsat_INCLUDE_DIR ${mathsat_H} PATH)
-  endif(NOT mathsat_FOUND)
-else (metaSMT_USE_mathsat)
-  set(mathsat_FOUND 0)
-endif (metaSMT_USE_mathsat)
-
 if (metaSMT_DOC_Doxygen)
   find_package(Doxygen)
 else (metaSMT_DOC_Doxygen)
@@ -206,12 +181,6 @@ if(Z3_FOUND)
   list(APPEND metaSMT_LIBS ${Z3_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${Z3_INCLUDE_DIR})
 endif(Z3_FOUND)
-
-if(mathsat_FOUND)
-  config_find(mathsat ${mathsat_DIR})
-  list(APPEND metaSMT_LIBS ${mathsat_LIBRARIES})
-  list(APPEND metaSMT_INCLUDES ${mathsat_INCLUDE_DIR})
-endif(mathsat_FOUND)
 
 if(Aiger_FOUND)
   config_find(Aiger ${Aiger_DIR})
