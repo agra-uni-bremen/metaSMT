@@ -8,6 +8,8 @@ include(CTest)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
+set(Boost_NO_BOOST_CMAKE true)
+set(Boost_NO_SYSTEM_PATHS true)
 set(Boost_ADDITIONAL_VERSIONS "1.46.1")
 find_package(Boost REQUIRED)
 find_package(Boost COMPONENTS iostreams thread python)
