@@ -323,33 +323,6 @@ namespace metaSMT {
     }
 
     /**
-     * \brief  set the value of an unsigned variable
-     *
-     * Takes an unsigend variable and set his value to the current variable.
-     *
-     * \param counter0 The value of the variable
-     * \return void
-     */
-    void set_counter0( unsigned counter0)
-    {
-      this.counter0 = counter0;
-    }
-
-    /**
-     * \brief  set the value of an unsigned variable
-     *
-     * Takes an unsigend variable and set his value to the current variable.
-     *
-     * \param counter1 The value of the variable
-     * \return void
-     *
-     */
-    void set_counter1( unsigned counter1)
-    {
-      this.counter1 = counter1;
-    }
-
-    /**
      * \brief  get the value of a variable
      *
      * Gives back the value of the current variable.
