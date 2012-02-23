@@ -62,7 +62,7 @@ void sort_results( std::vector<std::vector<unsigned> > &results )
 	{
 	  sort(results[i].begin(), results[i].end());
 	}
-	  sort(results.begin(), results.end(), cmp_vec);
+	sort(results.begin(), results.end(), cmp_vec);
 }
 
 
@@ -136,10 +136,9 @@ BOOST_AUTO_TEST_CASE( one_false_vec )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
 
-  cout << result << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 1);
-
+  BOOST_REQUIRE_EQUAL(result[0].size(), 1);
+  BOOST_REQUIRE_EQUAL(result[0][0], 0);
 }
 
 BOOST_AUTO_TEST_CASE( two_false )
@@ -148,10 +147,6 @@ BOOST_AUTO_TEST_CASE( two_false )
 
   vector< vector<unsigned> > result =
       contradiction_analysis(ctx, boost::make_tuple( False, False ));
-
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
@@ -176,9 +171,6 @@ BOOST_AUTO_TEST_CASE( two_false_vec )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
 
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
   BOOST_REQUIRE_EQUAL(result[1].size(), 1);
@@ -193,9 +185,6 @@ BOOST_AUTO_TEST_CASE( three_false )
 
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple(False, False, False) );
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 3);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
@@ -223,9 +212,6 @@ BOOST_AUTO_TEST_CASE( three_false_vec )
 
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 3);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
@@ -283,9 +269,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_1_vec )
   
   sort_results(result);
 
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
   BOOST_REQUIRE_EQUAL(result[1].size(), 2);
@@ -306,9 +289,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_2 )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple(equal(c,b), nequal(d,b), nequal(c,b), equal(d, b) ));
   sort_results(result);
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 2);
@@ -347,9 +327,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_2_vec )
   
   sort_results(result);
 
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 2);
   BOOST_REQUIRE_EQUAL(result[1].size(), 2);
@@ -372,9 +349,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_3 )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple(True, nequal(d,b), False, equal(d, b) ));
   sort_results(result);
-
-  cout << result << endl;
- // cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
@@ -409,9 +383,6 @@ BOOST_AUTO_TEST_CASE( two_conflicts_3_vec )
   
   sort_results(result);
 
-  cout << result << endl;
- // cout << result.size() << " result.size() " << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 1);
   BOOST_REQUIRE_EQUAL(result[1].size(), 2);
@@ -431,9 +402,6 @@ BOOST_AUTO_TEST_CASE( double_conflict_1 )
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple(True, nequal(d,b), equal(d, b), nequal(d,b) ));
   sort_results(result);
-
-  cout << result << endl;
- // cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 2);
@@ -472,9 +440,6 @@ BOOST_AUTO_TEST_CASE( double_conflict_1_vec )
   
   sort_results(result);
 
-  cout << result << endl;
- // cout << result.size() << " result.size() " << endl;
-
   BOOST_REQUIRE_EQUAL(result.size(), 2);
   BOOST_REQUIRE_EQUAL(result[0].size(), 2);
   BOOST_REQUIRE_EQUAL(result[1].size(), 2);
@@ -492,31 +457,43 @@ BOOST_AUTO_TEST_CASE( double_conflicts_1)
 {
   BOOST_REQUIRE( solve(ctx) );
 
+  predicate a = new_variable();
   predicate b = new_variable();
   predicate c = new_variable();
   predicate d = new_variable(); 
-  predicate a = new_variable();
-  
-  vector< vector<unsigned> > result =
-    contradiction_analysis(ctx, boost::make_tuple( True, equal(d,b), False, nequal(d,b), False, equal(a,c), nequal(a,c), True ) );
- 
-//  sort_results(result);
 
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
+  vector< vector<unsigned> > result =
+    contradiction_analysis(ctx, boost::make_tuple( 
+      True,
+      equal(d,b),
+      False,
+      nequal(d,b),
+      False,
+      equal(a,c),
+      nequal(a,c),
+      True
+    ));
+
+  sort_results(result);
 
   BOOST_REQUIRE_EQUAL(result.size(), 4);
-  BOOST_REQUIRE_EQUAL(result[0].size(), 2);
+  BOOST_REQUIRE_EQUAL(result[0].size(), 1);
   BOOST_REQUIRE_EQUAL(result[1].size(), 1);
-  BOOST_REQUIRE_EQUAL(result[2].size(), 1);
+  BOOST_REQUIRE_EQUAL(result[2].size(), 2);
   BOOST_REQUIRE_EQUAL(result[3].size(), 2);
 
-   vector<unsigned> expected;
+  vector<unsigned> expected;
+
+  expected = list_of (2);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[0].begin(), result[0].end(), expected.begin(), expected.end());
+
+  expected = list_of (4);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[1].begin(), result[1].end(), expected.begin(), expected.end());
 
   expected = list_of (1)(3);
-  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[0].begin(), result[0].end(), expected.begin(), expected.end());
- 
-    expected = list_of (5)(6);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[2].begin(), result[2].end(), expected.begin(), expected.end());
+
+  expected = list_of (5)(6);
   BOOST_REQUIRE_EQUAL_COLLECTIONS( result[3].begin(), result[3].end(), expected.begin(), expected.end());
 }
 
@@ -530,43 +507,38 @@ BOOST_AUTO_TEST_CASE( double_conflicts_1_vec)
   predicate c = new_variable();
   predicate d = new_variable();
 
-  result_type x1 = evaluate(ctx,True);
-  result_type x2 = evaluate(ctx,equal(a,b));
-  result_type x3 = evaluate(ctx,False);
-  result_type x4 = evaluate(ctx,nequal(a,b));
-  result_type x5 = evaluate(ctx,False);
-  result_type x6 = evaluate(ctx,equal(c,d));
-  result_type x7 = evaluate(ctx,nequal(c,d));
-  result_type x8 = evaluate(ctx,True);
-
   vector<result_type> vec;
-  vec.push_back(x1);
-  vec.push_back(x2);
-  vec.push_back(x3);
-  vec.push_back(x4);
-  vec.push_back(x5);
-  vec.push_back(x6);
-  vec.push_back(x7);
-  vec.push_back(x8);
+
+  vec.push_back( evaluate(ctx,True) );
+  vec.push_back( evaluate(ctx,equal(a,b)) );
+  vec.push_back( evaluate(ctx,False) );
+  vec.push_back( evaluate(ctx,nequal(a,b)) );
+  vec.push_back( evaluate(ctx,False) );
+  vec.push_back( evaluate(ctx,equal(c,d)) );
+  vec.push_back( evaluate(ctx,nequal(c,d)) );
+  vec.push_back( evaluate(ctx,True) );
 
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
   
-  //sort_results(result);
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
+  sort_results(result);
 
   BOOST_REQUIRE_EQUAL(result.size(), 4);
-  BOOST_REQUIRE_EQUAL(result[0].size(), 2);
+  BOOST_REQUIRE_EQUAL(result[0].size(), 1);
   BOOST_REQUIRE_EQUAL(result[1].size(), 1);
-  BOOST_REQUIRE_EQUAL(result[2].size(), 1);
+  BOOST_REQUIRE_EQUAL(result[2].size(), 2);
   BOOST_REQUIRE_EQUAL(result[3].size(), 2);
 
-   vector<unsigned> expected;
+  vector<unsigned> expected;
+
+  expected = list_of (2);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[0].begin(), result[0].end(), expected.begin(), expected.end());
+ 
+    expected = list_of (4);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[1].begin(), result[1].end(), expected.begin(), expected.end());
 
   expected = list_of (1)(3);
-  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[0].begin(), result[0].end(), expected.begin(), expected.end());
+  BOOST_REQUIRE_EQUAL_COLLECTIONS( result[2].begin(), result[2].end(), expected.begin(), expected.end());
  
     expected = list_of (5)(6);
   BOOST_REQUIRE_EQUAL_COLLECTIONS( result[3].begin(), result[3].end(), expected.begin(), expected.end());
@@ -583,9 +555,6 @@ BOOST_AUTO_TEST_CASE( unsolve_conflict)
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, boost::make_tuple( nequal(a,b), nequal(b,c), nequal(a,c)) );
 
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
 
   BOOST_REQUIRE_EQUAL(result.size(), 1);
   vector<unsigned> expected;
@@ -615,10 +584,7 @@ BOOST_AUTO_TEST_CASE( unsolve_conflict_vec)
   vector< vector<unsigned> > result =
     contradiction_analysis(ctx, vec );
   
-  //sort_results(result);
-
-  cout << result << endl;
-  //cout << result.size() << " result.size() " << endl;
+  sort_results(result);
 
   BOOST_REQUIRE_EQUAL(result.size(), 1);
   vector<unsigned> expected;
@@ -627,32 +593,6 @@ BOOST_AUTO_TEST_CASE( unsolve_conflict_vec)
   BOOST_REQUIRE_EQUAL_COLLECTIONS( result[0].begin(), result[0].end(), expected.begin(), expected.end());
 }
 
-/*
-BOOST_AUTO_TEST_CASE( con_checking1 )
-{
-  BOOST_REQUIRE( solve(ctx) );
-
-  predicate b = new_variable();
-  predicate c = new_variable();
-  predicate d = new_variable();
-  
-  vector< vector<unsigned> > result =
-    con_checking(ctx, boost::make_tuple(False, True) );
-
-  cout << result << endl;
-  cout << result.size() << " result.size() " << endl;
-
-  BOOST_REQUIRE_EQUAL(result.size(), 1);
-  
-  BOOST_REQUIRE_EQUAL(result[0].size(), 1);
-  BOOST_REQUIRE_EQUAL(result[1].size(), 1);
-  BOOST_REQUIRE_EQUAL(result[2].size(), 1);
-  BOOST_REQUIRE(result[0][0] == 0 || result[1][0] == 0 || result[2][0] == 0);
-  BOOST_REQUIRE(result[0][0] == 1 || result[1][0] == 1 || result[2][0] == 1);
-  BOOST_REQUIRE(result[0][0] == 2 || result[1][0] == 2 || result[2][0] == 2);
-  
-}
-*/
 BOOST_AUTO_TEST_SUITE_END() //Solver
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
