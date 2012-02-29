@@ -30,14 +30,18 @@
 namespace metaSMT {
 
   /**
-   * @brief Multi-multiple solver contexts and dispatches all calls
-   * (assertions/assumptions) to both of them. The "faster" solver context 
-   * is used to acquire  the assignment for the variables.
+   * @brief Run two solver contexts in two threads and dispatch all calls
+   * (assertions/assumptions,commands) to both of them. The "faster" solver
+   * context is used to return the results and acquire variable assignments
+   * assignment.
    * 
-   * \tparam SolverContext1 a valid metaSMT context, e.g. DirectSolver_Context<...>
-   * \tparam SolverContext2 another valid metaSMT context
+   * \tparam SolverContext1 a metaSMT context to be instanciated as the first thread (e.g. DirectSolvers_Context<...>)
+   * \tparam SolverContext2 another valid metaSMT context for the second thread
+   *
+   * \tparam  WaitForJoin Boolean value, wait for both threeads to finish 
+   *          in the destructor of Threaded_Context? (default: no)
    **/
-  template<typename SolverContext1, typename SolverContext2>
+  template<typename SolverContext1, typename SolverContext2, bool WaitForJoin=false>
   struct Threaded_Context 
     : boost::proto::callable_context< Threaded_Context<SolverContext1, SolverContext2>, boost::proto::null_context >
   { 
@@ -62,8 +66,10 @@ namespace metaSMT {
     ~Threaded_Context() {
       thread1.interrupt();
       thread2.interrupt();
-      thread1.join();
-      thread2.join();
+      if(WaitForJoin) {
+        thread1.join();
+        thread2.join();
+      }
     }
 
     /** \cond */
