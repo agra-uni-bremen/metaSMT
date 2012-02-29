@@ -70,7 +70,9 @@ namespace metaSMT {
   template <typename Context, typename Boolean, typename LT_Expr, typename EQ_Expr, typename GT_Expr>
   typename Context::result_type
   cardinality_any(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality,
-                  LT_Expr lt, EQ_Expr eq, GT_Expr gt) {
+                  LT_Expr lt, EQ_Expr eq, GT_Expr gt)
+  {
+    using namespace metaSMT::logic;
     assert(ps.size() > 0 && "Cardinality constraint requires at least one input variable");
     assert(cardinality > 0 && "Unsatisfied precondition for tableau construction");
 
@@ -102,6 +104,7 @@ namespace metaSMT {
   template <typename Context, typename Boolean>
   typename Context::result_type
   cardinality_eq(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
+    using namespace metaSMT::logic;
     assert(ps.size() > 0 && "Equality cardinality constraint requires at least one input variable");
 
     if (cardinality == 0) {
