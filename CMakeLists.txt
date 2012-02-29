@@ -1,5 +1,4 @@
 PROJECT(metaSMT)
-SET(metaSMT_VERSION 4)
 
 cmake_minimum_required(VERSION 2.8.2)
 include(CheckIncludeFileCXX)
@@ -17,6 +16,11 @@ set_package_info(Boost "Portable C++ libraries")
 include_directories(${Boost_INCLUDE_DIRS})
 
 list(INSERT CMAKE_PREFIX_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
+
+# Set the default version number, but try to calculate
+# a proper version from git.
+SET(metaSMT_VERSION 4)
+include(cmake/get_git_version.cmake)
 
 include(cmake/build_type.cmake)
 include(cmake/config_file.cmake)
@@ -226,8 +230,8 @@ Feature_Summary(WHAT ALL)
 
 # CPack version numbers for release tarball name.
 set(CPACK_PACKAGE_VERSION_MAJOR ${metaSMT_VERSION})
-set(CPACK_PACKAGE_VERSION_MINOR 0)
-set(CPACK_PACKAGE_VERSION_PATCH 0)
+#set(CPACK_PACKAGE_VERSION_MINOR 0)
+#set(CPACK_PACKAGE_VERSION_PATCH 0)
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "SMT programming library")
 set(CPACK_PACKAGE_VENDOR "metaSMT development team")
