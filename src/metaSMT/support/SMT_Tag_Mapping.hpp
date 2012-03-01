@@ -13,6 +13,7 @@ namespace metaSMT {
   namespace arraytags = ::metaSMT::logic::Array::tag;
   namespace mpl = boost::mpl;
 
+  /** \cond **/
   typedef mpl::map42<
       mpl::pair<predtags::true_tag,    mpl::string<'t', 'r', 'u', 'e'> >
     , mpl::pair<predtags::false_tag,   mpl::string<'f', 'a', 'l', 's', 'e'> >
@@ -63,6 +64,7 @@ namespace metaSMT {
     , mpl::pair<bvtags::bvshr_tag,     mpl::string<'b', 'v', 'l', 's', 'h', 'r'> >    
     , mpl::pair<bvtags::bvashr_tag,     mpl::string<'b', 'v', 'a', 's', 'h', 'r'> >    
   > SMT_NameMap;
+  /** \endcond **/
 
 
   template<typename Tag> 

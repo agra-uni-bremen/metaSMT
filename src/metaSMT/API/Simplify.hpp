@@ -33,6 +33,7 @@ namespace metaSMT {
   simplify( Context &ctx, Expr const &e ) {
     return evaluate(ctx, e);
   }
+  /** \endcond **/
 
   /**@}*/
 
