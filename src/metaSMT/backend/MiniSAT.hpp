@@ -2,6 +2,7 @@
 
 #include "../tags/SAT.hpp"
 #include "../result_wrapper.hpp"
+#include "../Features.hpp" 
 
  
 #include <vector>
@@ -24,6 +25,13 @@
 
 
 namespace metaSMT {
+
+  // Forward declaration
+  struct addclause_cmd;
+  namespace features
+  {
+    struct addclause_api;
+  }
   namespace solver {
 
     class MiniSAT {
@@ -85,11 +93,16 @@ namespace metaSMT {
           assumption_.push ( toLit ( lit ) ); 
         }
 
+        void command ( addclause_cmd const&, std::vector < SAT::tag::lit_tag > const& cls )
+        {
+          clause ( cls );
+        }
+
 
         bool solve ( )
         {
           if ( !solver_.okay()) {
-            //std::cout << "Okay? failed." << std::endl;
+            // might be unsat during pre-processing (empty clause derived)
             return false;
           }
            
@@ -119,5 +132,11 @@ namespace metaSMT {
         Minisat::vec<Minisat::Lit> assumption_;
     };
   } /* solver */
+
+  namespace features {
+    template<>
+      struct supports< solver::MiniSAT, features::addclause_api>
+      : boost::mpl::true_ {};
+  } /* features */
 } /* metaSMT */
 // vim: ts=2 sw=2 et
