@@ -101,6 +101,7 @@ namespace metaSMT {
 
         bool solve ( )
         {
+          solver_.simplify();
           if ( !solver_.okay()) {
             // might be unsat during pre-processing (empty clause derived)
             return false;
