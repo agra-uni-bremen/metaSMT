@@ -110,7 +110,7 @@ namespace metaSMT {
         }
       };
 
-    struct PrecoSAT
+      struct PrecoSAT
       {
         static boost::optional < bool > execute ( std::string const& dimacsFile, std::string const& log, std::string const& err)
         {
@@ -303,7 +303,7 @@ namespace metaSMT {
 
           bool solve ( )
           {
-            GoTmp working_directory;
+            // // GoTmp working_directory;
             std::string name = "clause-writer.cnf"; 
             write_cnf ( name ); 
 
