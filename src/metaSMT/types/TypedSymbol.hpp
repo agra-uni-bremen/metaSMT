@@ -291,12 +291,12 @@ namespace metaSMT {
       inline typename Context::result_type toBV(Context &ctx,
                                                 unsigned const width) {
         if (isBool()) {
-          return evaluate(ctx, zero_extend(width-1,
+          return evaluate(ctx, bv::zero_extend(width-1,
                                            detail::to_bitvector(ctx, *this)));
         } else {
           BitVector bvtype = getType(BitVector());
           assert(width > bvtype.width);
-          return evaluate(ctx, zero_extend(width-bvtype.width,
+          return evaluate(ctx, bv::zero_extend(width-bvtype.width,
                                            detail::to_bitvector(ctx, *this)));
         }
       }
