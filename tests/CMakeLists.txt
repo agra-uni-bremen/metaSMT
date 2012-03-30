@@ -114,69 +114,72 @@ add_test_executable( direct_Aiger_PicoSAT direct_Aiger_PicoSAT.cpp
 #add_test_executable( graph_Aiger_PicoSAT graph_Aiger_PicoSAT.cpp
 #  REQUIRES PicoSAT_FOUND Aiger_FOUND )
 
-find_program(PicoSAT_EXECUTABLE picosat)
-add_test_executable( direct_CW_PicoSAT direct_CW_PicoSAT.cpp
-  REQUIRES PicoSAT_EXECUTABLE
-  ARGS "-s no"
-  ENVIRONMENT "PicoSAT_EXECUTABLE=${PicoSAT_EXECUTABLE}"
-)
-
-find_program(MiniSat_EXECUTABLE minisat)
-add_test_executable( direct_CW_MiniSat direct_CW_MiniSat.cpp
-  REQUIRES MiniSat_EXECUTABLE
-  ARGS "-s no"
-  ENVIRONMENT "MiniSat_EXECUTABLE=${MiniSat_EXECUTABLE}"
-)
-
-find_program(PrecoSat_EXECUTABLE precosat)
-add_test_executable( direct_CW_PrecoSat direct_CW_PrecoSat.cpp
-  REQUIRES Precosat_EXECUTABLE
-  ARGS "-s no"
-  ENVIRONMENT "PrecoSat_EXECUTABLE=${PrecoSat_EXECUTABLE}"
-)
-
-find_program(Plingeling_EXECUTABLE plingeling)
-add_test_executable( direct_CW_Plingeling direct_CW_Plingeling.cpp
-  REQUIRES Plingeling_EXECUTABLE
-  ARGS "-s no"
-  ENVIRONMENT "Plingeling_EXECUTABLE=${Plingeling_EXECUTABLE}"
-)
-
-
-find_program(Glucoser_EXECUTABLE glucoser)
-add_test_executable( direct_CW_Glucoser direct_CW_Glucoser.cpp
-  REQUIRES Glucoser_EXECUTABLE
-  ARGS "-s no"
-  ENVIRONMENT "GLUCOSER_EXECUTABLE=${Glocoser_EXECUTABLE}"
+if(metaSMT_USE_CW)
+  find_program(PicoSAT_EXECUTABLE picosat)
+  add_test_executable( direct_CW_PicoSAT direct_CW_PicoSAT.cpp
+    REQUIRES PicoSAT_EXECUTABLE
+    ARGS "-s no"
+    ENVIRONMENT "PicoSAT_EXECUTABLE=${PicoSAT_EXECUTABLE}"
   )
 
-find_program(Z3_EXECUTABLE z3)
+  find_program(MiniSat_EXECUTABLE minisat)
+  add_test_executable( direct_CW_MiniSat direct_CW_MiniSat.cpp
+    REQUIRES MiniSat_EXECUTABLE
+    ARGS "-s no"
+    ENVIRONMENT "MiniSat_EXECUTABLE=${MiniSat_EXECUTABLE}"
+  )
+
+  find_program(PrecoSat_EXECUTABLE precosat)
+  add_test_executable( direct_CW_PrecoSat direct_CW_PrecoSat.cpp
+    REQUIRES Precosat_EXECUTABLE
+    ARGS "-s no"
+    ENVIRONMENT "PrecoSat_EXECUTABLE=${PrecoSat_EXECUTABLE}"
+  )
+
+  find_program(Plingeling_EXECUTABLE plingeling)
+  add_test_executable( direct_CW_Plingeling direct_CW_Plingeling.cpp
+    REQUIRES Plingeling_EXECUTABLE
+    ARGS "-s no"
+    ENVIRONMENT "Plingeling_EXECUTABLE=${Plingeling_EXECUTABLE}"
+  )
+
+  find_program(Glucoser_EXECUTABLE glucoser)
+  add_test_executable( direct_CW_Glucoser direct_CW_Glucoser.cpp
+    REQUIRES Glucoser_EXECUTABLE
+    ARGS "-s no"
+    ENVIRONMENT "GLUCOSER_EXECUTABLE=${Glocoser_EXECUTABLE}"
+  )
+endif(metaSMT_USE_CW)
+
+if(metaSMT_USE_SMT2)
+  find_program(Z3_EXECUTABLE z3)
 
 
-if (Z3_EXECUTABLE)
-  execute_process(
-   COMMAND echo "(check-sat) "
-   COMMAND ${Z3_EXECUTABLE} -smt2 -in
-   OUTPUT_VARIABLE _Z3_OUTPUT
- )
- if( _Z3_OUTPUT STREQUAL "sat\n")
-   set( Z3_IS_INTERACTIVE 1)
- else()
-   set( Z3_IS_INTERACTIVE 0)
- endif()
-endif()
+  if (Z3_EXECUTABLE)
+    execute_process(
+      COMMAND echo "(check-sat) "
+      COMMAND ${Z3_EXECUTABLE} -smt2 -in
+      OUTPUT_VARIABLE _Z3_OUTPUT
+      )
+    if( _Z3_OUTPUT STREQUAL "sat\n")
+      set( Z3_IS_INTERACTIVE 1)
+    else()
+      set( Z3_IS_INTERACTIVE 0)
+    endif()
+  endif()
 
-add_test_executable( direct_SMT2 direct_SMT2.cpp
-  ARGS "--log_level=nothing"
-  REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
-  LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
-  ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
-)
-add_test_executable( graph_SMT2 graph_SMT2.cpp
-  ARGS "--log_level=nothing"
-  REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
-  LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
-  ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
-)
+  add_test_executable( direct_SMT2 direct_SMT2.cpp
+    ARGS "--log_level=nothing"
+    REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
+    LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
+    ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
+  )
+  add_test_executable( graph_SMT2 graph_SMT2.cpp
+    ARGS "--log_level=nothing"
+    REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
+    LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
+    ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
+  )
+endif(metaSMT_USE_SMT2)
 
 # vim: ts=2 sw=2 et

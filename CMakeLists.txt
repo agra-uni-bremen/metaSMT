@@ -30,6 +30,7 @@ include(cmake/config_file.cmake)
 # set all solvers to "on" with good support and experimental or
 # work in progress to "off"
 ###
+option(metaSMT_USE_SMT2       "try to use SMTLIB2 solver" on)
 option(metaSMT_USE_SWORD      "try to use SWORD solver" on)
 option(metaSMT_USE_Boolector  "try to use Boolector solver" on)
 option(metaSMT_USE_Z3         "try to use Z3 solver" on)
@@ -37,6 +38,7 @@ option(metaSMT_USE_CUDD       "try to use CUDD BDD package" on )
 option(metaSMT_USE_MiniSat    "try to use minisat SAT solver" on)  
 option(metaSMT_USE_picosat    "try to use picosat SAT solver" on)
 option(metaSMT_USE_Aiger      "try to use aiger" on)
+option(metaSMT_USE_CW         "try to use clause writers" off)
 
 option(metaSMT_DOC_Doxygen    "try to build doxygen documentation" off)
 option(metaSMT_ENABLE_TESTS   "build tests (recommended)" on)
