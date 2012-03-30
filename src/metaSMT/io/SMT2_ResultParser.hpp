@@ -14,7 +14,7 @@ namespace metaSMT {
     namespace qi = boost::spirit::qi;
 
     template< typename Iterator >
-    struct smt2_response_grammar : boost::spirit::qi::grammar<Iterator, std::string()> {
+    struct smt2_response_grammar : qi::grammar<Iterator, std::string()> {
       smt2_response_grammar() : smt2_response_grammar::base_type(start) {
         using qi::omit;
         using qi::lit;
@@ -46,10 +46,10 @@ namespace metaSMT {
         //debug(start);
       }
 
-      boost::spirit::qi::rule<Iterator> quotted_symbol;
-      boost::spirit::qi::rule<Iterator> simple_symbol;
-      boost::spirit::qi::rule<Iterator> symbol_name;
-      boost::spirit::qi::rule<Iterator, std::string()> start;
+      qi::rule<Iterator> quotted_symbol;
+      qi::rule<Iterator> simple_symbol;
+      qi::rule<Iterator> symbol_name;
+      qi::rule<Iterator, std::string()> start;
     }; // smt2_response_grammar
 
   } // io
