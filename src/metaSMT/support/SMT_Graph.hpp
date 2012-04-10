@@ -2,15 +2,12 @@
 
 #include "metaSMT/tags/Logics.hpp"
 
-#define _BACKWARD_BACKWARD_WARNING_H
+#include "disable_warnings.hpp"
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#undef _BACKWARD_BACKWARD_WARNING_H
-#pragma GCC push_options
 #include <boost/function.hpp>
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#pragma GCC pop_options
 #include <boost/any.hpp>
+#include "enable_warnings.hpp"
 
 namespace boost {
   enum edge_input_t { edge_input };
