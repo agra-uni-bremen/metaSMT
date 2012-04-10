@@ -14,14 +14,11 @@
 #include <boost/any.hpp> 
 #include <boost/foreach.hpp>
  
-/* disable MiniSAT warnings in GCC */
-#pragma GCC push_options
-#pragma GCC diagnostic ignored "-Wparentheses"
+#include "../support/disable_warnings.hpp"
 
 #include <minisat/core/Solver.h>
 
-/* re-enable warnings */
-#pragma GCC pop_options
+#include "../support/enable_warnings.hpp"
 
 
 namespace metaSMT {
