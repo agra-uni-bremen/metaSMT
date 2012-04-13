@@ -474,8 +474,21 @@ namespace metaSMT {
         typedef boost::tuple<long, unsigned long> Tuple;
         Tuple tuple = boost::any_cast<Tuple>(arg);
         long value = boost::get<0>(tuple);
-        unsigned long width = boost::get<1>(tuple);
-	return expr::bv_const<bvtags::bvsint_tag>(static_cast<unsigned long>(value), width);
+        unsigned long const width = boost::get<1>(tuple);
+        if (    value > std::numeric_limits<int>::max()
+             || value < std::numeric_limits<int>::min()
+             || width > 8*sizeof(int) ) {
+          std::string val(width, '0');
+          std::string::reverse_iterator it = val.rbegin();
+          for ( unsigned long u = 0; u < width; ++u, ++it ) {
+            *it = (value & 1l) ? '1' : '0';
+            value >>= 1;
+          }
+          return expr::bv_const<bvtags::bvbin_tag>::bin(val);
+        }
+        else {
+          return expr::bv_const<bvtags::bvsint_tag>(static_cast<unsigned long>(value), width);
+        }
       }
 
       result_type operator() ( bvtags::bvbin_tag , boost::any arg ) {
