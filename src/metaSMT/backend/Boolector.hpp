@@ -138,9 +138,9 @@ namespace metaSMT {
 
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
           typedef boost::tuple<long, unsigned long> P;
-          P p = boost::any_cast<P>(arg);
+          P const p = boost::any_cast<P>(arg);
           long value = boost::get<0>(p);
-          unsigned long width = boost::get<1>(p);
+          unsigned long const width = boost::get<1>(p);
 
           if (  value > std::numeric_limits<int>::max()
              || value < std::numeric_limits<int>::min()
@@ -155,7 +155,7 @@ namespace metaSMT {
             }
             return ptr( boolector_const(_btor, val.c_str()) );
           } else {
-            return ptr(boolector_int(_btor, boost::get<0>(p), boost::get<1>(p)));
+            return ptr( boolector_int(_btor, value, width) );
           }
         }
 
