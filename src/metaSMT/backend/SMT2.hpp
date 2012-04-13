@@ -472,12 +472,13 @@ namespace metaSMT {
 
       result_type operator() ( bvtags::bvsint_tag , boost::any arg ) {
         typedef boost::tuple<long, unsigned long> Tuple;
-        Tuple tuple = boost::any_cast<Tuple>(arg);
+        Tuple const tuple = boost::any_cast<Tuple>(arg);
         long value = boost::get<0>(tuple);
         unsigned long const width = boost::get<1>(tuple);
         if (    value > std::numeric_limits<int>::max()
              || value < std::numeric_limits<int>::min()
-             || width > 8*sizeof(int) ) {
+             || (width > 8*sizeof(int) && value < 0)
+          ) {
           std::string val(width, '0');
           std::string::reverse_iterator it = val.rbegin();
           for ( unsigned long u = 0; u < width; ++u, ++it ) {
