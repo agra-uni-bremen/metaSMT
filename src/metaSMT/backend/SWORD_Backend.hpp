@@ -97,11 +97,25 @@ namespace metaSMT {
         }
 
         result_type operator() (bvtags::bvsint_tag , boost::any arg ) {
-          typedef boost::tuple<long, unsigned long> P;
-          P p = boost::any_cast<P>(arg);
           //printf("bvsint\n");
-          return _sword.addConstant(boost::get<1>(p)
-            , static_cast<unsigned long>(boost::get<0>(p)) );
+          typedef boost::tuple<long, unsigned long> Tuple;
+          Tuple const tuple = boost::any_cast<Tuple>(arg);
+          long value = boost::get<0>(tuple);
+          unsigned long const width = boost::get<1>(tuple);
+
+          if (    value > std::numeric_limits<int>::max()
+               || value < std::numeric_limits<int>::min()
+               || (width > 8*sizeof(int) && value < 0)
+             ) {
+            std::string val(width, '0');
+            std::string::reverse_iterator it = val.rbegin();
+            for ( unsigned long u = 0; u < width; ++u, ++it ) {
+              *it = (value & 1l) ? '1' : '0';
+              value >>= 1;
+            }
+            return _sword.addBinConstant(val);
+          }
+          return _sword.addConstant(width, static_cast<unsigned long>(value) );
         }
 
         result_type operator() (bvtags::extract_tag const & 
