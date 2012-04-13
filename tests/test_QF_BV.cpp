@@ -1800,28 +1800,53 @@ BOOST_AUTO_TEST_CASE( bvsint_t )
 {
   BOOST_REQUIRE( solve(ctx) );
 
-  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,8),
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(123,8),
     bvbin("01111011")
   ));
   BOOST_REQUIRE( solve(ctx) );
 
-  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,16),
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(123,16),
     bvbin("0000000001111011")
   ));
   BOOST_REQUIRE( solve(ctx) );
   
-  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,32),
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(123,32),
     bvbin("00000000000000000000000001111011")
   ));
   BOOST_REQUIRE( solve(ctx) );
   
-  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,64),
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(123,64),
     bvbin("0000000000000000000000000000000000000000000000000000000001111011")
   ));
   BOOST_REQUIRE( solve(ctx) );
 
-  metaSMT::assumption( ctx, metaSMT::logic::equal( bvuint(123,128),
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(123,128),
     bvbin("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111011")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(-123,8),
+    bvbin("10000101")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(-123,16),
+    bvbin("1111111110000101")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(-123,32),
+    bvbin("11111111111111111111111110000101")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(-123,64),
+    bvbin("1111111111111111111111111111111111111111111111111111111110000101")
+  ));
+  BOOST_REQUIRE( solve(ctx) );
+
+  metaSMT::assumption( ctx, metaSMT::logic::equal( bvsint(-123,128),
+    bvbin("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110000101")
   ));
   BOOST_REQUIRE( solve(ctx) );
 }
