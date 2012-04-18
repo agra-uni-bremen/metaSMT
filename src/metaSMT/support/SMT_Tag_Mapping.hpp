@@ -87,7 +87,7 @@ namespace metaSMT {
   }
 
 
-  typedef mpl::map<
+  typedef mpl::map7<
       mpl::pair<predtags::nequal_tag, mpl::pair<predtags::not_tag, predtags::equal_tag > >
     , mpl::pair<predtags::nand_tag, mpl::pair<predtags::not_tag, predtags::and_tag > >
     , mpl::pair<predtags::nor_tag, mpl::pair<predtags::not_tag, predtags::or_tag > >
