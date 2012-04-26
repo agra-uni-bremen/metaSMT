@@ -27,16 +27,17 @@ namespace metaSMT {
       typedef Expr result_type;
       typedef std::list< Expr > Exprs;
 
+      result_type ptr(Expr expr) {
+        exprs.push_back(expr);
+        return expr;
+      }
+
       STP()
         : vc( vc_createValidityChecker() )
       {}
 
       ~STP() {
-        for( Exprs::iterator it = assertions.begin(), ie = assertions.end();
-             it != ie; ++it ) {
-          vc_DeleteExpr(*it);
-        }
-        for( Exprs::iterator it = assumptions.begin(), ie = assumptions.end();
+        for( Exprs::iterator it = exprs.begin(), ie = exprs.end();
              it != ie; ++it ) {
           vc_DeleteExpr(*it);
         }
@@ -59,18 +60,18 @@ namespace metaSMT {
         , TIMEOUT = 3
         };
 
-        Expr e = vc_trueExpr( vc );
+        Expr e = ptr(vc_trueExpr( vc ));
         for ( Exprs::const_iterator it = assertions.begin(), ie = assertions.end();
               it != ie; ++it ) {
-          e = vc_andExpr(vc, e, *it);
+          e = ptr(vc_andExpr(vc, e, *it));
         }
         for ( Exprs::const_iterator it = assumptions.begin(), ie = assumptions.end();
               it != ie; ++it ) {
-          e = vc_andExpr(vc, e, *it);
+          e = ptr(vc_andExpr(vc, e, *it));
         }
 
         // negate formula
-        e = vc_notExpr(vc, e);
+        e = ptr(vc_notExpr(vc, e));
         // vc_printExpr(vc, e);
 
         vc_push( vc );
@@ -96,7 +97,7 @@ namespace metaSMT {
       }
 
       result_wrapper read_value(result_type var) {
-        Expr cex = vc_getCounterExample(vc, var);
+        Expr cex = ptr(vc_getCounterExample(vc, var));
         // vc_printExpr(vc, cex);
 
         switch ( getType(var) ) {
@@ -131,37 +132,24 @@ namespace metaSMT {
         Type bool_ty = vc_boolType(vc);
         char buf[64];
         sprintf(buf, "var_%u", var.id);
-        return vc_varExpr(vc, buf, bool_ty);
+        return ptr(vc_varExpr(vc, buf, bool_ty));
       }
 
       result_type operator()( predtags::false_tag , boost::any arg ) {
-        return vc_falseExpr(vc);
+        return ptr(vc_falseExpr(vc));
       }
 
       result_type operator()( predtags::true_tag , boost::any arg ) {
-        return vc_trueExpr(vc);
+        return ptr(vc_trueExpr(vc));
       }
 
       result_type operator()( predtags::not_tag , result_type e ) {
-        return vc_notExpr(vc, e);
-      }
-
-      result_type operator()( bvtags::bvcomp_tag , result_type a, result_type b ) {
-        Expr comp = vc_eqExpr(vc, a, b);
-        return vc_boolToBVExpr(vc, comp);
-      }
-
-      result_type operator()( bvtags::bvshl_tag, result_type a, result_type b ) {
-        return vc_bvVar32LeftShiftExpr(vc, b, a);
-      }
-
-      result_type operator()( bvtags::bvshr_tag, result_type a, result_type b ) {
-        return vc_bvVar32RightShiftExpr(vc, b, a);
+        return ptr(vc_notExpr(vc, e));
       }
 
       result_type operator()( predtags::ite_tag tag
                               , result_type a, result_type b, result_type c ) {
-        return vc_iteExpr(vc, a, b, c);
+        return ptr(vc_iteExpr(vc, a, b, c));
       }
 
       // bvtags
@@ -170,15 +158,15 @@ namespace metaSMT {
         Type bv_ty = vc_bvType(vc, var.width);
         char buf[64];
         sprintf(buf, "var_%u", var.id);
-        return vc_varExpr(vc, buf, bv_ty);
+        return ptr(vc_varExpr(vc, buf, bv_ty));
       }
 
       result_type operator()( bvtags::bit0_tag , boost::any arg ) {
-        return vc_bvConstExprFromInt(vc, 1, 0);
+        return (vc_bvConstExprFromInt(vc, 1, 0)); // No ptr()
       }
 
       result_type operator()( bvtags::bit1_tag , boost::any arg ) {
-        return vc_bvConstExprFromInt(vc, 1, 1);
+        return (vc_bvConstExprFromInt(vc, 1, 1)); // No ptr()
       }
 
       result_type operator()( bvtags::bvuint_tag , boost::any arg ) {
@@ -195,10 +183,10 @@ namespace metaSMT {
             *sit = (value & 1ul) ? '1':'0';
             value >>= 1;
           }
-          return vc_bvConstExprFromStr(vc, val.c_str());
+          return ptr(vc_bvConstExprFromStr(vc, val.c_str()));
         }
         else {
-          return vc_bvConstExprFromLL(vc, width, value);
+          return ptr(vc_bvConstExprFromLL(vc, width, value));
         }
       }
 
@@ -219,16 +207,16 @@ namespace metaSMT {
             *sit = (value & 1l) ? '1':'0';
             value >>= 1;
           }
-          return vc_bvConstExprFromStr(vc, val.c_str());
+          return ptr(vc_bvConstExprFromStr(vc, val.c_str()));
         }
         else {
-          return vc_bvConstExprFromLL(vc, width, static_cast<unsigned long>(value));
+          return ptr(vc_bvConstExprFromLL(vc, width, static_cast<unsigned long>(value)));
         }
       }
 
       result_type operator()( bvtags::bvbin_tag , boost::any arg ) {
         std::string val = boost::any_cast<std::string>(arg);
-        return vc_bvConstExprFromStr(vc, val.c_str());
+        return (vc_bvConstExprFromStr(vc, val.c_str()));
       }
 
       result_type operator()( bvtags::bvhex_tag , boost::any arg ) {
@@ -288,36 +276,49 @@ namespace metaSMT {
           }
         }
         //std::cout << bin << std::endl;
-        return vc_bvConstExprFromStr(vc, bin.c_str());
+        return ptr(vc_bvConstExprFromStr(vc, bin.c_str()));
       }
 
       result_type operator()( bvtags::bvnot_tag , result_type e ) {
-        return vc_bvNotExpr(vc, e);
+        return ptr(vc_bvNotExpr(vc, e));
       }
 
       result_type operator()( bvtags::bvneg_tag , result_type e ) {
-        return vc_bvUMinusExpr(vc, e);
+        return ptr(vc_bvUMinusExpr(vc, e));
+      }
+
+      result_type operator()( bvtags::bvcomp_tag , result_type a, result_type b ) {
+        Expr comp = ptr(vc_eqExpr(vc, a, b));
+        return ptr(vc_boolToBVExpr(vc, comp));
+      }
+
+      result_type operator()( bvtags::bvshl_tag, result_type a, result_type b ) {
+        return ptr(vc_bvVar32LeftShiftExpr(vc, b, a));
+      }
+
+      result_type operator()( bvtags::bvshr_tag, result_type a, result_type b ) {
+        return ptr(vc_bvVar32RightShiftExpr(vc, b, a));
       }
 
       result_type operator()( bvtags::extract_tag const &
         , unsigned long upper, unsigned long lower
         , result_type e) {
-        return vc_bvExtract(vc, e, upper, lower);
+        return ptr(vc_bvExtract(vc, e, upper, lower));
       }
 
       result_type operator()( bvtags::zero_extend_tag const &
         , unsigned long width
         , result_type e) {
         std::string s(width, '0');
-        Expr zeros = vc_bvConstExprFromStr(vc, s.c_str());
-        return vc_bvConcatExpr(vc, zeros, e);
+        Expr zeros = ptr(vc_bvConstExprFromStr(vc, s.c_str()));
+        return ptr(vc_bvConcatExpr(vc, zeros, e));
       }
 
       result_type operator()( bvtags::sign_extend_tag const &
         , unsigned long width
         , result_type e) {
         unsigned long const current_width = getBVLength(e);
-        return vc_bvSignExtend(vc, e, current_width + width);
+        return ptr(vc_bvSignExtend(vc, e, current_width + width));
       }
 
       result_type operator()( predtags::equal_tag const &
@@ -331,16 +332,16 @@ namespace metaSMT {
         assert( type_a == type_b );
 
         if ( type_a == BOOLEAN_TYPE && type_b == BOOLEAN_TYPE ) {
-          return vc_iffExpr(vc, a, b);
+          return ptr(vc_iffExpr(vc, a, b));
         }
 
-        return vc_eqExpr(vc, a, b);
+        return ptr(vc_eqExpr(vc, a, b));
       }
 
       result_type operator()( predtags::nequal_tag const &
                              , result_type a
                              , result_type b) {
-        return vc_notExpr(vc, operator()(predtags::equal_tag(), a, b));
+        return ptr(vc_notExpr(vc, operator()(predtags::equal_tag(), a, b)));
       }
 
       ////////////////////////
@@ -432,13 +433,13 @@ namespace metaSMT {
           , mpl::at< Opcode_Map, TagT >
           , mpl::identity< VC_F2<vc_bvAndExpr> >
           >::type opcode;
-          return opcode::exec(vc, a, b);
+          return ptr(opcode::exec(vc, a, b));
         }
         else {
           // std::cerr << "unknown operator: " << tag << std::endl;
 
           assert(false && "unknown operator");
-          return vc_falseExpr(vc);
+          return ptr(vc_falseExpr(vc));
         }
       }
 
@@ -453,6 +454,7 @@ namespace metaSMT {
       VC vc;
       Exprs assertions;
       Exprs assumptions;
+      Exprs exprs;
     }; // STP
 
   } // solver
