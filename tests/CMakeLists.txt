@@ -85,6 +85,8 @@ add_test_executable( graph_Boolector graph_Boolector.cpp
 add_test_executable( direct_Z3 direct_Z3.cpp REQUIRES Z3_FOUND )
 add_test_executable( graph_Z3 graph_Z3.cpp REQUIRES Z3_FOUND )
 
+add_test_executable( direct_STP direct_STP.cpp REQUIRES STP_FOUND )
+add_test_executable( graph_STP graph_STP.cpp REQUIRES STP_FOUND )
 
 add_test_executable( direct_MiniSAT direct_MiniSAT.cpp
   REQUIRES MiniSat_FOUND

@@ -15,6 +15,7 @@ FREE="
   aiger-20071012
   cudd-2.4.2
   minisat-git
+  stp-svn
 "
 
 NONFREE="
