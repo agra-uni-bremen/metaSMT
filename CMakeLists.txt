@@ -39,7 +39,7 @@ option(metaSMT_USE_CUDD       "try to use CUDD BDD package" on )
 option(metaSMT_USE_MiniSat    "try to use minisat SAT solver" on)  
 option(metaSMT_USE_picosat    "try to use picosat SAT solver" on)
 option(metaSMT_USE_Aiger      "try to use aiger" on)
-option(metaSMT_USE_CW         "try to use clause writers" off)
+option(metaSMT_USE_CW         "try to use clause writers" on)
 
 option(metaSMT_DOC_Doxygen    "try to build doxygen documentation" off)
 option(metaSMT_ENABLE_TESTS   "build tests (recommended)" on)
