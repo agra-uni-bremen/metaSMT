@@ -184,4 +184,18 @@ if(metaSMT_USE_SMT2)
   )
 endif(metaSMT_USE_SMT2)
 
+if(metaSMT_USE_ExprSolver)
+  add_test_executable( direct_ExprSolver_Boolector direct_ExprSolver_Boolector.cpp
+    REQUIRES Boolector_FOUND
+    LIBRARIES ${Boost_IOSTREAMS_LIBRARY})
+  add_test_executable( direct_ExprSolver_Z3 direct_ExprSolver_Z3.cpp
+    REQUIRES Z3_FOUND
+    LIBRARIES ${Boost_IOSTREAMS_LIBRARY})
+  add_test_executable( direct_ExprSolver_SMT2 direct_ExprSolver_SMT2.cpp
+    ARGS "--log_level=nothing"
+    REQUIRES Z3_EXECUTABLE Z3_IS_INTERACTIVE
+    LIBRARIES ${Boost_IOSTREAMS_LIBRARY}
+    ENVIRONMENT "Z3_EXECUTABLE=${Z3_EXECUTABLE}"
+  )
+endif(metaSMT_USE_ExprSolver)
 # vim: ts=2 sw=2 et
