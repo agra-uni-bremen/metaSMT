@@ -4,8 +4,8 @@
 
 #include <boost/proto/core.hpp>
 #include <boost/variant.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/spirit/include/qi.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
@@ -52,30 +52,29 @@ namespace metaSMT {
 
     template < typename OpTag >
     struct bv_const {
-      struct hex_to_uint {
-        unsigned value;
-
-        friend std::istream &operator>>(std::istream &in, hex_to_uint &val) {
-          return in >> std::hex >> val.value;
-        }
-
-        operator unsigned() const {
-          return value;
-        }
-      }; // hex_to_uint
-
       unsigned long value;
       unsigned long width;
       std::string str;
       bool overflow;
 
       static bv_const<bvtags::bvhex_tag> hex(std::string const &hex_string) {
-        //std::cerr << "hex " << boost::lexical_cast<hex_to_uint>(hex_string.c_str()) << '\n';
-        return bv_const<bvtags::bvhex_tag>(
-                 boost::lexical_cast<hex_to_uint>(hex_string.c_str()),
-                 4*hex_string.size(),
-                 hex_string
-               );
+        //std::cerr << "hex " << hex_string << '\n';
+        typedef std::string::const_iterator ConstIterator;
+        ConstIterator it = hex_string.begin(), ie = hex_string.end();
+
+        static boost::spirit::qi::rule< ConstIterator, unsigned long() > hex_rule
+          = boost::spirit::qi::uint_parser<unsigned long, 16, 1, 16>()
+          ;
+
+        unsigned long value;
+        if ( boost::spirit::qi::parse(it, ie, hex_rule, value) ) {
+          assert( it == ie && "Expression not completely consumed" );
+          unsigned const width = (hex_string.size() - 2)*4;
+          return bv_const<bvtags::bvhex_tag>(value, width, hex_string);
+        }
+
+        assert( false && "Unable to parse hex literal" );
+        throw std::exception();
       }
 
       static bv_const<bvtags::bvbin_tag> bin(std::string const &bin_string) {
