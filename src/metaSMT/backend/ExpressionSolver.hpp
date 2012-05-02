@@ -339,6 +339,7 @@ namespace metaSMT {
       // nary expressions
       result_type operator() ( expr::nary_expression<expr::uf_tag, proto::tag::function> e ) const {
         assert( false && "Yet not implemented" );
+        return solver(predtags::false_tag(), boost::any());
       }
 
       result_type operator() ( expr::nary_expression<expr::logic_tag, predtags::and_tag> e ) const {
