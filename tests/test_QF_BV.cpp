@@ -1920,6 +1920,123 @@ BOOST_AUTO_TEST_CASE( signed_constant_64bit )
 
 }
 
+
+BOOST_AUTO_TEST_CASE(extended_concat) {
+
+
+  // b[..] == b
+  bitvector b_1   = new_bitvector(8);
+  bitvector b_0_1 = new_bitvector(4);
+  bitvector b_1_1 = new_bitvector(4);
+  assertion(ctx, equal( concat( b_1_1, b_0_1), b_1) );
+
+  bitvector a_1   = new_bitvector(8);
+  bitvector a_0_1 = new_bitvector(4);
+  bitvector a_1_1 = new_bitvector(4);
+
+  // a[..] == a
+  assertion(ctx, equal( concat( a_1_1, a_0_1), a_1) );
+
+  bitvector z_1   = new_bitvector(16);
+  bitvector z_0_1 = new_bitvector(4);
+  bitvector z_1_1 = new_bitvector(4);
+  bitvector z_2_1 = new_bitvector(4);
+  bitvector z_3_1 = new_bitvector(4);
+
+  // z[..] == z
+  assertion(ctx, equal(
+    concat( z_3_1,
+    concat( z_2_1,
+    concat( z_1_1,
+            z_0_1))),
+    z_1
+  ));
+
+  bitvector buf_3_o_0_1 = new_bitvector(4);
+  bitvector buf_3_o_1_1 = new_bitvector(4);
+  bitvector buf_3_o_2_1 = new_bitvector(4);
+  bitvector buf_3_o_3_1 = new_bitvector(4);
+
+  // (a[..],b[..]) == buf
+  assertion(ctx, equal(
+
+    concat( a_1_1,
+    concat( a_0_1,
+    concat( b_1_1,
+            b_0_1))),
+
+    concat( buf_3_o_3_1,
+    concat( buf_3_o_2_1,
+    concat( buf_3_o_1_1,
+            buf_3_o_0_1)))
+  ));
+
+  // buf[..] == z[..]
+  assertion(ctx, equal(
+
+    concat( buf_3_o_3_1,
+    concat( buf_3_o_2_1,
+    concat( buf_3_o_1_1,
+            buf_3_o_0_1))),
+
+    concat( z_3_1,
+    concat( z_2_1,
+    concat( z_1_1,
+            z_0_1)))
+
+  ));
+
+
+  BOOST_REQUIRE( solve(ctx) );
+
+  // a = 00
+  // b = 00
+  assumption(ctx, equal(a_1, bvbin("00000000")));
+  assumption(ctx, equal(b_1, bvbin("00000000")));
+
+  BOOST_REQUIRE( solve(ctx) );
+
+  std::string av = read_value(ctx, a_1);
+  std::string bv = read_value(ctx, b_1);
+  std::string zv = read_value(ctx, z_1);
+
+  BOOST_REQUIRE_EQUAL( av, "00000000" );
+  BOOST_REQUIRE_EQUAL( bv, "00000000" );
+  BOOST_REQUIRE_EQUAL( zv, "0000000000000000" );
+
+
+  // a = 00
+  // b = 01
+  assumption(ctx, equal(a_1, bvbin("00000000")));
+  assumption(ctx, equal(b_1, bvbin("00000001")));
+
+  BOOST_REQUIRE( solve(ctx) );
+
+  std::string av2 = read_value(ctx, a_1);
+  std::string bv2 = read_value(ctx, b_1);
+  std::string zv2 = read_value(ctx, z_1);
+
+  BOOST_REQUIRE_EQUAL( av2, "00000000" );
+  BOOST_REQUIRE_EQUAL( bv2, "00000001" );
+  BOOST_REQUIRE_EQUAL( zv2, "0000000000000001" );
+
+
+  // a = 01
+  // b = 00
+  assumption(ctx, equal(a_1, bvbin("00000001")));
+  assumption(ctx, equal(b_1, bvbin("00000000")));
+
+  BOOST_REQUIRE( solve(ctx) );
+
+  std::string av3 = read_value(ctx, a_1);
+  std::string bv3 = read_value(ctx, b_1);
+  std::string zv3 = read_value(ctx, z_1);
+
+  BOOST_REQUIRE_EQUAL( av3, "00000001" );
+  BOOST_REQUIRE_EQUAL( bv3, "00000000" );
+  BOOST_REQUIRE_EQUAL( zv3, "0000000100000000" );
+}
+
 BOOST_AUTO_TEST_SUITE_END() //QF_BV
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
