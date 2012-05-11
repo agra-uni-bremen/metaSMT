@@ -896,7 +896,6 @@ namespace metaSMT {
           bv_result bv1 = boost::apply_visitor(bv_getter(), e1);
           bv_result bv2 = boost::apply_visitor(bv_getter(), e2);
           bv_result ret(bv1.size()+bv2.size());
-          typename bv_result::iterator iter = ret.begin();
           std::copy(bv2.begin(), bv2.end(), ret.begin() );
           std::copy(bv1.begin(), bv1.end(), ret.begin() + bv2.size() );
           return ret;
