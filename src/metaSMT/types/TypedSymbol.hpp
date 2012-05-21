@@ -3,6 +3,7 @@
 #include <boost/variant/variant.hpp>
 #include "../frontend/Logic.hpp"
 #include "../frontend/QF_BV.hpp"
+#include "../frontend/Array.hpp"
 #include "Types.hpp"
 
 namespace metaSMT {
@@ -13,8 +14,8 @@ namespace metaSMT {
      * \brief symbols with type information
      *
      * TypedSymbols annotate metaSMT's primitive symbols (predicate,
-     * bitvector, and Context::result_type) with additional type
-     * information (Boolean or BitVector).
+     * bitvector, array, and Context::result_type) with additional
+     * type information (Boolean, BitVector, or Array).
      *
      * The type information is especially useful when expressions
      * become evaluated and stored as Context::result_types.
@@ -43,6 +44,7 @@ namespace metaSMT {
      */
 
     namespace bv = logic::QF_BV;
+    namespace ary = ::metaSMT::logic::Array;
 
     /* Forward TypedSymbol*/
     template < typename Context >
@@ -55,9 +57,10 @@ namespace metaSMT {
       struct Expr {
         typedef boost::variant<
           logic::predicate
-          , bv::bitvector
-          , typename Context::result_type
-          > type;
+        , bv::bitvector
+        , ary::array
+        , typename Context::result_type
+        > type;
       }; /* Expr */
 
       template < typename Context >
@@ -75,6 +78,11 @@ namespace metaSMT {
 
         typename Context::result_type
         operator()(bv::bitvector const &expr) const {
+          return evaluate(ctx_, expr);
+        }
+
+        typename Context::result_type
+        operator()(ary::array const &expr) const {
           return evaluate(ctx_, expr);
         }
 
@@ -156,6 +164,24 @@ namespace metaSMT {
           return evaluate(ctx_, s_.eval(ctx_));
         }
 
+        typename Context::result_type operator()(type::Array const &a) const {
+          unsigned const index_width = a.index_width;
+          unsigned const max_index = 1 << index_width;
+          typename Context::result_type r =
+            evaluate(ctx_, select(s_.eval(ctx_), bv::bvuint(0, index_width)));
+          for ( unsigned long ul = 1; ul < max_index; ++ul ) {
+            r = evaluate(ctx_, concat(r, select(s_.eval(ctx_), bv::bvuint(ul, index_width))));
+          }
+          return r;
+        }
+
+        // Fallback
+        template < typename T >
+        typename Context::result_type operator()(T const &t) const {
+          assert( false );
+          return evaluate(ctx_, False);
+        }
+
         Context &ctx_;
         TypedSymbol<Context> &s_;
       }; // convert_to_bitvector_visitor
@@ -189,8 +215,21 @@ namespace metaSMT {
         }
 
         typename Context::result_type operator()(BitVector const &bv) const {
-          return evaluate(ctx_, logic::nequal(s_.eval(ctx_),
-                                              bv::bvuint(0, bv.width)));
+          return evaluate(ctx_,
+            logic::nequal(s_.eval(ctx_), bv::bvuint(0, bv.width)));
+        }
+
+        typename Context::result_type operator()(type::Array const &a) const {
+          unsigned const w = a.elem_width*(1 << a.index_width);
+          return evaluate(ctx_,
+            logic::nequal(to_bitvector(ctx_, s_), bv::bvuint(0, w)));
+        }
+
+        // Fallback
+        template < typename T >
+        typename Context::result_type operator()(T const &t) const {
+          assert( false );
+          return evaluate(ctx_, False);
         }
 
         Context &ctx_;
@@ -228,6 +267,13 @@ namespace metaSMT {
         , type(BitVector(w))
       {}
 
+      TypedSymbol(ary::array arr,
+                  unsigned const elem_width,
+                  unsigned const index_width)
+        : value(arr)
+        , type(type::Array(elem_width, index_width))
+      {}
+
       TypedSymbol(result_type s,
                   any_type ty)
         : value(s)
@@ -258,8 +304,13 @@ namespace metaSMT {
         return detail::is_value<Context, bv::bitvector>( value );
       }
 
+      // value == array && type == Array
+      inline bool isPrimitiveArray() const {
+        return detail::is_value<Context, ary::array>( value );
+      }
+
       inline bool isPrimitive() const {
-        return isPrimitiveBool() || isPrimitiveBitVector();
+        return isPrimitiveBool() || isPrimitiveBitVector() || isPrimitiveArray();
       }
 
       inline bool isExpression() const {
@@ -272,6 +323,10 @@ namespace metaSMT {
 
       inline bool isBitVector() const {
         return detail::is_type<BitVector>( type );
+      }
+
+      inline bool isArray() const {
+        return detail::is_type<type::Array>( type );
       }
 
       template < typename Type >
@@ -293,11 +348,18 @@ namespace metaSMT {
         if (isBool()) {
           return evaluate(ctx, bv::zero_extend(width-1,
                                            detail::to_bitvector(ctx, *this)));
-        } else {
+        }
+        else if (isBitVector()) {
           BitVector bvtype = getType(BitVector());
           assert(width > bvtype.width);
           return evaluate(ctx, bv::zero_extend(width-bvtype.width,
                                            detail::to_bitvector(ctx, *this)));
+        }
+        else {
+          type::Array arraytype = getType(type::Array());
+          unsigned const w = arraytype.elem_width*(1 << arraytype.index_width);
+          assert(width > w);
+          return evaluate(ctx, bv::zero_extend(width-w, detail::to_bitvector(ctx, *this)));
         }
       }
 

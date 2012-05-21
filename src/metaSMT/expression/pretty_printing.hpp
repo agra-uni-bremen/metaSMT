@@ -14,6 +14,11 @@ namespace metaSMT {
     struct type_visitor : boost::static_visitor<std::string> {
       type_visitor() {}
 
+      std::string operator() (type::Array const &arg) const {
+        return boost::str( boost::format("(Array (_ BitVec %u) (_ BitVec %u))")
+                           % arg.index_width % arg.elem_width );
+      }
+
       std::string operator() (type::BitVector const &arg) const {
         return boost::str( boost::format("(_ BitVec %u)") % arg.width );
       }
