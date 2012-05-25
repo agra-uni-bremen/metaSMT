@@ -362,6 +362,7 @@ namespace metaSMT {
     struct extract_expression {
       unsigned long from;
       unsigned long width;
+      unsigned long to;
       logic_expression expr;
 
       extract_expression( unsigned long from,
@@ -369,6 +370,7 @@ namespace metaSMT {
                           logic_expression const &expr )
         : from( from )
         , width( width )
+        , to( from-width )
         , expr( expr )
       {}
 
