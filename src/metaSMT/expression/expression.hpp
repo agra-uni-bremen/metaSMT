@@ -9,12 +9,12 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
-#include <metaSMT/frontend/Logic.hpp>
-#include <metaSMT/frontend/QF_BV.hpp>
-#include <metaSMT/frontend/Array.hpp>
-#include <metaSMT/frontend/QF_UF.hpp>
-#include <metaSMT/support/SMT_Tag_Mapping.hpp>
-#include <metaSMT/support/boost_mpl_vector60.hpp>
+#include "../frontend/Logic.hpp"
+#include "../frontend/QF_BV.hpp"
+#include "../frontend/Array.hpp"
+#include "../frontend/QF_UF.hpp"
+#include "../support/SMT_Tag_Mapping.hpp"
+#include "../support/boost_mpl_vector60.hpp"
 
 namespace metaSMT {
   namespace expression {

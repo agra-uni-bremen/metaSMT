@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metaSMT/tags/Logics.hpp"
+#include "../tags/Logics.hpp"
 
 #include "disable_warnings.hpp"
 #include <boost/graph/graph_traits.hpp>
