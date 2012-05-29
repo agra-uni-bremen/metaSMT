@@ -58,8 +58,14 @@ namespace metaSMT {
         return Z3_mk_bool_sort(z3_);
       }
 
+      Z3_sort operator() (type::Array const &arg) const {
+        Z3_sort index_type = Z3_mk_bv_sort(z3_, arg.index_width);
+        Z3_sort elem_type = Z3_mk_bv_sort(z3_, arg.elem_width);
+        return Z3_mk_array_sort(z3_, index_type, elem_type);
+      }
+
       Z3_context &z3_;
-    };
+    }; // domain_type_visitor
 
     /**
      * \ingroup Backend
