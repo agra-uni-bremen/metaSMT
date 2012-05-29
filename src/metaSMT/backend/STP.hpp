@@ -121,10 +121,12 @@ namespace metaSMT {
             return result_wrapper(str);
           }
           break;
+        case ARRAY_TYPE:
         case UNKNOWN_TYPE:
           assert( false );
           break;
         }
+        return result_wrapper( false );
       }
 
       // predtags
@@ -351,6 +353,7 @@ namespace metaSMT {
       template <typename TagT>
       result_type operator() (TagT tag, boost::any args ) {
         assert( false );
+        return ptr(vc_falseExpr(vc));
       }
 
       template< result_type (*FN) (VC, Expr, Expr) >
@@ -446,6 +449,7 @@ namespace metaSMT {
       template <typename TagT>
       result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
         assert( false );
+        return ptr(vc_falseExpr(vc));
       }
 
       // pseudo command
