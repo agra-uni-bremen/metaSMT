@@ -43,7 +43,7 @@ namespace metaSMT {
      * @{
      */
 
-    namespace bv = logic::QF_BV;
+    namespace bv = ::metaSMT::logic::QF_BV;
     namespace ary = ::metaSMT::logic::Array;
 
     /* Forward TypedSymbol*/
@@ -168,9 +168,9 @@ namespace metaSMT {
           unsigned const index_width = a.index_width;
           unsigned const max_index = 1 << index_width;
           typename Context::result_type r =
-            evaluate(ctx_, select(s_.eval(ctx_), bv::bvuint(0, index_width)));
+            evaluate(ctx_, ary::select(s_.eval(ctx_), bv::bvuint(0, index_width)));
           for ( unsigned long ul = 1; ul < max_index; ++ul ) {
-            r = evaluate(ctx_, concat(r, select(s_.eval(ctx_), bv::bvuint(ul, index_width))));
+            r = evaluate(ctx_, bv::concat(r, ary::select(s_.eval(ctx_), bv::bvuint(ul, index_width))));
           }
           return r;
         }
@@ -179,7 +179,7 @@ namespace metaSMT {
         template < typename T >
         typename Context::result_type operator()(T const &t) const {
           assert( false );
-          return evaluate(ctx_, False);
+          return evaluate(ctx_, metaSMT::logic::False);
         }
 
         Context &ctx_;
@@ -229,7 +229,7 @@ namespace metaSMT {
         template < typename T >
         typename Context::result_type operator()(T const &t) const {
           assert( false );
-          return evaluate(ctx_, False);
+          return evaluate(ctx_, logic::False);
         }
 
         Context &ctx_;
