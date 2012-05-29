@@ -37,14 +37,14 @@ BOOST_FUSION_ADAPT_TPL_STRUCT(
   (ReturnTag)(OpTag),
   (metaSMT::expression::unary_expression)(ReturnTag)(OpTag),
   (metaSMT::expression::logic_expression,expr)
-);
+)
 
 BOOST_FUSION_ADAPT_TPL_STRUCT(
   (ReturnTag)(OpTag),
   (metaSMT::expression::binary_expression)(ReturnTag)(OpTag),
   (metaSMT::expression::logic_expression,left)
   (metaSMT::expression::logic_expression,right)
-);
+)
 
 BOOST_FUSION_ADAPT_TPL_STRUCT(
   (ReturnTag)(OpTag),
@@ -52,36 +52,36 @@ BOOST_FUSION_ADAPT_TPL_STRUCT(
   (metaSMT::expression::logic_expression,expr1)
   (metaSMT::expression::logic_expression,expr2)
   (metaSMT::expression::logic_expression,expr3)
-);
+)
 
 BOOST_FUSION_ADAPT_TPL_STRUCT(
   (ReturnTag)(OpTag),
   (metaSMT::expression::nary_expression)(ReturnTag)(OpTag),
   (std::vector<metaSMT::expression::logic_expression>,exprs)
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::logic::predicate,
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::logic::QF_BV::bitvector,
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::logic::Array::array,
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::logic::QF_UF::Uninterpreted_Function,
-);
+)
 
 BOOST_FUSION_ADAPT_TPL_STRUCT(
   (OpTag),
   (metaSMT::expression::extend_expression)(OpTag),
   (unsigned long,by)
   (metaSMT::expression::logic_expression,expr)
-);
+)
 
 BOOST_FUSION_ADAPT_TPL_STRUCT(
   (OpTag),
@@ -89,20 +89,20 @@ BOOST_FUSION_ADAPT_TPL_STRUCT(
   (unsigned long,from)
   (unsigned long,to)
   (metaSMT::expression::logic_expression,expr)
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::expression::select_expression,
   (metaSMT::expression::logic_expression,array)
   (metaSMT::expression::logic_expression,index)
-);
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
   metaSMT::expression::store_expression,
   (metaSMT::expression::logic_expression,array)
   (metaSMT::expression::logic_expression,index)
   (metaSMT::expression::logic_expression,value)
-);
+)
 
 namespace metaSMT {
   namespace expression {
