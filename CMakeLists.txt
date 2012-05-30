@@ -23,6 +23,7 @@ SET(metaSMT_VERSION 4)
 include(cmake/get_git_version.cmake)
 
 include(cmake/build_type.cmake)
+include(cmake/default_compliler_flags.cmake)
 include(cmake/config_file.cmake)
 
 ###  
