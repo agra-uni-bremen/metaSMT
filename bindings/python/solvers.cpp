@@ -207,17 +207,17 @@ private:
   map _map;
 };
 
-struct set_symbol_table_visitor : public boost::static_visitor<unsigned>
+struct set_symbol_table_visitor : public boost::static_visitor<void>
 {
   explicit set_symbol_table_visitor( smt2_symbol_table& table ) : table( table ) {}
 
-  unsigned operator()( boost::shared_ptr<smt2_solver>& s ) const
+  void operator()( boost::shared_ptr<smt2_solver>& s ) const
   {
     metaSMT::set_symbol_table( *s, table );
   }
 
   template<typename T>
-  unsigned operator()( T& s ) const
+  void operator()( T& s ) const
   {
     // do nothing
   }
