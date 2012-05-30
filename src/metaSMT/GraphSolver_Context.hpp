@@ -220,7 +220,7 @@ namespace metaSMT {
     {
       template<typename T>
       result_type operator() (T) const {
-        return result_wrapper(boost::logic::indeterminate);
+        return result_wrapper(&boost::logic::indeterminate);
       }
       
       result_type operator() (logic::QF_BV::tag::var_tag const & var) const {

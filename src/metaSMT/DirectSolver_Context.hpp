@@ -131,7 +131,7 @@ namespace metaSMT {
         return SolverContext::read_value( boost::proto::eval(var, *this) );
       } else {
         // unknown variable
-        return result_wrapper(boost::logic::indeterminate);
+        return result_wrapper(&boost::logic::indeterminate);
       }
     }
 
@@ -154,10 +154,8 @@ namespace metaSMT {
         return SolverContext::read_value( boost::proto::eval(var, *this) );
       } else {
         // unknown variable
-        std::vector<boost::logic::tribool> ret(tag.width);
-        for (unsigned i = 0; i < tag.width; ++i) {
-          ret[i] = boost::logic::indeterminate;
-        }
+        std::vector<boost::logic::tribool> ret ( tag.width
+            ,  boost::logic::indeterminate);
         return result_wrapper(ret);
       }
     }
