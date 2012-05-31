@@ -147,21 +147,21 @@ if(Z3_FOUND)
     set(Z3_LIBRARIES ${Z3_LIBRARIES} gomp)
   endif()
 
-  include(CheckCXXSourceCompiles)
+  include(CheckCXXSourceRuns)
 
   set(CMAKE_REQUIRED_INCLUDES ${Z3_INCLUDE_DIR})
   set(CMAKE_REQUIRED_LIBRARIES ${Z3_LIBRARIES})
 
-  check_CXX_source_compiles("#include <z3.h>
+  check_CXX_source_runs("#include <z3.h>
 int main(int argc, const char *argv[])
 {
   Z3_config cfg;
   cfg = Z3_mk_config();
 	return 0;
 }"
-  Z3_COMPILES)
+  Z3_WORKS)
 
-  if( NOT Z3_COMPILES )
+  if( NOT Z3_WORKS )
     message(WARNING "Z3 backend found not working. Disabling Z3.")
     set( Z3_FOUND 0)
   endif()
