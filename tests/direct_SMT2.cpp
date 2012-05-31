@@ -8,7 +8,7 @@ using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef DirectSolver_Context< Stack< SMT2 > > ContextType;
+  typedef DirectSolver_Context< SMT2 > ContextType;
   ContextType ctx ;
 };
 
@@ -16,6 +16,7 @@ struct Solver_Fixture
 #include "test_QF_BV.cpp"
 #include "test_QF_UF.cpp"
 #include "test_annotate.cpp"
+#include "test_stack.cpp"
 #include "test_Array.cpp"
 //#include "test_group.cpp"
 //#include "test_unsat.cpp"

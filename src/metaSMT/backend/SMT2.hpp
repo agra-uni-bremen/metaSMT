@@ -33,11 +33,14 @@
 #include <boost/algorithm/string/replace.hpp>
 
 namespace metaSMT {
+  struct stack_pop;
+  struct stack_push;
   struct set_symbol_table_cmd;
   struct simplify_cmd;
   struct write_comment;
 
   namespace features {
+    struct stack_api;
     struct comment_api;
   } // features
 
@@ -242,6 +245,14 @@ namespace metaSMT {
 
       void assumption( result_type e ) {
         assumptions_.push_back( e );
+      }
+
+      void command( stack_push const &, unsigned howmany ) {
+        out_ << "(push " << howmany << ")\n";
+      }
+
+      void command( stack_pop const &, unsigned howmany ) {
+        out_ << "(pop " << howmany << ")\n";
       }
 
       bool solve() {
@@ -691,6 +702,10 @@ namespace metaSMT {
   } // solver
 
   namespace features {
+    template<>
+    struct supports< solver::SMT2, features::stack_api >
+    : boost::mpl::true_ {};
+
     template<>
     struct supports< solver::SMT2, features::comment_api >
     : boost::mpl::true_ {};

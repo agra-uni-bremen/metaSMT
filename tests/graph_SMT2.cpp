@@ -8,7 +8,7 @@ using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef GraphSolver_Context< Stack< SMT2 > > ContextType;
+  typedef GraphSolver_Context< SMT2 > ContextType;
   ContextType ctx ;
 };
 
