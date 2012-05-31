@@ -1,13 +1,14 @@
 #define BOOST_TEST_MODULE direct_SMT2
 #define BOOST_VARIANT_VISITATION_UNROLLING_LIMIT 60
 #include <metaSMT/DirectSolver_Context.hpp>
+#include <metaSMT/API/Stack.hpp>
 #include <metaSMT/backend/SMT2.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef DirectSolver_Context< SMT2 > ContextType;
+  typedef DirectSolver_Context< Stack< SMT2 > > ContextType;
   ContextType ctx ;
 };
 

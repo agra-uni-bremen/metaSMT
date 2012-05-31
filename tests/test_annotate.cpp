@@ -1,6 +1,7 @@
 #include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/API/Comment.hpp>
 #include <metaSMT/API/SymbolTable.hpp>
+#include <metaSMT/API/Stack.hpp>
 #include <boost/test/unit_test.hpp>
 
 // lazy headers
@@ -35,6 +36,20 @@ BOOST_AUTO_TEST_CASE( comment_t )
   assertion( ctx, x);
   comment( ctx, "finally call solve");
   BOOST_REQUIRE( solve(ctx) );
+}
+
+BOOST_AUTO_TEST_CASE( stacked_comments ) {
+  predicate x = new_variable();
+  comment( ctx, "before push" );
+  push( ctx );
+  comment( ctx, "after push" );
+  assertion ( ctx, False );
+  BOOST_REQUIRE ( !solve(ctx) );
+  BOOST_REQUIRE ( !solve(ctx) );
+  comment( ctx, "before pop" );
+  pop( ctx );
+  comment( ctx, "after pop" );
+  BOOST_REQUIRE ( solve(ctx) );
 }
 
 BOOST_AUTO_TEST_CASE( symbol_table )

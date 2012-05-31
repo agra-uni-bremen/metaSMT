@@ -2,12 +2,13 @@
 #define BOOST_VARIANT_VISITATION_UNROLLING_LIMIT 60
 #include <metaSMT/GraphSolver_Context.hpp>
 #include <metaSMT/backend/SMT2.hpp>
+#include <metaSMT/API/Stack.hpp>
 
 using namespace metaSMT::solver;
 using namespace metaSMT;
 struct Solver_Fixture
 {
-  typedef GraphSolver_Context< SMT2 > ContextType;
+  typedef GraphSolver_Context< Stack< SMT2 > > ContextType;
   ContextType ctx ;
 };
 
