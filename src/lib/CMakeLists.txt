@@ -1,4 +1,7 @@
-add_library(metaSMT STATIC _var_id.cpp)
+add_library(metaSMT STATIC
+  _var_id.cpp
+  expression_generator.cpp
+)
 target_link_libraries(metaSMT ${metaSMT_LIBS})
 set_target_properties(metaSMT PROPERTIES COMPILE_FLAGS "-fPIC")
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "../support/DefaultSymbolTable.hpp"
 #include "expression.hpp"
-#include "print_expression.hpp"
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
 
@@ -26,6 +25,7 @@ namespace metaSMT {
       std::string operator() (type::Boolean const &arg) const {
         return "Bool";
       }
+
     }; // type_visitor
 
     /**
@@ -142,17 +142,5 @@ namespace metaSMT {
                                boost::function<std::string(unsigned)> const &table ) {
       boost::apply_visitor( collect_declaration_visitor(decls, table), expr );
     }
-
-    inline std::string to_string( logic_expression const &expr,
-                                  boost::function<std::string(unsigned)> const &table ) {
-      typedef std::back_insert_iterator<std::string> output_iterator_type;
-      std::string s;
-      output_iterator_type out_it(s);
-      grammar<output_iterator_type> g(table);
-      bool r = karma::generate_delimited(out_it, g, spirit::ascii::space, expr);
-      boost::trim(s);
-      return s;
-    }
-
   } // expression
 } // metaSMT
