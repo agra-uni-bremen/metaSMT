@@ -8,15 +8,12 @@
 #include <metaSMT/API/SymbolTable.hpp>
 #include <metaSMT/API/Simplify.hpp>
 
-#include <metaSMT/expression/expression.hpp>
-
 using namespace std;
 using namespace metaSMT;
 using namespace metaSMT::solver;
 using namespace metaSMT::logic;
 using namespace metaSMT::logic::QF_BV;
 using namespace metaSMT::logic::QF_UF;
-using namespace metaSMT::expression;
 namespace proto = boost::proto;
 using boost::dynamic_bitset;
 

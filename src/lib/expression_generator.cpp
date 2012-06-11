@@ -1,4 +1,4 @@
-#define BOOST_VARIANT_VISITATION_UNROLLING_LIMIT 60
+#include "../metaSMT/expression/default_visitation_unrolling_limit.hpp"
 #include "../metaSMT/expression/print_expression_generic.hpp"
 
 namespace metaSMT {

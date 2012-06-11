@@ -1,3 +1,4 @@
+#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/backend/SMT2.hpp>

@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE direct_SMT2
-#define BOOST_VARIANT_VISITATION_UNROLLING_LIMIT 60
+#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/API/Stack.hpp>
 #include <metaSMT/backend/SMT2.hpp>
