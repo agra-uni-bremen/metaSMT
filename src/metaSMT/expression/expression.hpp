@@ -133,6 +133,10 @@ namespace metaSMT {
       proto::terminal<bvtags::bit1_tag>::type
     > bit1_const;
 
+#if BOOST_VARIANT_VISITATION_UNROLLING_LIMIT < 56
+#warning "BOOST_VARIANT_VISITATION_UNROLLING_LIMIT is too small! Visiting logic_expressions may unexpectedly fail."
+#endif
+
     typedef boost::mpl::vector56<
       // constants
         bool
