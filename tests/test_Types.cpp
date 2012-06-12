@@ -8,6 +8,7 @@ using namespace std;
 using namespace metaSMT;
 using namespace metaSMT::logic;
 using namespace metaSMT::logic::QF_BV;
+using namespace metaSMT::logic::Array;
 using namespace metaSMT::type;
 namespace proto = boost::proto;
 
@@ -160,17 +161,22 @@ BOOST_AUTO_TEST_CASE( conversion ) {
   unsigned char const w = 32;
 
   predicate p_primitive = new_variable();
-  bitvector bv_primitive = new_bitvector(w);
-
   TypedSymbol<ContextType> p(p_primitive);
-  TypedSymbol<ContextType> bv(bv_primitive, w);
 
-  metaSMT::assertion(ctx, logic::equal(type::detail::to_bool(ctx, bv), p_primitive));
-  metaSMT::assertion(ctx, logic::equal(zero_extend(w-1, type::detail::to_bitvector(ctx, p)), bv_primitive));
+  bitvector bv_primitive_zext = new_bitvector(w);
+  TypedSymbol<ContextType> bv_zext(bv_primitive_zext, w);
+  metaSMT::assertion(ctx, logic::equal(type::detail::to_bool(ctx, bv_zext), p_primitive));
+  metaSMT::assertion(ctx, logic::equal(zero_extend(w-1, type::detail::to_bitvector(ctx, p)), bv_primitive_zext));
+  metaSMT::assertion(ctx, logic::equal(bv_zext.toBool(ctx), p_primitive));
+  metaSMT::assertion(ctx, logic::equal(p.toBV(bv::tag::zero_extend_tag(), ctx, w), bv_primitive_zext));
+  solve( ctx );
 
-  metaSMT::assertion(ctx, logic::equal(bv.toBool(ctx), p_primitive));
-  metaSMT::assertion(ctx, logic::equal(p.toBV(ctx, w), bv_primitive));
-
+  bitvector bv_primitive_sext = new_bitvector(w);
+  TypedSymbol<ContextType> bv_sext(bv_primitive_sext, w);
+  metaSMT::assertion(ctx, logic::equal(type::detail::to_bool(ctx, bv_sext), p_primitive));
+  metaSMT::assertion(ctx, logic::equal(zero_extend(w-1, type::detail::to_bitvector(ctx, p)), bv_primitive_sext));
+  metaSMT::assertion(ctx, logic::equal(bv_sext.toBool(ctx), p_primitive));
+  metaSMT::assertion(ctx, logic::equal(p.toBV(bv::tag::sign_extend_tag(), ctx, w), bv_primitive_sext));
   solve( ctx );
 }
 
@@ -191,8 +197,7 @@ BOOST_AUTO_TEST_CASE( array_conversion ) {
   unsigned char const offsett = 32;
   unsigned char const ext_size = (1 << index_width)*elem_width+offsett;
   bitvector bv2 = new_bitvector(ext_size);
-  metaSMT::assertion(ctx, logic::equal(bv2, a.toBV(ctx, ext_size)));
-
+  metaSMT::assertion(ctx, logic::equal(bv2, a.toBV(bv::tag::zero_extend_tag(), ctx, ext_size)));
   BOOST_REQUIRE( solve( ctx ) );
 }
 

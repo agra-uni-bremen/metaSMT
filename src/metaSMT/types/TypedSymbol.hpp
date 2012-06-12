@@ -4,6 +4,7 @@
 #include "../frontend/Logic.hpp"
 #include "../frontend/QF_BV.hpp"
 #include "../frontend/Array.hpp"
+#include "../tags/QF_BV.hpp"
 #include "Types.hpp"
 
 namespace metaSMT {
@@ -52,7 +53,6 @@ namespace metaSMT {
 
     /** \cond **/
     namespace detail {
-
       template < typename Context >
       struct Expr {
         typedef boost::variant<
@@ -290,7 +290,7 @@ namespace metaSMT {
                 type == other.type);
       }
 
-      typename Context::result_type eval(Context &ctx) const {
+      result_type eval(Context &ctx) const {
         return detail::to_result_type(ctx, value);
       }
 
@@ -314,7 +314,7 @@ namespace metaSMT {
       }
 
       inline bool isExpression() const {
-        return detail::is_value<Context,typename Context::result_type>( value );
+        return detail::is_value<Context,result_type>( value );
       }
 
       inline bool isBool() const {
@@ -339,11 +339,12 @@ namespace metaSMT {
         return boost::get<Type>(type);
       }
 
-      inline typename Context::result_type toBV(Context &ctx) {
+      inline result_type toBV(Context &ctx) {
         return detail::to_bitvector(ctx, *this);
       }
 
-      inline typename Context::result_type toBV(Context &ctx,
+      inline result_type toBV(bv::tag::zero_extend_tag const &,
+                                                Context &ctx,
                                                 unsigned const width) {
         if (isBool()) {
           return evaluate(ctx, bv::zero_extend(width-1,
@@ -363,7 +364,28 @@ namespace metaSMT {
         }
       }
 
-      inline typename Context::result_type toBool(Context &ctx) {
+      inline result_type toBV(bv::tag::sign_extend_tag const &,
+                                                Context &ctx,
+                                                unsigned const width) {
+        if (isBool()) {
+          return evaluate(ctx, bv::sign_extend(width-1,
+                                           detail::to_bitvector(ctx, *this)));
+        }
+        else if (isBitVector()) {
+          BitVector bvtype = getType(BitVector());
+          assert(width > bvtype.width);
+          return evaluate(ctx, bv::sign_extend(width-bvtype.width,
+                                           detail::to_bitvector(ctx, *this)));
+        }
+        else {
+          type::Array arraytype = getType(type::Array());
+          unsigned const w = arraytype.elem_width*(1 << arraytype.index_width);
+          assert(width > w);
+          return evaluate(ctx, bv::sign_extend(width-w, detail::to_bitvector(ctx, *this)));
+        }
+      }
+
+      inline result_type toBool(Context &ctx) {
         return detail::to_bool(ctx, *this);
       }
 
