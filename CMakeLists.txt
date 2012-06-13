@@ -287,7 +287,7 @@ set(CPACK_SOURCE_GENERATOR TGZ TBZ2)
 set(CPACK_SOURCE_IGNORE_FILES
 "/\\\\.git"
 "/deps"
-"/build"
+"/build.*/"
 "/root"
 )
 include(CPack)
