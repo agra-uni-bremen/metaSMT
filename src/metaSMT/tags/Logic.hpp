@@ -58,7 +58,6 @@ namespace metaSMT {
       typedef boost::mpl::vector<
           false_tag
         , true_tag
-        , bool_tag
         , not_tag
         , equal_tag
         , nequal_tag

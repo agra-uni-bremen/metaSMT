@@ -4,6 +4,7 @@
 #include "support/SMT_Graph.hpp"
 #include "support/dot_SMT_Graph.hpp"
 #include "support/SMT_File_Writer.hpp"
+#include "API/BoolEvaluator.hpp"
 
 #include <boost/proto/core.hpp>
 #include <boost/proto/context.hpp>
@@ -132,8 +133,15 @@ namespace metaSMT {
       return ret;
     }
 
-    template<typename TagT>
-    result_type operator() (proto::tag::terminal, TagT tag ) 
+    template < typename TagT >
+    typename boost::enable_if< Evaluator<TagT>, result_type >::type
+    operator() (proto::tag::terminal, TagT tag) {
+      return Evaluator<TagT>::eval(*this, tag);
+    }
+
+    template < typename TagT >
+    typename boost::disable_if< Evaluator<TagT>, result_type >::type
+    operator() (proto::tag::terminal, TagT tag )
     {
       Tag t1 (tag);
       Op0LookupT::const_iterator ite = _op0Lookup.find( t1 );
@@ -283,19 +291,6 @@ namespace metaSMT {
       return ret;
     }
     
-    template< typename Expr1>
-    result_type operator() (logic::tag::bool_tag tag
-        , Expr1 value
-    )
-    {
-      const bool val = proto::value(value);
-      if (val) {
-        return (*this)(proto::tag::terminal(), logic::tag::true_tag() );
-      } else {
-        return (*this)(proto::tag::terminal(), logic::tag::false_tag() );
-      }
-    }
-
     template< typename Expr1>
     result_type operator() (logic::QF_BV::tag::bvhex_tag tag
         , Expr1 value

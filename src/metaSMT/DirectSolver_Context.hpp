@@ -8,6 +8,7 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/BoolEvaluator.hpp"
 
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -15,9 +16,7 @@
 #include <boost/proto/context.hpp>
 #include <boost/tr1/unordered_map.hpp>
 
-
 namespace metaSMT {
-
   /**
    * @brief direct Solver integration
    *
@@ -43,8 +42,8 @@ namespace metaSMT {
       const unsigned long val   = proto::value(value);
       const unsigned long width = proto::value(bw);
 
-      return  SolverContext::operator() ( tag, 
-        boost::any(boost::make_tuple(val, width)) 
+      return SolverContext::operator() ( tag,
+        boost::any(boost::make_tuple(val, width))
       );
     }
 
@@ -95,19 +94,6 @@ namespace metaSMT {
         result_type ret = SolverContext::operator() ( tag, boost::any() );
         _variables.insert( std::make_pair(tag.id, ret) );
         return ret;
-      }
-    }
-
-    template< typename Expr1>
-    result_type operator() (logic::tag::bool_tag tag
-        , Expr1 value
-    )
-    {
-      const bool val = proto::value(value);
-      if (val) {
-        return SolverContext::operator() ( logic::tag::true_tag(), boost::any() );
-      } else {
-        return SolverContext::operator() ( logic::tag::false_tag(), boost::any() );
       }
     }
 
@@ -247,13 +233,9 @@ namespace metaSMT {
       return SolverContext::operator() ( t, boost::any() );
     }
 
-    template< typename Tag>
-    result_type operator() (boost::proto::tag::terminal, Tag t) {
-      return SolverContext::operator() ( t, boost::any());
-    }
-
     template< typename Tag, typename Expr1>
-    result_type operator() (Tag t, Expr1 e1) {
+    result_type
+    operator() (Tag t, Expr1 e1) {
       return SolverContext::operator() ( t,
           boost::proto::eval(e1, *this)
       );
@@ -291,6 +273,18 @@ namespace metaSMT {
       return r;
     }
 
+    template < typename Tag >
+    typename boost::enable_if< Evaluator<Tag>, result_type >::type
+    operator() (boost::proto::tag::terminal, Tag t) {
+      return Evaluator<Tag>::eval(*this, t);
+    }
+
+    template < typename Tag >
+    typename boost::disable_if< Evaluator<Tag>, result_type >::type
+    operator() (boost::proto::tag::terminal, Tag t) {
+      return SolverContext::operator()( t, boost::any() );
+    }
+
     void command( assertion_cmd const &, result_type e) {
       SolverContext::assertion(e);
     }
@@ -323,9 +317,12 @@ namespace metaSMT {
   }
 
   template <typename SolverType, typename Expr>
-	typename boost::disable_if<
-    typename boost::is_same<Expr, typename DirectSolver_Context<SolverType>::result_type>::type,
-    typename DirectSolver_Context<SolverType>::result_type
+  typename boost::disable_if<
+    typename boost::is_same<
+      Expr
+    , typename DirectSolver_Context<SolverType>::result_type
+    >::type
+  , typename DirectSolver_Context<SolverType>::result_type
   >::type
   evaluate( DirectSolver_Context<SolverType> & ctx, Expr const & e ) {
     return boost::proto::eval(e, ctx);

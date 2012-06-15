@@ -372,28 +372,28 @@ BOOST_AUTO_TEST_CASE( read_result_type ) {
 
 BOOST_AUTO_TEST_CASE( predicate_constant )
 {
-  assumption( ctx, equal(True, predicate_const(true)) );
+  assumption( ctx, equal(True, true) );
   BOOST_REQUIRE( solve(ctx) );
 
-  assumption( ctx, nequal(True, predicate_const(true)) );
+  assumption( ctx, nequal(True, true) );
   BOOST_REQUIRE( !solve(ctx) );
 
-  assumption( ctx, equal(False, predicate_const(false)) );
+  assumption( ctx, equal(False, false) );
   BOOST_REQUIRE( solve(ctx) );
 
-  assumption( ctx, nequal(False, predicate_const(false)) );
+  assumption( ctx, nequal(False, false) );
   BOOST_REQUIRE( !solve(ctx) );
 
-  assumption( ctx, equal(True, predicate_const(false)) );
+  assumption( ctx, equal(True, false) );
   BOOST_REQUIRE( !solve(ctx) );
 
-  assumption( ctx, nequal(True, predicate_const(false)) );
+  assumption( ctx, nequal(True, false) );
   BOOST_REQUIRE( solve(ctx) );
 
-  assumption( ctx, equal(False, predicate_const(true)) );
+  assumption( ctx, equal(False, true) );
   BOOST_REQUIRE( !solve(ctx) );
 
-  assumption( ctx, nequal(False, predicate_const(true)) );
+  assumption( ctx, nequal(False, true) );
   BOOST_REQUIRE( solve(ctx) );
 }
 

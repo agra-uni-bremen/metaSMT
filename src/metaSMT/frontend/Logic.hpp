@@ -24,7 +24,6 @@ namespace metaSMT {
       , proto::or_<
           proto::terminal< tag::true_tag >
         , proto::terminal< tag::false_tag >
-        , proto::terminal< tag::bool_tag >
         , Binary_Predicate
         , proto::_   // any other grammar
       >
@@ -67,14 +66,6 @@ namespace metaSMT {
     // expressions
     Predicate<proto::terminal<tag::true_tag>::type  > const True; // = {{{}}};
     Predicate<proto::terminal<tag::false_tag>::type > const False; // = {{{}}};
-
-    inline proto::result_of::make_expr< tag::bool_tag, Predicate_Domain
-        , bool const
-      > ::type
-    predicate_const( bool const value )
-    {
-      return proto::make_expr< tag::bool_tag, Predicate_Domain >( value );
-    }
 
 /** @cond */ 
  #define _BINARY_PREDICATE(NAME_, TAG_) \
