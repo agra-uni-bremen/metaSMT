@@ -201,6 +201,22 @@ BOOST_AUTO_TEST_CASE( array_conversion ) {
   BOOST_REQUIRE( solve( ctx ) );
 }
 
+BOOST_AUTO_TEST_CASE( evaluate_symbol ) {
+  predicate p = new_variable();
+  TypedSymbol<ContextType> a(new_variable());
+  bool ab;
+
+  metaSMT::assumption(ctx, logic::equal(true, a));
+  BOOST_REQUIRE( solve( ctx ) );
+  ab = read_value(ctx, a.toBool(ctx));
+  BOOST_CHECK_EQUAL(true, ab);
+
+  metaSMT::assumption(ctx, logic::equal(false, a));
+  BOOST_REQUIRE( solve( ctx ) );
+  ab = read_value(ctx, a.toBool(ctx));
+  BOOST_CHECK_EQUAL(false, ab);
+}
+
 BOOST_AUTO_TEST_SUITE_END() // Types
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab

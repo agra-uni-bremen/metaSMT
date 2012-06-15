@@ -8,6 +8,16 @@
 #include "Types.hpp"
 
 namespace metaSMT {
+  namespace type {
+    /* Forward TypedSymbol */
+    template < typename Context >
+    struct TypedSymbol;
+  } // type
+} // metaSMT
+
+#include "Evaluator.hpp"
+
+namespace metaSMT {
 
   namespace type {
 
@@ -46,10 +56,6 @@ namespace metaSMT {
 
     namespace bv = ::metaSMT::logic::QF_BV;
     namespace ary = ::metaSMT::logic::Array;
-
-    /* Forward TypedSymbol*/
-    template < typename Context >
-    struct TypedSymbol;
 
     /** \cond **/
     namespace detail {
@@ -277,7 +283,7 @@ namespace metaSMT {
       TypedSymbol(result_type s,
                   any_type ty)
         : value(s)
-      , type(ty)
+        , type(ty)
       {}
 
       TypedSymbol(TypedSymbol<Context> const &other)
