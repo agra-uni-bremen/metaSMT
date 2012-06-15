@@ -15,7 +15,10 @@
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #endif
 
+
 #ifdef __GNUC__
+# if __GNUC__ >= 4 and __GNUC_MINOR__ > 4
+// with this definitions gcc 4.4 creates executables with random segfaults
 #define _BACKWARD_BACKWARD_WARNING_H
 #pragma GCC push_options
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -23,5 +26,6 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wparentheses"
+#endif
 #endif
 
