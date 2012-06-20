@@ -3,6 +3,7 @@
 
 #include "Aiger.hpp"
 #include "../tags/SAT.hpp"
+#include "../Features.hpp"
 
 #include <vector>
 

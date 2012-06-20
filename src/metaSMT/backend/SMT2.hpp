@@ -28,7 +28,7 @@ namespace metaSMT {
 
   struct set_symbol_table_cmd;
 
-  std::string default_symbol_table(unsigned id) {
+  inline std::string default_symbol_table(unsigned id) {
     char buf[64];
     sprintf(buf, "var_%u", id);
     return buf;

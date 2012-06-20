@@ -86,6 +86,7 @@ namespace metaSMT {
     result_type operator() (boost::proto::tag::terminal,  
         ::metaSMT::logic::tag::var_tag tag)
     {
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {
@@ -123,6 +124,7 @@ namespace metaSMT {
     result_wrapper read_value(logic::predicate var)
     { 
       logic::tag::var_tag tag = boost::proto::value(var);
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {
@@ -145,6 +147,7 @@ namespace metaSMT {
     result_wrapper read_value(logic::QF_BV::bitvector var)
     { 
       logic::QF_BV::tag::var_tag tag = boost::proto::value(var);
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {
@@ -164,6 +167,7 @@ namespace metaSMT {
     result_type operator() (boost::proto::tag::terminal,  
         ::metaSMT::logic::QF_UF::tag::function_var_tag tag)
     {
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {
@@ -178,6 +182,7 @@ namespace metaSMT {
     result_type operator() (boost::proto::tag::terminal,  
         ::metaSMT::logic::Array::tag::array_var_tag tag)
     {
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {
@@ -192,6 +197,7 @@ namespace metaSMT {
     result_type operator() (boost::proto::tag::terminal,  
         ::metaSMT::logic::QF_BV::tag::var_tag tag)
     {
+      assert(tag.id != 0);
       typename VariableLookupT::const_iterator iter
         = _variables.find(tag.id);
       if ( iter != _variables.end() ) {

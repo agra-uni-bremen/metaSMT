@@ -9,3 +9,4 @@ cmake
 *.d
 *.log
 *.tdo
+*.pyc

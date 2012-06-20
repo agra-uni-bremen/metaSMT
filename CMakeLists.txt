@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 
 set(Boost_ADDITIONAL_VERSIONS "1.46.1")
 find_package(Boost REQUIRED)
-find_package(Boost COMPONENTS iostreams thread)
+find_package(Boost COMPONENTS iostreams thread python)
 set_package_info(Boost "Portable C++ libraries")
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -56,6 +56,7 @@ option(metaSMT_USE_Aiger      "try to use aiger" on)
 
 option(metaSMT_DOC_Doxygen    "try to build doxygen documentation" off)
 option(metaSMT_ENABLE_TESTS   "build tests (recommended)" on)
+option(metaSMT_ENABLE_BINDINGS "build bindings" on)
 option(metaSMT_ENABLE_TOOLBOX "build toolbox projects" on)
 
 set(metaSMT_CONFIG_DIR "share/metaSMT" CACHE PATH 
@@ -216,6 +217,35 @@ if (PicoSAT_FOUND)
 endif (PicoSAT_FOUND)
 
 ############################################################
+############# RPATH ########################################
+############################################################
+
+# Generate an RPATH from all the libraries used by metaSMT.
+# If the library is a file use its directory,
+# if the library is a target use its location and recurse on
+# its dependencies.
+
+macro(add_dependent_libraries)
+  foreach( lib ${ARGN})
+    if(EXISTS ${lib})
+      get_filename_component(libdir ${lib} PATH)
+      list(APPEND CMAKE_INSTALL_RPATH ${libdir})
+    elseif(lib)
+      get_target_property(libpath ${lib} LOCATION)
+      get_filename_component(libdir ${libpath} PATH)
+      list(APPEND CMAKE_INSTALL_RPATH ${libdir})
+      get_target_property(dependent ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES)
+      add_dependent_libraries(${dependent})
+      get_target_property(dependent ${lib} IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE)
+      add_dependent_libraries(${dependent})
+    endif()
+  endforeach(lib)
+endmacro(add_dependent_libraries)
+
+add_dependent_libraries(${metaSMT_LIBS})
+
+
+############################################################
 ############# subdirectories ###############################
 ############################################################
 
@@ -227,6 +257,9 @@ if(metaSMT_ENABLE_TESTS)
   add_subdirectory(tests)
 endif(metaSMT_ENABLE_TESTS)
 
+if(metaSMT_ENABLE_BINDINGS)
+  add_subdirectory(bindings)
+endif(metaSMT_ENABLE_BINDINGS)
 if(metaSMT_ENABLE_TOOLBOX)
   add_subdirectory(toolbox)
 endif()

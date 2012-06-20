@@ -29,17 +29,17 @@ The bootstrap.sh script provided by metaSMT can automatically download and
 install dependencies needed by metaSMT and setup a metaSMT build folder.
 
 Calling ./bootstrap.sh without arguments will display a complete list of
-options. It is recommended to call either
+options. It is recommended to call
 
- ./bootstrap.sh --deps deps/ --free -m RELEASE build/
+ ./bootstrap.sh --deps deps/ --free     -m RELEASE build/
 or
  ./bootstrap.sh --deps deps/ --non-free -m RELEASE build/
 
 to download and build all dependencies in the "deps" folder and configure a
-metaSMT build in the "build" folder. This folder can be shared for different
-build folders. The parameters --free and --non-free select which set of
-backend tools to download and include in the build, you need to select which
-you want.
+metaSMT build in the "build" folder. The source folder can be shared for
+different build folders. The parameters --free and --non-free select which
+set of backend tools to download and include in the build, you need to select
+which you want.
 
 Please note that some free and non-free backends use licenses which
 are not compatible (e.g. Boolector: GPL, SWORD and Z3: Proprietary).
@@ -66,12 +66,18 @@ to the build/root/ folder.
 
 Please also note that metaSMT by default compiles an excessive test suite for
 all available backends. After building it can be called with "make test".
-However building the suite can take a lot of time. If you want to disable
-building the tests you can call
+Note that some Tests are expected to fail, e.g. due to timeouts, backend
+restrictions or work in progress (new) functionality.
+
+
+Building the test suite can take a lot of time. If you want to disable
+building the tests you can  pass -DmetaSMT_ENABLE_TESTS=off to the bootstrap
+script or call
 
   cmake ./ -DmetaSMT_ENABLE_TESTS=off
 
-or by setting the option using "ccmake ." or "cmake-gui .".
+in the build folderor by setting the option using "ccmake ." or
+"cmake-gui .".
 
 3. Using metaSMT
 ===================
@@ -89,4 +95,11 @@ folder. Simply open the doc/html/index.html file in your favorite browser.
 Note: The documentation is not yet complete. Only selected modules are
 currently documented.
 
+5. Python
+===========
+When you call "make install" metaSMT will place a python folder into the
+install folder (build/root by default).
+
+The folder will contain a pymetaSMT wrapper script to ease executing custom
+python scripts and an example folder.
 

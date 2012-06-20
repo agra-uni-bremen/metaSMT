@@ -1,0 +1,10 @@
+#!/bin/sh
+THIS="$(cd $(dirname $0); pwd)"
+if [ "$1" = "--gdb" ]; then
+  GDB="gdb --args"
+  shift
+fi
+if [ -x '${Z3_EXECUTABLE}' ]; then
+  Z3_PATH="Z3_EXECUTABLE='${Z3_EXECUTABLE}'"
+fi
+exec /usr/bin/env PYTHONPATH=$THIS $Z3_PATH $GDB python $@
