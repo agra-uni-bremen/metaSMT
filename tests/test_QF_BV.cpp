@@ -1877,13 +1877,26 @@ BOOST_AUTO_TEST_CASE( constant_64bit )
   BOOST_REQUIRE( solve(ctx) );
 
   unsigned long xd = read_value(ctx, x);
+  std::string xs = read_value(ctx, x);
   BOOST_CHECK_EQUAL(xd, value);
+  BOOST_CHECK_EQUAL(xs, "1111111111111111111111111111111111111111111111111111111111111111");
 
   assumption(ctx, equal(x, bvuint(value-123, w)));
   BOOST_REQUIRE( solve(ctx) );
 
   xd = read_value(ctx, x);
   BOOST_CHECK_EQUAL(xd, value-123);
+}
+
+BOOST_AUTO_TEST_CASE( constant_69bit )
+{
+  bitvector x = new_bitvector(69);
+
+  const std::string longconst ("001111001110010101010100000000000000000000000000000000000000000000000");
+  assumption(ctx, equal( x,  bvbin(longconst) ) );
+  BOOST_REQUIRE( solve(ctx) );
+  std::string longval = read_value(ctx, x);
+  BOOST_REQUIRE_EQUAL( longconst, longval);
 }
 
 BOOST_AUTO_TEST_CASE( signed_constant_64bit )
@@ -1894,6 +1907,9 @@ BOOST_AUTO_TEST_CASE( signed_constant_64bit )
 
   assumption(ctx, equal(x, bvsint(value, w)));
   BOOST_REQUIRE( solve(ctx) );
+
+  std::string xs = read_value(ctx, x);
+  BOOST_CHECK_EQUAL(xs, "0111111111111111111111111111111111111111111111111111111111111111");
 
   long xd = read_value(ctx, x);
   BOOST_CHECK_EQUAL(xd, value);
