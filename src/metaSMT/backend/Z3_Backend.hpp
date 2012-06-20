@@ -177,16 +177,16 @@ namespace metaSMT {
         model_map::const_iterator it = model_map_.find(var_name);
         if (it != model_map_.end()) {
 
-          unsigned value = it->second.get<0>();
-          unsigned width = it->second.get<1>();
+          unsigned long value = it->second.get<0>();
+          unsigned long width = it->second.get<1>();
+
+          std::cout << "read_value: " << value << ' ' << width << std::endl;
 
           if (width == 0) {
             return result_wrapper(value == 1);
           }
 
-          boost::dynamic_bitset<> bv(width, value);
-          std::string str; to_string(bv, str);
-          return result_wrapper(str);
+          return result_wrapper(value, width);
         }
 
         // XXX: determinate size?
@@ -339,32 +339,71 @@ namespace metaSMT {
       }
 
       result_type operator() (bvtags::bvuint_tag , boost::any arg) {
+        const size_t ubits = std::numeric_limits<unsigned>::digits;
+
         typedef boost::tuple<unsigned long, unsigned long> P;
         P p = boost::any_cast<P>(arg);
         unsigned long const value = boost::get<0>(p);
-        assert( value <=  std::numeric_limits<unsigned int>::max() );
         unsigned const width = boost::get<1>(p);
-        Z3_sort ty = Z3_mk_bv_sort(z3_, width);
-        return Z3_mk_unsigned_int(z3_, value, ty);
+
+        if( value <= std::numeric_limits<unsigned int>::max() || width <= ubits ) {
+          Z3_sort ty = Z3_mk_bv_sort(z3_, width);
+          return Z3_mk_unsigned_int(z3_, value, ty);
+        } else {
+          const unsigned part1 = static_cast<unsigned>(value);
+          const unsigned part2 = static_cast<unsigned>(value>>ubits);
+          Z3_sort ty1 = Z3_mk_bv_sort(z3_, ubits);
+          Z3_sort ty2 = Z3_mk_bv_sort(z3_, width-ubits);
+          return Z3_mk_concat(z3_,
+            Z3_mk_unsigned_int(z3_, part2, ty2),
+            Z3_mk_unsigned_int(z3_, part1, ty1)
+          );
+        }
       }
 
       result_type operator() (bvtags::bvsint_tag , boost::any arg) {
+        const size_t ibits = std::numeric_limits<int>::digits;
+
         typedef boost::tuple<long, unsigned long> P;
         P p = boost::any_cast<P>(arg);
-        unsigned long const value = boost::get<0>(p);
-        assert( value <=  std::numeric_limits<unsigned int>::max() );
+        long const value = boost::get<0>(p);
         unsigned const width = boost::get<1>(p);
-        Z3_sort ty = Z3_mk_bv_sort(z3_, width);
-        return Z3_mk_int(z3_, value, ty);
+
+        if( (value <= std::numeric_limits<int>::max() && value >= std::numeric_limits<int>::min()) || width <= ibits ) {
+          Z3_sort ty = Z3_mk_bv_sort(z3_, width);
+          return Z3_mk_int(z3_, value, ty);
+        } else {
+          const int part1 = static_cast<int>(value);
+          const int part2 = static_cast<int>(value<<ibits);
+          std::cout << "signed multipart: " << part2 << " | " << part1 << std::endl;
+          Z3_sort ty1 = Z3_mk_bv_sort(z3_, ibits);
+          Z3_sort ty2 = Z3_mk_bv_sort(z3_, width-ibits);
+          return Z3_mk_concat(z3_,
+            Z3_mk_int(z3_, part2, ty2),
+            Z3_mk_int(z3_, part1, ty1)
+          );
+        }
       }
 
       result_type operator() (bvtags::bvbin_tag , boost::any arg) {
+        const size_t ubits = std::numeric_limits<unsigned>::digits;
         std::string s = boost::any_cast<std::string>(arg);
-        boost::dynamic_bitset<> bv(s);
-        unsigned long const value = bv.to_ulong();
-        assert( value <=  std::numeric_limits<unsigned int>::max() );
-        Z3_sort ty = Z3_mk_bv_sort(z3_, bv.size());
-        return Z3_mk_unsigned_int(z3_, value, ty);
+        const size_t len = s.size();
+        bool first = true;
+        result_type result;
+        for (unsigned i = 0; i < len; i+=ubits) {
+          std::cout << i << "-" << (i+ubits) << ": " << s.substr(i, ubits) << std::endl;
+          unsigned part = boost::dynamic_bitset<>(s, i, ubits).to_ulong();
+          std::cout << "part " << i << '-' << (i+std::min( len-i, ubits)) << ": " << part << std::endl;
+          Z3_sort ty = Z3_mk_bv_sort(z3_, std::min( len-i, ubits));
+          if (first) {
+            result = Z3_mk_unsigned_int(z3_, part, ty);
+            first = false;
+          } else {
+            result = Z3_mk_concat(z3_, result, Z3_mk_unsigned_int(z3_, part, ty) );
+          }
+        }
+        return result;
       }
 
       // XXX will be removed in a later revision
@@ -582,14 +621,14 @@ namespace metaSMT {
 
     protected:
       typedef std::string::const_iterator ConstIterator;
-      typedef boost::tuple<unsigned, unsigned> BitvectorTuple;
+      typedef boost::tuple<unsigned long, unsigned long> BitvectorTuple;
       typedef std::pair<std::string, BitvectorTuple> NamedTuple;
 
       void build_model_map(std::string const &assign_str) {
         ConstIterator it = assign_str.begin();
         ConstIterator ie = assign_str.end();
 
-        //std::cout << assign_str << std::endl;
+        std::cout << assign_str << std::endl;
 
         static qi::rule<ConstIterator, std::string() > name_rule
           = +(qi::char_ - qi::char_(" ()"))
@@ -604,7 +643,7 @@ namespace metaSMT {
           ;
 
         static qi::rule<ConstIterator, BitvectorTuple() > bitvector_rule
-          = "bv" >> qi::uint_ >> '[' >> qi::uint_ >> ']'
+          = "bv" >> qi::ulong_ >> '[' >> qi::ulong_ >> ']'
           ;
         static qi::rule<ConstIterator, BitvectorTuple() > value_rule
           = ( true_rule | false_rule | bitvector_rule );
@@ -675,9 +714,9 @@ namespace metaSMT {
 
         if (qi::parse(it, ie, rule, model_map_)) {
           if (it != ie ) {
-            std::cout << assign_str << "\n----\n";
-            std::cout << std::string(it,ie) << "\n----\n";
-            std::cout.flush();
+            //std::cout << assign_str << "\n----\n";
+            //std::cout << std::string(it,ie) << "\n----\n";
+            //std::cout.flush();
             assert( it == ie && "Expression not completely consumed" );
           }
           return;
