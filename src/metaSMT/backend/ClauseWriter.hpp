@@ -10,6 +10,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <cstdio>
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -165,67 +166,32 @@ namespace metaSMT {
             model[position] = X;
           }
 
-          //std::ifstream instream ( log.c_str() );
-          //
-          //if ( !instream ) 
-          //{
-          //  std::cerr << "Unable to read model." << std::endl;
-          //  return;
-          //}
-
-          //std::string line;
-          //while ( getline ( instream, line  ) )
-          //{
-          //  if (line[0] == 'c') continue; // comment
-          //  if (line[0] == 's') 
-          //  {
-          //    if (line.substr (2) != "SATISFIABLE")
-          //    {
-          //      std::cerr << "Expected the instance is satisfiable." << std::endl;
-          //      return;
-          //    }
-          //  }
-          //  if (line[0] == 'v')
-          //  {
-          //    std::vector < std::string > pModel;
-          //    std::string part = line.substr ( 2 ); 
-          //    boost::split ( pModel, part, boost::is_any_of (" "));
-          //    BOOST_FOREACH ( std::string const& str, pModel )
-          //    {
-          //      int val = atoi ( str.c_str() );
-          //      if ( val == 0 ) continue;
-          //      unsigned size = abs ( val );
-          //      unsigned X = val < 0 ? 0 : 1;
-          //      if (size >= model.size()) {
-          //        std::cout << model.size() << " " << size << std::endl;
-          //      }
-          //      assert(model.size() > size);
-          //      model[size] = X;
-          //    }
-          //  }
-          //}
         }
 
         boost::optional < bool > solve ( std::string const& filename )
         {
-          std::string log = "solver.log";
-          std::string err = "solver.err"; 
+          std::string log = boost::str( boost::format("solver-%d.log") % getpid());
+          std::string err = boost::str( boost::format("solver-%d.err") % getpid());
 
           boost::optional < bool > result = Exec::execute ( filename, log, err ); 
 
+          bool returnValue = false;
           if ( result )
           {
             //std::cout << "SAT? " << *result << std::endl;
             if ( *result )
             {
-              readModel ( log ); 
-              return true;
+              readModel ( log );
+              returnValue = true;
             }
             else
-              return false;
+              returnValue = false;
           }
-          else
-            return result; 
+
+          std::remove( log.c_str() );
+          std::remove( err.c_str() );
+
+          return returnValue;
         }
 
         private:
@@ -304,7 +270,7 @@ namespace metaSMT {
           bool solve ( )
           {
             // // GoTmp working_directory;
-            std::string name = "clause-writer.cnf"; 
+            std::string name = boost::str( boost::format("clause-writer-%d.cnf") % getpid());
             write_cnf ( name ); 
 
             //system ("cnf2aig clause-writer.cnf clause-writer.aig");
@@ -319,6 +285,8 @@ namespace metaSMT {
             boost::optional < bool > result = solver.solve ( name ); 
 
             assert ( result );
+
+            std::remove(name.c_str());
 
             if ( *result == false ) return false;
 
