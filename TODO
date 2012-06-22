@@ -1,0 +1,38 @@
+= TODO List =
+
+== Target Features for metaSMT 1.0 ==
+ * support for Boolector (QF_BV, Core Logic) [done]
+ * supoort for Z3 (QF_BV, Core Logic) [done]
+ * supoort for MiniSAT (Core Logic) [done]
+ * support for SWORD (QF_BV, Logic) [done]
+ * support for Picosat (Logic) [done]
+ * support for BitBlastig QF_BV to Logic [done]
+ * compile time Solver selection (same api, different solvers) [done]
+
+ * README for installation
+ * install scripts for Solvers (s.a.)  [done]
+ * Example algorithm (Sudoku, Mastermind, etc) [done]
+ * Tool Paper [mostly done]
+ * README/script to setup own projects
+ * list/documentation of available commands (SMT expressions, other)
+ 
+== Additional Features  for 1.0 ==
+ * Cardinality Constraints [ done ]
+ * Constraint Groups [done]
+ * Constraint Stack [done]
+ * Array over Bitvector Theory [done]
+ * lazy expressions [done, major test missing]
+
+== Future versions (maybe) ==
+ * Solver independent Syntax Trees
+ * SMT-LIB 1 Parser
+ * SMT-LIB 2 Parser
+ * SMT-LIB File output [ SMT1 from graph, SMT2 context for Z3 ]
+ * BitBlasting QF_BV to LIA (or other Logics)
+ * Types
+ * Pseudo Boolean SAT/Solvers
+ * Parallel/Distributed/Clustered solving
+ * Solver Checking (using a different Solver)
+ * Fuzzing
+ * Explicit Features [partial]
+ * eFMI ( easy Formal Methods Interface)

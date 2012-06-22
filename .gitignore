@@ -1,0 +1,11 @@
+*~
+*.swp
+build*
+root*
+cmake
+*.aux
+*.bbl
+*.blg
+*.d
+*.log
+*.tdo

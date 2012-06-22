@@ -1,0 +1,114 @@
+#!/bin/bash
+SRC_DIR=$( cd $(dirname $0) && pwd)
+
+BUILD_DIR=$PWD/build
+
+BOOST=boost-1_46_1
+
+REQUIRES="
+  $BOOST
+"
+
+FREE="
+  picosat-936
+  boolector-1.4.1
+  aiger-20071012
+  cudd-2.4.2
+  minisat-git
+"
+
+NONFREE="
+  Z3-2.19
+  SWORD-1.1
+"
+
+CMAKE=cmake
+BUILD_CMAKE="no"
+CMAKE_PACKAGE=cmake-2.8.4
+
+CMAKE_ARGS=""
+
+
+
+if ! [[ "$1" ]]; then
+  cat << EOF
+$0 sets up a metaSMT build folder.
+usage: $0 [--free] [--non-free] build
+  --free          include free backends (Aiger, Boolector, CUDD, PicoSat)
+  --non-free      include non-free backends (SWORD, Z3)
+  --clean         delete build folder before creating a new one
+  --deps <dir>    build dependencies in this folder
+   -d <dir>       can be shared in different projects
+  --install <dir> configure cmake to install to this directory
+   -i <dir>
+  --mode <type>   the CMake build type to configure, types are
+   -m <type>      RELEASE, MINSIZEREL, RELWITHDEBINFO, DEBUG
+  --cmake         build a custom cmake version
+  <build>         the folder to setup the build environment in
+EOF
+  exit 1
+fi
+
+
+
+while [[ "$@" ]]; do
+  case $1 in
+    --free)       REQUIRES="$REQUIRES $FREE" ;;
+    --non-free)   REQUIRES="$REQUIRES $NONFREE" ;;
+    --deps|-d)    DEPS="$2"; shift;;
+    --install|-i) INSTALL="$2"; shift;;
+    --mode|-m)    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_BUILD_TYPE=$2"; shift;;
+      --clean|-c) CLEAN="rm -rf";;
+      --cmake)    BUILD_CMAKE="yes";;
+               *) ## assume build dir
+                  BUILD_DIR="$1" ;;
+  esac
+  shift;
+done
+
+if [[ "$CLEAN" ]]; then
+  rm -rf $BUILD_DIR
+fi
+
+mk_and_abs_dir() {
+  mkdir -p $1 &&
+  cd $1 &>/dev/null &&
+  pwd
+}
+BUILD_DIR=$(mk_and_abs_dir $BUILD_DIR) &&
+INSTALL=$(mk_and_abs_dir ${INSTALL:-$BUILD_DIR/root}) &&
+DEPS=$(mk_and_abs_dir ${DEPS:-$BUILD_DIR}) &&
+
+
+if [ -d dependencies ]; then 
+  cd dependencies
+else
+    echo "missing dependencies folder. Please manually create a checkout or symlink in the metaSMT base folder."
+    exit 2
+  fi
+fi
+
+./build "$DEPS" $REQUIRES &&
+if [ "$BUILD_CMAKE" = "yes" ]; then
+  ./build "$DEPS" $CMAKE_PACKAGE &&
+  CMAKE=$DEPS/$CMAKE_PACKAGE/bin/cmake
+fi
+
+cd $BUILD_DIR && 
+
+PREFIX_PATH=$(echo $REQUIRES| sed "s@[ ^] *@;$DEPS/@g")
+
+eval_echo() {
+ $@
+ echo "$@"
+}
+
+
+
+cd $BUILD_DIR
+eval_echo $CMAKE $SRC_DIR \
+  -DCMAKE_INSTALL_PREFIX="$INSTALL" \
+  -DCMAKE_PREFIX_PATH="$PREFIX_PATH" \
+  -DBOOST_ROOT="$DEPS/$BOOST"
+
+echo "finished bootstrap, you can now call make in $BUILD_DIR"
