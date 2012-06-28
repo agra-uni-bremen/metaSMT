@@ -13,6 +13,8 @@
 #pragma clang diagnostic ignored "-Wreturn-type"
 #pragma clang diagnostic ignored "-Wsign-compare"
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wdelete-non-virtual-dtor"
+#pragma clang diagnostic ignored "-Wparentheses-equality"
 #endif
 
 

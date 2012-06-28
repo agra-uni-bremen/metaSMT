@@ -1,7 +1,10 @@
 #pragma once 
 
+#include "../support/disable_warnings.hpp"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include "../support/enable_warnings.hpp"
+
 #include <queue>
 
 namespace metaSMT {
