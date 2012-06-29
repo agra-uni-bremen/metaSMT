@@ -67,7 +67,11 @@ def sign_extend( by, expr ): return py_sign_extend( by, to_logic_expression( exp
 def _solver_assertion( solver, expression ):
     solver.py_assertion( to_logic_expression( expression ) )
 
+def _solver_assumtion ( solver, expression ):
+    solver.py_assumption ( to_logic_expression( expression ) )
+
 solver.assertion = _solver_assertion
+solver.assumption = _solver_assumtion
 
 def available_solvers():
     return dict( [ ( "%s_solver" % s, globals()["%s_solver" % s] ) for s in [ "sword", "boolector", "z3", "cudd", "minisat", "minisat_aiger", "picosat", "glucoser_executable", "minisat_executable", "picosat_executable", "plingeling_executable", "precosat_executable", "smt2", "constraint" ] if "%s_solver" % s in globals() ] )
