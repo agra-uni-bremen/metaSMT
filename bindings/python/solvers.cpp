@@ -122,6 +122,25 @@ void py_assertion( const solver& ctx, const logic_expression& expr )
   boost::apply_visitor( assertion_visitor( expr ), ctx );
 }
 
+struct assumption_visitor : public boost::static_visitor<>
+{
+  explicit assumption_visitor( const logic_expression& expr ) : expr( expr ) {}
+
+  template<typename T>
+  void operator()( const boost::shared_ptr<T>& s ) const
+  {
+    metaSMT::assumption( *s, boost::apply_visitor( evaluate_expression_visitor<T>( *s ), expr ) );
+  }
+
+private:
+  const logic_expression& expr;
+};
+
+void py_assumption( const solver& ctx, const logic_expression& expr )
+{
+  boost::apply_visitor( assumption_visitor( expr ), ctx );
+}
+
 struct solve_visitor : public boost::static_visitor<bool>
 {
   template<typename T>
@@ -235,6 +254,7 @@ void export_solvers()
 {
   class_<solver>( "solver" )
     .def( "py_assertion", &py_assertion )
+    .def( "py_assumption", &py_assumption )
     .def( "solve", &py_solve )
     .def( "read_value", &py_read_value )
     .def( "read_value", &py_read_bv_value )
