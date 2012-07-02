@@ -26,7 +26,8 @@ errors. This is not required to use metaSMT in general.
 =============================
 
 The bootstrap.sh script provided by metaSMT can automatically download and
-install dependencies needed by metaSMT and setup a metaSMT build folder.
+install dependencies needed by metaSMT and setup a metaSMT build folder. You 
+may require subversion, or git to be installed.
 
 Calling ./bootstrap.sh without arguments will display a complete list of
 options. It is recommended to call
