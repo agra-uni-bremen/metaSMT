@@ -93,12 +93,9 @@ INSTALL=$(mk_and_abs_dir ${INSTALL:-$BUILD_DIR/root}) &&
 DEPS=$(mk_and_abs_dir ${DEPS:-$BUILD_DIR}) &&
 
 
-if [ -d dependencies ]; then 
-  cd dependencies
-else
+if ! cd dependencies; then 
     echo "missing dependencies folder. Please manually create a checkout or symlink in the metaSMT base folder."
     exit 2
-  fi
 fi
 
 if [ "$BUILD_CMAKE" = "yes" ]; then
