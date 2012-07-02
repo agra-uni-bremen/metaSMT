@@ -75,7 +75,7 @@ if(PYTHONINTERP_FOUND)
 
   add_custom_command(
     OUTPUT "${_CTESTFILE}_"
-    COMMAND ${PYTHON_EXECUTABLE} tests --discover
+    COMMAND ${PYMETASMT} tests --discover
      | ${AWK}
         -v pymetaSMT="${PYMETASMT}"
         -v path="${CMAKE_CURRENT_SOURCE_DIR}"
