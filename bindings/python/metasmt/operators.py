@@ -26,6 +26,12 @@ def install_operator( sym, types, functions ):
     for t in types:
         setattr( t, sym, f )
 
+def member_extract(self, x):
+    if isinstance( x, tuple ):
+		return extract( x[0], x[1], self )
+    else:
+        return extract( x, x, self )
+
 def install_extract( types ):
     # Process Types
     if types == '*':
@@ -33,9 +39,8 @@ def install_extract( types ):
     elif not isinstance( types, list ):
         types = [ types ]
 
-    f = lambda self, x: extract( x[0], x[1], self ) if isinstance( x, tuple ) else logic_equal( extract( x, x, self ), bit1 )
     for t in types:
-        setattr( t, '__getitem__', f )
+        setattr( t, '__getitem__', member_extract )
 
 install_operator( '__neg__', '*', ( logic_not, bv_not ) )
 install_operator( '__eq__', '*', logic_equal )

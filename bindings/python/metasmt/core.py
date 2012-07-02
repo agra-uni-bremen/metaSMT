@@ -74,4 +74,18 @@ solver.assertion = _solver_assertion
 solver.assumption = _solver_assumtion
 
 def available_solvers():
-    return dict( [ ( "%s_solver" % s, globals()["%s_solver" % s] ) for s in [ "sword", "boolector", "z3", "cudd", "minisat", "minisat_aiger", "picosat", "glucoser_executable", "minisat_executable", "picosat_executable", "plingeling_executable", "precosat_executable", "smt2", "constraint" ] if "%s_solver" % s in globals() ] )
+    return dict( [ ( "%s_solver" % s, globals()["%s_solver" % s] ) for s in (
+        "sword","boolector",
+        "z3",
+        "cudd",
+        "minisat",
+        "minisat_aiger",
+        "picosat",
+        "glucoser_executable",
+        "minisat_executable",
+        "picosat_executable",
+        "plingeling_executable",
+        "precosat_executable",
+        "smt2",
+        "constraint",
+	) if "%s_solver" % s in globals() ] )
