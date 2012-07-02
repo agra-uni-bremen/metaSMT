@@ -1,6 +1,6 @@
 find_package( PythonLibs )
 
-if( PYTHONLIBS_FOUND ) 
+if( PYTHONLIBS_FOUND )
 
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 include_directories( ../../src )
@@ -67,14 +67,38 @@ if(PYTHONINTERP_FOUND)
   add_test(py_operators ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/operators.py)
   add_test(py_support ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/support.py)
   add_test(py_smt2 ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/smt2.py)
+
+  find_program(AWK awk)
+
+  set (_CTESTFILE ${CMAKE_CURRENT_BINARY_DIR}/CTestTestfile.cmake)
+
+
+  add_custom_command(
+    OUTPUT "${_CTESTFILE}_"
+    COMMAND ${PYTHON_EXECUTABLE} tests --discover
+     | ${AWK}
+        -v pymetaSMT="${PYMETASMT}"
+        -v path="${CMAKE_CURRENT_SOURCE_DIR}"
+        -f "${CMAKE_CURRENT_SOURCE_DIR}/generate_ctest_script.awk"
+     > "${_CTESTFILE}_"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS metasmt_python
+  )
+  add_custom_target( py_test_script ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${_CTESTFILE}_"
+      "${_CTESTFILE}"
+    DEPENDS "${_CTESTFILE}_"
+  )
+
 endif()
 
 
-install(DIRECTORY metasmt 
+install(DIRECTORY metasmt
   DESTINATION python
   FILES_MATCHING PATTERN "*.py"
 )
-install(DIRECTORY examples 
+install(DIRECTORY examples
   DESTINATION python
   FILES_MATCHING PATTERN "*.py"
 )
@@ -84,7 +108,7 @@ install(TARGETS metasmt_python
 
 install(FILES ${PYMETASMT}
   DESTINATION python
-  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE 
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE
 )
 
 else()
