@@ -177,6 +177,7 @@ namespace metaSMT {
     BOOST_MPL_ASSERT_MSG(
         ( features::supports< Context, features::group_api>::value),
         context_does_not_support_group_api,
+        ()
     );
     return ctx.command ( group_create() ); 
   }
@@ -196,6 +197,7 @@ namespace metaSMT {
     BOOST_MPL_ASSERT_MSG(
         ( features::supports< Context, features::group_api>::value),
         context_does_not_support_group_api,
+        ()
     );
     ctx.command( group_delete(), guard ); 
   }
@@ -213,6 +215,7 @@ namespace metaSMT {
     BOOST_MPL_ASSERT_MSG(
         ( features::supports< Context, features::group_api>::value),
         context_does_not_support_group_api,
+        ()
     );
     ctx.command ( group_change(), guard ); 
   }
@@ -228,6 +231,7 @@ namespace metaSMT {
     BOOST_MPL_ASSERT_MSG(
         ( features::supports< Context, features::group_api>::value),
         context_does_not_support_group_api,
+        ()
     );
     return ctx.command( group_current() ); 
   }
