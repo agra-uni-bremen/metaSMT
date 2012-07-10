@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE graph_STP
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/GraphSolver_Context.hpp>
 #include <metaSMT/backend/STP.hpp>
 

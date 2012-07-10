@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../support/SMT_Graph.hpp"
 #include "../tags/QF_UF.hpp"
-#include "../tags/Logics.hpp"
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
 #include <boost/proto/core.hpp>

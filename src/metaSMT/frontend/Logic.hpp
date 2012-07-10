@@ -1,5 +1,5 @@
 #pragma once
-#include "../tags/Logics.hpp"
+#include "../tags/Logic.hpp"
 #include "../impl/_var_id.hpp"
 #include <boost/proto/core.hpp>
 

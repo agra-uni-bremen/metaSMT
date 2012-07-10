@@ -136,7 +136,7 @@ namespace metaSMT {
 #if BOOST_VARIANT_VISITATION_UNROLLING_LIMIT < 56
 #warning "BOOST_VARIANT_VISITATION_UNROLLING_LIMIT is too small!"
 #warning "Visiting logic_expressions may unexpectedly fail."
-#warning "Try to include <metaSMT/expression/default_visitation_unrolling_limit.hpp>."
+#warning "Try to include <metaSMT/support/default_visitation_unrolling_limit.hpp>."
 #endif // BOOST_VARIANT_VISITATION_UNROLLING_LIMIT
 
     typedef boost::mpl::vector56<

@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE test_graph
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/Graph_Context.hpp>
 #include <metaSMT/support/SMT_File_Writer.hpp>

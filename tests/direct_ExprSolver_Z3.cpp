@@ -1,5 +1,5 @@
 #define BOOST_TEST_MODULE direct_ExprSolver_Z3
-#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/backend/ExpressionSolver.hpp>
