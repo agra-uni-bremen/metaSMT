@@ -3,6 +3,7 @@
 #include <boost/mpl/for_each.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/empty.hpp>
+#include <boost/mpl/find.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/add_pointer.hpp>
 #include <boost/shared_ptr.hpp>
