@@ -264,7 +264,7 @@ namespace metaSMT {
 
       result_type operator() (proto::tag::function,
                               result_type func_decl) {
-        Z3_ast arg_array[0];
+        Z3_ast *arg_array = 0;
         return Z3_mk_app(z3_, func_decl, 0, arg_array);
       }
 
