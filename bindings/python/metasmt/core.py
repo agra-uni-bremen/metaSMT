@@ -42,10 +42,17 @@ def to_logic_expression( expr ):
 def _logic_unary( f ): return lambda a: f( to_logic_expression( a ) )
 def _logic_binary( f ): return lambda a, b: f( to_logic_expression( a ), to_logic_expression( b ) )
 def _logic_ternary( f ): return lambda a, b, c: f( to_logic_expression( a ), to_logic_expression( b ), to_logic_expression( c ) )
+def _logic_nary( f ):
+	def fun(*args):
+		return f( map(to_logic_expression, args) )
+	return fun
 
 _logic = { _logic_unary: ['not'],
-           _logic_binary: ['equal', 'nequal', 'implies', 'and', 'nand', 'or', 'nor', 'xor', 'xnor'],
-           _logic_ternary: ['ite'] }
+           _logic_binary: ['equal', 'nequal', 'implies', 'nand', 'nor', 'xor', 'xnor'],
+           _logic_ternary: ['ite'],
+           _logic_nary: ['and', 'or'],
+}
+
 for ( w, fs ) in _logic.items():
     for f in fs:
         globals()["logic_%s" % f] = w( globals()["py_logic_%s" % f] )

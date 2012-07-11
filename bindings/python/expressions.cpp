@@ -1,4 +1,5 @@
-#include "expressions.hpp"
+#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/expression/expression.hpp>
 
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
@@ -10,6 +11,8 @@
 #include <boost/range/iterator_range.hpp>
 
 using namespace boost::python;
+
+using namespace metaSMT::expression;
 
 template<typename T>
 logic_expression make_logic_expression( const T& v )
@@ -29,18 +32,22 @@ logic_expression make_bit1()
 
 logic_expression make_uint_expression( unsigned long value, unsigned long width )
 {
-  return bvuint_expression( value, width );
+  return bv_const<metaSMT::logic::QF_BV::tag::bvuint_tag>( value, width );
 }
 
 logic_expression make_sint_expression( long value, unsigned long width )
 {
-  return bvsint_expression( value, width );
+  return bv_const<metaSMT::logic::QF_BV::tag::bvsint_tag>( value, width );
 }
 
-template<typename T>
-logic_expression make_str_expression( const std::string& value )
+logic_expression make_bin_expression( const std::string& value )
 {
-  return bvstr_expression<T>( value );
+  return bv_const<metaSMT::logic::QF_BV::tag::bvbin_tag>::bin( value );
+}
+
+logic_expression make_hex_expression( const std::string& value )
+{
+  return bv_const<metaSMT::logic::QF_BV::tag::bvhex_tag>::hex( value );
 }
 
 template<typename LogicTag, typename OpTag>
@@ -59,6 +66,12 @@ template<typename LogicTag, typename OpTag>
 logic_expression make_ternary_expression( const logic_expression& expr1, const logic_expression& expr2, const logic_expression& expr3 )
 {
   return logic_expression( ternary_expression<LogicTag, OpTag>( expr1, expr2, expr3 ) );
+}
+
+template<typename LogicTag, typename OpTag>
+logic_expression make_nary_expression( std::vector<logic_expression> const& exprns )
+{
+  return logic_expression( nary_expression<LogicTag, OpTag>( exprns ) );
 }
 
 template<typename T>
@@ -106,18 +119,8 @@ struct type_visitor : public boost::static_visitor<unsigned>
     return 1u;
   }
 
-  unsigned operator()( const bvuint_expression& expr ) const
-  {
-    return 1u;
-  }
-
-  unsigned operator()( const bvsint_expression& expr ) const
-  {
-    return 1u;
-  }
-
-  template<typename Tag>
-  unsigned operator()( const bvstr_expression<Tag>& expr ) const
+  template<typename T>
+  unsigned operator()( const bv_const<T>& expr ) const
   {
     return 1u;
   }
@@ -169,6 +172,12 @@ struct type_visitor : public boost::static_visitor<unsigned>
   {
     return 1u;
   }
+
+  template<typename T>
+  unsigned operator()( T const & expr ) const
+  {
+    return (unsigned) -1;
+  }
 };
 
 unsigned py_logic_expression_type( const logic_expression& expr )
@@ -178,6 +187,8 @@ unsigned py_logic_expression_type( const logic_expression& expr )
 
 void export_expressions()
 {
+  using namespace metaSMT::logic;
+
   class_<logic_expression>( "logic_expression" )
     .def( "type", &py_logic_expression_type )
     ;
@@ -189,8 +200,8 @@ void export_expressions()
 
   def( "py_bv_uint", &make_uint_expression );
   def( "py_bv_sint", &make_sint_expression );
-  def( "py_bv_bin" , &make_str_expression<metaSMT::logic::QF_BV::tag::bvbin_tag> );
-  def( "py_bv_hex" , &make_str_expression<metaSMT::logic::QF_BV::tag::bvhex_tag> );
+  def( "py_bv_bin" , &make_bin_expression );
+  def( "py_bv_hex" , &make_hex_expression );
 
   def( "py_logic_not"    , &make_unary_expression<logic_tag, tag::not_tag> );
   def( "py_bv_not"       , &make_unary_expression<bv_tag, metaSMT::logic::QF_BV::tag::bvnot_tag> );
@@ -199,9 +210,9 @@ void export_expressions()
   def( "py_logic_equal"  , &make_binary_expression<logic_tag, tag::equal_tag> );
   def( "py_logic_nequal" , &make_binary_expression<logic_tag, tag::nequal_tag> );
   def( "py_logic_implies", &make_binary_expression<logic_tag, tag::implies_tag> );
-  def( "py_logic_and"    , &make_binary_expression<logic_tag, tag::and_tag> );
+  def( "py_logic_and"    , &make_nary_expression<logic_tag, tag::and_tag> );
   def( "py_logic_nand"   , &make_binary_expression<logic_tag, tag::nand_tag> );
-  def( "py_logic_or"     , &make_binary_expression<logic_tag, tag::or_tag> );
+  def( "py_logic_or"     , &make_nary_expression<logic_tag, tag::or_tag> );
   def( "py_logic_nor"    , &make_binary_expression<logic_tag, tag::nor_tag> );
   def( "py_logic_xor"    , &make_binary_expression<logic_tag, tag::xor_tag> );
   def( "py_logic_xnor"   , &make_binary_expression<logic_tag, tag::xnor_tag> );
