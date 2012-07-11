@@ -43,7 +43,15 @@ if __name__ == "__main__":
         lookup = {}
         map_tests( collect_tests(lookup), tests)
         suite = unittest.TestSuite()
+        success = True
         for t in sys.argv[1:]:
-           tc = lookup[tuple(t.split('.'))]
-           suite.addTest(tc)
-        unittest.TextTestRunner(verbosity=2).run(suite)
+            tc = lookup[tuple(t.split('.'))]
+            suite.addTest(tc)
+            result = unittest.TextTestRunner(verbosity=2).run(suite)
+            if len(result.errors) > 0 or len(result.failures) > 0:
+                success = False
+
+        if success:
+            sys.exit(0)
+        else:
+            sys.exit(1)
