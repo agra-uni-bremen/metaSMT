@@ -8,7 +8,9 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/Options.hpp"
 #include "API/BoolEvaluator.hpp"
+#include "support/Options.hpp"
 
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -28,7 +30,18 @@ namespace metaSMT {
     : SolverContext
     , boost::proto::callable_context< DirectSolver_Context<SolverContext>, boost::proto::null_context >
   { 
-    DirectSolver_Context() {}
+    DirectSolver_Context() {
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, setup_option_map_cmd >::type
+      , /* then = */ option::SetupOptionMapCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( static_cast<SolverContext&>(*this), opt );
+    }
+
+    DirectSolver_Context(Options const &opt)
+      : opt(opt)
+    {}
 
     /// The returned expression type is the result_type of the SolverContext
     typedef typename SolverContext::result_type result_type;
@@ -275,13 +288,13 @@ namespace metaSMT {
 
     template < typename Tag >
     typename boost::enable_if< Evaluator<Tag>, result_type >::type
-    operator() (boost::proto::tag::terminal, Tag t) {
+    operator() ( boost::proto::tag::terminal const &, Tag const &t ) {
       return Evaluator<Tag>::eval(*this, t);
     }
 
     template < typename Tag >
     typename boost::disable_if< Evaluator<Tag>, result_type >::type
-    operator() (boost::proto::tag::terminal, Tag t) {
+    operator() ( boost::proto::tag::terminal const &, Tag const &t ) {
       return SolverContext::operator()( t, boost::any() );
     }
 
@@ -291,11 +304,31 @@ namespace metaSMT {
     void command( assumption_cmd const &, result_type e) {
       SolverContext::assumption(e);
     }
+
+    void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
+      opt.set(key, value);
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, notify_option_change_cmd >::type
+      , /* then = */ option::NotifyOptionChangeCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( static_cast<SolverContext&>(*this), opt );
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key ) {
+      return opt.get(key);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key, std::string const &default_value ) {
+      return opt.get(key, default_value);
+    }
+
     using SolverContext::command;
 
     private:
       typedef typename std::tr1::unordered_map<unsigned, result_type> VariableLookupT;
       VariableLookupT _variables;
+      Options opt;
 
       // disable copying DirectSolvers;
       DirectSolver_Context(DirectSolver_Context const & );
@@ -313,6 +346,14 @@ namespace metaSMT {
 
     template<typename Context>
     struct supports< DirectSolver_Context<Context>, assumption_cmd>
+    : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, get_option_cmd>
+    : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, set_option_cmd>
     : boost::mpl::true_ {};
   }
 
