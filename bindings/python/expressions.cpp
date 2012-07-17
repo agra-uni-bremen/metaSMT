@@ -1,5 +1,7 @@
 #include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/expression/expression.hpp>
+#include <metaSMT/expression/print_expression.hpp>
+#include <metaSMT/support/DefaultSymbolTable.hpp>
 
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
@@ -190,12 +192,20 @@ unsigned py_logic_expression_type( const logic_expression& expr )
   return boost::apply_visitor( type_visitor(), expr );
 }
 
+std::string py_logic_expression_repr (logic_expression const& le) {
+  std::ostringstream buf;
+  std::ostream_iterator<char> ite(buf);
+  metaSMT::expression::print_expression_static( ite, le, metaSMT::support::default_symbol_table);
+  return buf.str();
+}
+
 void export_expressions()
 {
   using namespace metaSMT::logic;
 
   class_<logic_expression>( "logic_expression" )
     .def( "type", &py_logic_expression_type )
+    .def( "__repr__", &py_logic_expression_repr )
     ;
   def( "py_logic_term", &make_logic_expression<bool> );
   def( "py_bv_bit0", &make_bit0 );
