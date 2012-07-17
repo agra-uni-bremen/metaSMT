@@ -2,6 +2,7 @@ from metasmt.core import *
 
 import inspect
 
+
 # Expressions
 def install_operator( sym, types, functions ):
     # Process Types
@@ -22,6 +23,10 @@ def install_operator( sym, types, functions ):
         f = lambda a, b: functions[to_logic_expression( a ).type()]( a, b )
     elif n == 3:
         f = lambda a, b, c: functions[to_logic_expression( a ).type()]( a, b, c )
+    else:
+        def fun(*a):
+            return functions[to_logic_expression(a[0]).type()](*a)
+        f = fun
 
     for t in types:
         setattr( t, sym, f )
