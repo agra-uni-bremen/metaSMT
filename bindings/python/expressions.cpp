@@ -69,9 +69,14 @@ logic_expression make_ternary_expression( const logic_expression& expr1, const l
 }
 
 template<typename LogicTag, typename OpTag>
-logic_expression make_nary_expression( std::vector<logic_expression> const& exprns )
+logic_expression make_nary_expression( boost::python::list const& exprns )
 {
-  return logic_expression( nary_expression<LogicTag, OpTag>( exprns ) );
+  unsigned length ( boost::python::len(exprns) );
+  std::vector<logic_expression> args;
+  for (unsigned i = 0; i < length; ++i) {
+    args.push_back( boost::python::extract<logic_expression>( exprns[i] ) );
+  }
+  return logic_expression( nary_expression<LogicTag, OpTag>( args ) );
 }
 
 template<typename T>
