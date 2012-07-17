@@ -88,6 +88,33 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
     return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr1 ) ), boost::cref( boost::apply_visitor( *this, expr.expr2 ) ), boost::cref( boost::apply_visitor( *this, expr.expr3 ) ) ) );
   }
 
+  // nary expressions
+  typename T::result_type operator() ( nary_expression<uf_tag, boost::proto::tag::function> e ) const {
+    assert( false && "Yet not implemented" );
+    return metaSMT::evaluate( _solver, metaSMT::logic::False);
+  }
+
+  typename T::result_type operator() ( nary_expression<logic_tag, predtags::and_tag> e ) const {
+    typedef nary_expression<logic_tag, predtags::and_tag> Expr;
+    result_type r = evaluate( _solver, metaSMT::logic::True);
+    for ( Expr::ContainerType::const_iterator it = e.begin(), ie = e.end(); it != ie; ++it ) {
+      result_type arg = boost::apply_visitor(*this, *it);
+      r = evaluate(_solver, metaSMT::logic::And(r, arg));
+    }
+    return r;
+  }
+
+  typename T::result_type operator() ( nary_expression<logic_tag, predtags::or_tag> e ) const {
+    typedef nary_expression<logic_tag, predtags::or_tag> Expr;
+    result_type r = evaluate( _solver, metaSMT::logic::False);
+    for ( Expr::ContainerType::const_iterator it = e.begin(), ie = e.end(); it != ie; ++it ) {
+      result_type arg = boost::apply_visitor(*this, *it);
+      r = evaluate(_solver, metaSMT::logic::Or(r, arg));
+    }
+    return r;
+  }
+
+
   template<typename Tag>
   typename T::result_type operator()( const extend_expression<Tag>& expr ) const
   {
@@ -103,6 +130,7 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
   template<typename OtherTag>
   typename T::result_type operator()( const OtherTag & expr ) const
   {
+    std::cerr << "\nunknown operator used \n" << typeid(expr).name() << "\n";
     return metaSMT::evaluate( _solver, metaSMT::logic::False );
   }
 
