@@ -34,7 +34,12 @@ set_solver(ENABLE_SOLVER_GLUCOSER Glucoser_EXECUTABLE)
 set_solver(ENABLE_SOLVER_SMT2 Z3_EXECUTABLE Boost_IOSTREAMS_LIBRARY)
 set_solver(ENABLE_SOLVER_CONSTRAINT Z3_FOUND CUDD_FOUND Boost_THREAD_LIBRARY)
 
-configure_file(python_config.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx)
+configure_file(python_config.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_)
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_ ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_
+)
 
 add_library( metasmt_python SHARED
   python.cpp
