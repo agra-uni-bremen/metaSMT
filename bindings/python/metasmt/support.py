@@ -7,7 +7,7 @@ def _adjust( ps, width ):
     if width == None:
         width = len( ps )
     else:
-        ps = [ ps[i] == True for i in range( width ) ]
+        ps = [ as_boolean(ps[i]) == True for i in range( width ) ]
     assert( width > 0 )
     return ( ps, width )
 
@@ -83,3 +83,15 @@ def bv_count( bv, width ):
 # Get bit-width for values
 def bits_for_values( values ):
     return int( math.ceil( math.log( values ) / math.log( 2.0 ) ) )
+
+def as_boolean( bool_or_bit ):
+    """if the paramter is boolean, returns it. If it is
+       a bitvector returns parameter != bit0. This only
+       works for 1-bit bitvectors.
+    """
+
+    if bool_or_bit.type() == 0:
+        # boolean
+        return bool_or_bit
+    else:
+        return logic_nequal(bool_or_bit, bit0)
