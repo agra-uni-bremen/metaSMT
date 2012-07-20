@@ -3,6 +3,8 @@
 
 #include "../tags/Logic.hpp" 
 
+#include <boost/any.hpp>
+
 extern "C" {
 #include <aiger.h>
 }
