@@ -44,7 +44,8 @@ add_custom_command(
 add_library( metasmt_python SHARED
   python.cpp
   expressions.cpp
-  solvers.cpp
+  solvers.cpp 
+  ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
 )
 
 set_target_properties( metasmt_python
