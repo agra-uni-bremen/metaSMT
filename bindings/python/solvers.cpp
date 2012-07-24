@@ -7,6 +7,7 @@
 #include <metaSMT/API/SymbolTable.hpp>
 
 using namespace boost::python;
+using namespace metaSMT::expression;
 
 template<typename T>
 solver make_solver()
@@ -53,50 +54,84 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
     return metaSMT::evaluate( _solver, bv );
   }
 
-  typename T::result_type operator()( const bvuint_expression& expr ) const
+  typename T::result_type operator()( const bv_const<metaSMT::logic::QF_BV::tag::bvuint_tag>& expr ) const
   {
     return metaSMT::evaluate( _solver, metaSMT::logic::QF_BV::bvuint( expr.value, expr.width ) );
   }
 
-  typename T::result_type operator()( const bvsint_expression& expr ) const
+  typename T::result_type operator()( const bv_const<metaSMT::logic::QF_BV::tag::bvsint_tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, metaSMT::logic::QF_BV::bvsint( expr.value, expr.width ) );
+    return metaSMT::evaluate( _solver, metaSMT::logic::QF_BV::bvuint( expr.value, expr.width ) );
   }
 
   template<typename Tag>
-  typename T::result_type operator()( const bvstr_expression<Tag>& expr ) const
+  typename T::result_type operator()( const bv_const<Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( expr.value ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( expr.str ) ) );
   }
 
   template<typename LogicTag, typename Tag>
   typename T::result_type operator()( const unary_expression<LogicTag, Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
   }
 
   template<typename LogicTag, typename Tag>
   typename T::result_type operator()( const binary_expression<LogicTag, Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.left ) ), boost::cref( boost::apply_visitor( *this, expr.right ) ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.left ) ), boost::cref( boost::apply_visitor( *this, expr.right ) ) ) );
   }
 
   template<typename LogicTag, typename Tag>
   typename T::result_type operator()( const ternary_expression<LogicTag, Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr1 ) ), boost::cref( boost::apply_visitor( *this, expr.expr2 ) ), boost::cref( boost::apply_visitor( *this, expr.expr3 ) ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr1 ) ), boost::cref( boost::apply_visitor( *this, expr.expr2 ) ), boost::cref( boost::apply_visitor( *this, expr.expr3 ) ) ) );
   }
+
+  // nary expressions
+  typename T::result_type operator() ( nary_expression<uf_tag, boost::proto::tag::function> e ) const {
+    assert( false && "Yet not implemented" );
+    return metaSMT::evaluate( _solver, metaSMT::logic::False);
+  }
+
+  typename T::result_type operator() ( nary_expression<logic_tag, predtags::and_tag> e ) const {
+    typedef nary_expression<logic_tag, predtags::and_tag> Expr;
+    result_type r = evaluate( _solver, metaSMT::logic::True);
+    for ( Expr::ContainerType::const_iterator it = e.begin(), ie = e.end(); it != ie; ++it ) {
+      result_type arg = boost::apply_visitor(*this, *it);
+      r = evaluate(_solver, metaSMT::logic::And(r, arg));
+    }
+    return r;
+  }
+
+  typename T::result_type operator() ( nary_expression<logic_tag, predtags::or_tag> e ) const {
+    typedef nary_expression<logic_tag, predtags::or_tag> Expr;
+    result_type r = evaluate( _solver, metaSMT::logic::False);
+    for ( Expr::ContainerType::const_iterator it = e.begin(), ie = e.end(); it != ie; ++it ) {
+      result_type arg = boost::apply_visitor(*this, *it);
+      r = evaluate(_solver, metaSMT::logic::Or(r, arg));
+    }
+    return r;
+  }
+
 
   template<typename Tag>
   typename T::result_type operator()( const extend_expression<Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( expr.by ), boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( expr.by ), boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
   }
 
   template<typename Tag>
   typename T::result_type operator()( const extract_expression<Tag>& expr ) const
   {
-    return metaSMT::evaluate( _solver, proto::make_expr<Tag>( boost::cref( expr.from ), boost::cref( expr.width ), boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
+    return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( expr.from ), boost::cref( expr.width ), boost::cref( boost::apply_visitor( *this, expr.expr ) ) ) );
+  }
+
+  template<typename OtherTag>
+  typename T::result_type operator()( const OtherTag & expr ) const
+  {
+    std::cerr << "\nunknown operator used \n" << typeid(expr).name() << "\n";
+    return metaSMT::evaluate( _solver, metaSMT::logic::False );
   }
 
 private:

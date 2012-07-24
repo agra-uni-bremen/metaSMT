@@ -22,8 +22,7 @@ class LogicTest( object ):
         solver.solve()
 
     def check_with_solver( self, solver, metasmt_function, specification ):
-        vars = tuple( new_variables( len( inspect.getargspec( metasmt_function ).args ) ) )
-
+        vars = tuple( new_variables( len( inspect.getargspec( specification ).args ) ) )
         solver.assertion( metasmt_function( *vars ) )
         self.assertTrue( solver.solve() )
         self.assertTrue( specification( *tuple( map( solver.__getitem__, vars ) ) ) )
@@ -46,11 +45,31 @@ class LogicTest( object ):
     def test_and( self ):
         self.check( logic_and, lambda a, b: a and b )
 
+	solver = self.solver()
+	solver.assertion( logic_and( True, True, True ) )
+	self.assertTrue( solver.solve() )
+
+	solver.assertion( logic_and( True, False, True, True, False, True ) )
+	self.assertTrue( not solver.solve() )
+
     def test_nand( self ):
         self.check( logic_nand, lambda a, b: not( a and b ) )
 
     def test_or( self ):
         self.check( logic_or, lambda a, b: a or b )
+
+	solver = self.solver()
+	solver.assertion( logic_or( True, True, True ) )
+	self.assertTrue( solver.solve() )
+
+	solver.assertion( logic_or( True, False, True, True, False, True ) )
+	self.assertTrue( solver.solve() )
+
+	solver.assertion( logic_or( False, False, True, True, False, True ) )
+	self.assertTrue( solver.solve() )
+
+	solver.assertion( logic_or( False, False, False, False, False, False ) )
+	self.assertTrue( not solver.solve() )
 
     def test_nor( self ):
         self.check( logic_nor, lambda a, b: not( a or b ) )
@@ -121,6 +140,7 @@ class BitvectorTest( object ):
 
     def testBVAnd( self ):
         self.check( bv_and, lambda a, b: a & b )
+
 
     def testBVNand( self ):
         self.check( bv_nand, lambda a, b: invert( a & b ) )
@@ -201,7 +221,7 @@ class BitvectorTest( object ):
         solver = self.solver()
         a = new_bitvector( 32 )
         solver.assertion( logic_equal( a, bv_uint[32]( random.randint( 0, 2**32 - 1 ) ) ) )
-        solver.assertion( logic_equal( a, reduce( concat, [ extract( i, i, a ) for i in ( range( 32 ) ) ] ) ) )
+        solver.assertion( logic_equal( a, reduce( concat, reversed([ extract( i, i, a ) for i in ( range( 32 ) ) ] ) ) ))
         self.assertTrue( solver.solve() )
 
     def testZeroExtend( self ):

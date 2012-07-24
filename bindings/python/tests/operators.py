@@ -69,9 +69,10 @@ def twoscomp( v, bitwidth = 32 ):
         return -( invert( v - ( 1 << ( bitwidth - 1 ) ), bitwidth - 1 ) + 1 )
 
 class BitvectorTest( object ):
-    def check_with_solver( self, solver, metasmt_function, specification, bv = 32, rbv = 32, returns_bool = False, tbv = 32 ):
+    def check_with_solver( self, solver, metasmt_function, specification, bv = 32, rbv = 32, returns_bool = False, tbv = 32, v = None ):
         vars = new_bitvectors( bv, len( inspect.getargspec( metasmt_function ).args ) )
-        v = random.randint( 0, 2**rbv - 1 )
+        if v is None:
+            v = random.randint( 0, 2**rbv - 1 )
 
         solver = self.solver()
         if returns_bool:
@@ -86,9 +87,9 @@ class BitvectorTest( object ):
             else:
                 self.assertTrue( specification( *tuple( map( solver.__getitem__, vars ) ) ) == v )
 
-    def check( self, metasmt_function, specification, bv = 32, rbv = 32, returns_bool = False, tbv = 32 ):
+    def check( self, *args, **kwargs ):
         solver = self.solver()
-        self.check_with_solver( solver, metasmt_function, specification, bv, rbv, returns_bool, tbv )
+        self.check_with_solver( solver, *args, **kwargs )
 
     def testConstants( self ):
         solver = self.solver()
@@ -153,10 +154,10 @@ class BitvectorTest( object ):
         self.check( lambda a, b: a % b, lambda a, b: ( a % b ) )
 
     def testBVShl( self ):
-        self.check( lambda a, b: a << b, None )
+        self.check( lambda a, b: a << b, None, v = 4090671586 )
 
     def testBVShr( self ):
-        self.check( lambda a, b: a >> b, None )
+        self.check( lambda a, b: a >> b, None, v = 1914427133 )
 
     def testBVAshr( self ):
         pass

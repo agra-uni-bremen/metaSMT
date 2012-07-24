@@ -1,6 +1,6 @@
 find_package( PythonLibs )
 
-if( PYTHONLIBS_FOUND ) 
+if( PYTHONLIBS_FOUND )
 
 include_directories( ${PYTHON_INCLUDE_DIRS} )
 include_directories( ../../src )
@@ -34,12 +34,18 @@ set_solver(ENABLE_SOLVER_GLUCOSER Glucoser_EXECUTABLE)
 set_solver(ENABLE_SOLVER_SMT2 Z3_EXECUTABLE Boost_IOSTREAMS_LIBRARY)
 set_solver(ENABLE_SOLVER_CONSTRAINT Z3_FOUND CUDD_FOUND Boost_THREAD_LIBRARY)
 
-configure_file(python_config.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx)
+configure_file(python_config.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_)
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_ ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx_
+)
 
 add_library( metasmt_python SHARED
   python.cpp
   expressions.cpp
-  solvers.cpp
+  solvers.cpp 
+  ${CMAKE_CURRENT_BINARY_DIR}/python_config.hxx
 )
 
 set_target_properties( metasmt_python
@@ -67,14 +73,38 @@ if(PYTHONINTERP_FOUND)
   add_test(py_operators ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/operators.py)
   add_test(py_support ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/support.py)
   add_test(py_smt2 ${PYMETASMT} ${CMAKE_CURRENT_SOURCE_DIR}/tests/smt2.py)
+
+  find_program(AWK awk)
+
+  set (_CTESTFILE ${CMAKE_CURRENT_BINARY_DIR}/CTestTestfile.cmake)
+
+
+  add_custom_command(
+    OUTPUT "${_CTESTFILE}_"
+    COMMAND ${PYMETASMT} tests --discover
+     | ${AWK}
+        -v pymetaSMT="${PYMETASMT}"
+        -v path="${CMAKE_CURRENT_SOURCE_DIR}"
+        -f "${CMAKE_CURRENT_SOURCE_DIR}/generate_ctest_script.awk"
+     > "${_CTESTFILE}_"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS metasmt_python
+  )
+  add_custom_target( py_test_script ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${_CTESTFILE}_"
+      "${_CTESTFILE}"
+    DEPENDS "${_CTESTFILE}_"
+  )
+
 endif()
 
 
-install(DIRECTORY metasmt 
+install(DIRECTORY metasmt
   DESTINATION python
   FILES_MATCHING PATTERN "*.py"
 )
-install(DIRECTORY examples 
+install(DIRECTORY examples
   DESTINATION python
   FILES_MATCHING PATTERN "*.py"
 )
@@ -84,7 +114,7 @@ install(TARGETS metasmt_python
 
 install(FILES ${PYMETASMT}
   DESTINATION python
-  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE 
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE
 )
 
 else()

@@ -1,6 +1,9 @@
 #ifndef SOLVERS_HPP
 #define SOLVERS_HPP
+
 #include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/expression/expression.hpp>
+
 #include <metaSMT/support/disable_warnings.hpp>
 #include <boost/variant.hpp>
 #include <boost/proto/core.hpp>
@@ -8,7 +11,6 @@
 
 namespace proto = boost::proto;
 
-#include "expressions.hpp"
 #include "python_config.hxx"
 
 #include <metaSMT/backend/ClauseWriter.hpp>

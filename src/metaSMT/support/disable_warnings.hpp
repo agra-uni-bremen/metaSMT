@@ -15,6 +15,7 @@
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma clang diagnostic ignored "-Wdelete-non-virtual-dtor"
 #pragma clang diagnostic ignored "-Wparentheses-equality"
+#pragma clang diagnostic ignored "-Wlogical-op-parentheses"
 #endif
 
 
