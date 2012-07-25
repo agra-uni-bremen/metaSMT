@@ -46,7 +46,7 @@ namespace metaSMT {
       , thread1(worker1)
       , thread2(worker2)
       , lastSAT(0)
-      , ready(false)
+      , ready(new bool(false))
       , counter0(0)
       , counter1(0)
     {}
@@ -292,7 +292,7 @@ namespace metaSMT {
       boost::unique_future<bool> future1 = pt1->get_future();
       worker1.push(mkPT(pt1));
 
-      if(ready)
+      if(*ready)
       {
         counter0++;
         lastSAT = 1;
@@ -302,7 +302,7 @@ namespace metaSMT {
       boost::packaged_task <bool>* pt2
         = new boost::packaged_task<bool>( SolveCaller<SolverContext2>(*ctx2) );
       boost::function0<void> newFunc
-        = boost::bind(&Priority_Context::setReady, boost::ref(ready) );
+        = boost::bind(&Priority_Context::setReady, ready );
 
       worker1.push(newFunc);
 
@@ -355,10 +355,10 @@ namespace metaSMT {
      * \return void
      *
      */
-    static void setReady( bool &ready )
+    static void setReady( boost::shared_ptr<bool> ready )
     {
       //std::cout << "now ready" << std::endl;
-      ready = true;
+      *ready = true;
     }
 
 
@@ -376,7 +376,7 @@ namespace metaSMT {
     // 1: ctx1
     // 2: ctx2
     unsigned lastSAT;
-    bool ready;
+    boost::shared_ptr<bool> ready;
     unsigned counter0;
     unsigned counter1;
 
