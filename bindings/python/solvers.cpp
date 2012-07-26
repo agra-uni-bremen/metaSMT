@@ -93,13 +93,11 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
     return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr1 ) ), boost::cref( boost::apply_visitor( *this, expr.expr2 ) ), boost::cref( boost::apply_visitor( *this, expr.expr3 ) ) ) );
   }
 
-  template<typename Tag>
   typename T::result_type operator()( const select_expression &expr ) const
   {
     return metaSMT::evaluate( _solver, metaSMT::logic::Array::select( boost::apply_visitor( *this, expr.array ) , boost::apply_visitor( *this, expr.index ) ) );
   }
 
-  template<typename Tag>
   typename T::result_type operator()( const store_expression &expr ) const
   {
     return metaSMT::evaluate( _solver, metaSMT::logic::Array::store( boost::apply_visitor( *this, expr.array ), boost::apply_visitor( *this, expr.index ), boost::apply_visitor( *this, expr.value ) ) );

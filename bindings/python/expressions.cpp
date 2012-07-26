@@ -236,7 +236,6 @@ void export_expressions()
     ;
   def( "py_array_store", &make_store_expression );
   def( "py_array_select", &make_select_expression );
-//  def( "py_new_array", &make_new_array );
 
   def( "py_logic_term", &make_logic_expression<bool> );
   def( "py_bv_bit0", &make_bit0 );
@@ -313,5 +312,6 @@ void export_expressions()
       /* def index_width */
       /* def value_width */
     ;
+  /* new_array(elem_width, index_width) */
   def( "new_array", &metaSMT::logic::Array::new_array );
 }
