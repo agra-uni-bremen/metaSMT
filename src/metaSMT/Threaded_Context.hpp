@@ -6,6 +6,7 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/Options.hpp"
 #include "concurrent/Threaded_Worker.hpp"
 #include "support/lazy.hpp"
 #include "support/protofy.hpp"
@@ -157,6 +158,18 @@ namespace metaSMT {
           //  , proto::terminal< proto::_ >
       , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
     > {};
+
+    void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
+      opt.set(key, value);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key ) {
+      return opt.get(key);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key, std::string const &default_value ) {
+      return opt.get(key, default_value);
+    }
 
     /** \endcond */
 
@@ -331,6 +344,7 @@ namespace metaSMT {
 
 
     private:
+      Options opt;
       boost::shared_ptr<SolverContext1> ctx1;
       boost::shared_ptr<SolverContext2> ctx2;
 
@@ -363,6 +377,14 @@ namespace metaSMT {
     typename supports<Context1, Feature>::type,
     typename supports<Context2, Feature>::type
   >::type {};
+
+    template<typename Context1, typename Context2>
+    struct supports< Threaded_Context<Context1, Context2>, get_option_cmd>
+    : boost::mpl::true_ {};
+
+    template<typename Context1, typename Context2>
+    struct supports< Threaded_Context<Context1, Context2>, set_option_cmd>
+    : boost::mpl::true_ {};
 
   }
 
