@@ -372,7 +372,7 @@ namespace metaSMT {
 
   template <typename Expr>
   SMT_Expression evaluate( Graph_Context & ctx, Expr const & e ) {
-    check(e);
+    // check(e);
     return  proto::eval(e, ctx) ;
   }
 } // namespace metaSMT 
