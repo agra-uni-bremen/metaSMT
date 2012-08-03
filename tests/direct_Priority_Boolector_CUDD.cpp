@@ -39,7 +39,7 @@ namespace std {
 #include "test_stack.cpp" 
 #include "test_unsat.cpp"
 #include "test_fmi.cpp"
-//#include "test_cardinality.cpp"
+#include "test_cardinality.cpp"
 #include "test_lazy.cpp"
 //#include "test_annotate.cpp"
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE( no_smt_after_bdd_bvmul )
 
   }
   BOOST_REQUIRE_GT(prev0,0u);
-};
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()
