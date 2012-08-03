@@ -308,11 +308,11 @@ namespace metaSMT {
     void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
       opt.set(key, value);
       typedef typename boost::mpl::if_<
-        /* if   = */ typename features::supports< SolverContext, notify_option_change_cmd >::type
-      , /* then = */ option::NotifyOptionChangeCommand
+        /* if   = */ typename features::supports< SolverContext, set_option_cmd >::type
+      , /* then = */ option::SetOptionCommand
       , /* else = */ option::NOPCommand
       >::type Command;
-      Command::template action( static_cast<SolverContext&>(*this), opt );
+      Command::template action( static_cast<SolverContext&>(*this), opt, key, value );
     }
 
     std::string command( get_option_cmd const &, std::string const &key ) {

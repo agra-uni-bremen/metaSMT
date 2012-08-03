@@ -6,7 +6,6 @@ namespace metaSMT {
   struct setup_option_map_cmd { typedef void result_type; };
   struct get_option_cmd { typedef std::string result_type; };
   struct set_option_cmd { typedef void result_type; };
-  struct notify_option_change_cmd { typedef void result_type; };
 
   template <typename Context_ >
   std::string get_option( Context_ &ctx, std::string const &key ) {

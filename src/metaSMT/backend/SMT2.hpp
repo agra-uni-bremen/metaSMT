@@ -224,8 +224,8 @@ namespace metaSMT {
         opt_ = opt;
       }
 
-      void command( notify_option_change_cmd const &, Options const &opt ) {
-        if ( init_ && (opt_.get("smt_filename") != opt.get("smt_filename")) ) {
+      void command( set_option_cmd const &, std::string const &key, std::string const &value, Options const &opt ) {
+        if ( init_ && key == "smt_filename" && (opt_.get(key) != value) ) {
           assert( false && "Changing the filename on-the-fly is yet not allowed" );
         }
         opt_ = opt;
@@ -750,10 +750,6 @@ namespace metaSMT {
 
     template<>
     struct supports< solver::SMT2, setup_option_map_cmd >
-    : boost::mpl::true_ {};
-
-    template<>
-    struct supports< solver::SMT2, notify_option_change_cmd >
     : boost::mpl::true_ {};
   } // features
 

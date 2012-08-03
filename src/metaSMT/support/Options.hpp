@@ -11,8 +11,18 @@ namespace metaSMT {
 
   namespace option {
     struct NOPCommand {
-      template < typename SolverType, typename T >
-      static void action( SolverType const &, T const & ) {
+      template < typename SolverType, typename T1 >
+      static void action( SolverType const &, T1 const & ) {
+        /* ignore command */
+      }
+
+      template < typename SolverType, typename T1, typename T2 >
+      static void action( SolverType const &, T1 const &, T2 const & ) {
+        /* ignore command */
+      }
+
+      template < typename SolverType, typename T1, typename T2, typename T3 >
+      static void action( SolverType const &, T1 const &, T2 const &, T3 const & ) {
         /* ignore command */
       }
     }; // NOPCommand
@@ -24,12 +34,13 @@ namespace metaSMT {
       }
     }; // SetupOptionMapCommand
 
-    struct NotifyOptionChangeCommand {
+    struct SetOptionCommand {
       template < typename SolverType >
-      static void action( SolverType &ctx, Options const &opt ) {
-        ctx.command( notify_option_change_cmd(), opt );
+      static void action( SolverType &ctx, Options const &opt,
+                          std::string const &key, std::string const &value ) {
+        ctx.command( set_option_cmd(), opt, key, value );
       }
-    }; // NotifyOptionChangeCommand
+    }; // SetOptionCommand
   } // option
 
   struct Options {
