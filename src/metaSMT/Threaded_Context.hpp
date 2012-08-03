@@ -6,6 +6,7 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/BoolEvaluator.hpp"
 #include "API/Options.hpp"
 #include "concurrent/Threaded_Worker.hpp"
 #include "support/lazy.hpp"
@@ -158,6 +159,7 @@ namespace metaSMT {
           //  , proto::terminal< proto::_ >
       , proto::nary_expr<proto::_, proto::vararg< unpack_future<N> > >
     > {};
+
 
     void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
       opt.set(key, value);
@@ -367,16 +369,16 @@ namespace metaSMT {
   };
 
   namespace features {
-  //  template<typename Context, typename Feature>
-  //  struct supports< Threaded_Context<Context>, Feature>
-  //  : supports<Context, Feature>::type {};
+    //  template<typename Context, typename Feature>
+    //  struct supports< Threaded_Context<Context>, Feature>
+    //  : supports<Context, Feature>::type {};
 
- template<typename Context1, typename Context2, typename Feature>
-  struct supports< Threaded_Context<Context1, Context2>, Feature>
-  : boost::mpl::and_<
-    typename supports<Context1, Feature>::type,
-    typename supports<Context2, Feature>::type
-  >::type {};
+    template<typename Context1, typename Context2, typename Feature>
+    struct supports< Threaded_Context<Context1, Context2>, Feature>
+      : boost::mpl::and_<
+      typename supports<Context1, Feature>::type,
+      typename supports<Context2, Feature>::type
+      >::type {};
 
     template<typename Context1, typename Context2>
     struct supports< Threaded_Context<Context1, Context2>, get_option_cmd>
@@ -385,23 +387,34 @@ namespace metaSMT {
     template<typename Context1, typename Context2>
     struct supports< Threaded_Context<Context1, Context2>, set_option_cmd>
     : boost::mpl::true_ {};
-
-  }
-
-  template <typename SolverType1, typename SolverType2, typename Expr>
-  typename boost::disable_if<
-    typename boost::is_same<Expr, typename Threaded_Context<SolverType1, SolverType2>::result_type>::type,
-    typename Threaded_Context<SolverType1, SolverType2>::result_type
-  >::type
-  evaluate( Threaded_Context<SolverType1, SolverType2> & ctx, Expr const & e ) {
-    return ctx.evaluate(e);
-  }
+  } // features
 
   template <typename SolverType1, typename SolverType2>
   typename Threaded_Context<SolverType1, SolverType2>::result_type
   evaluate( Threaded_Context<SolverType1, SolverType2> & ctx,
             typename Threaded_Context<SolverType1, SolverType2>::result_type r ) {
     return r;
+  }
+
+  template <typename SolverType1, typename SolverType2, typename Expr>
+    typename boost::disable_if<
+      typename boost::mpl::or_<
+        typename boost::is_same<Expr, typename Threaded_Context<SolverType1, SolverType2>::result_type>::type
+      , typename Evaluator<Expr>::type
+      >::type
+    , typename Threaded_Context<SolverType1, SolverType2>::result_type
+  >::type
+  evaluate( Threaded_Context<SolverType1, SolverType2> & ctx, Expr const & e ) {
+    return ctx.evaluate(e);
+  }
+
+  template < typename SolverType1, typename SolverType2, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , typename Threaded_Context<SolverType1, SolverType2>::result_type
+  >::type
+  evaluate( Threaded_Context<SolverType1, SolverType2> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverType1, typename SolverType2>

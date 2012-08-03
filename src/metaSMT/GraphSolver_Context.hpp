@@ -331,9 +331,34 @@ namespace metaSMT {
     : boost::mpl::true_ {};
   }
 
-  template <typename SolverTypes, typename Expr>
-  SMT_Expression evaluate( GraphSolver_Context<SolverTypes> & ctx, Expr const & e ) {
-    return  ctx.evaluate(e) ;
+  template < typename SolverType >
+  SMT_Expression evaluate( GraphSolver_Context<SolverType> &ctx,
+                           SMT_Expression r ) {
+    return r;
+  }
+
+  template < typename SolverType, typename Expr >
+  typename boost::disable_if<
+    typename boost::mpl::or_<
+      typename Evaluator<Expr>::type
+    , typename boost::is_same<
+        Expr
+      , SMT_Expression
+      >::type
+    >::type
+  , SMT_Expression
+  >::type
+  evaluate( GraphSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return ctx.evaluate(e);
+  }
+
+  template < typename SolverType, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , SMT_Expression
+  >::type
+  evaluate( GraphSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverTypes>

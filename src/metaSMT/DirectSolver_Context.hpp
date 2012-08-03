@@ -301,6 +301,7 @@ namespace metaSMT {
     void command( assertion_cmd const &, result_type e) {
       SolverContext::assertion(e);
     }
+
     void command( assumption_cmd const &, result_type e) {
       SolverContext::assumption(e);
     }
@@ -357,23 +358,35 @@ namespace metaSMT {
     : boost::mpl::true_ {};
   }
 
-  template <typename SolverType, typename Expr>
+  template < typename SolverType >
+  typename DirectSolver_Context<SolverType>::result_type
+  evaluate( DirectSolver_Context<SolverType> &ctx,
+            typename DirectSolver_Context<SolverType>::result_type r ) {
+    return r;
+  }
+
+  template < typename SolverType, typename Expr >
   typename boost::disable_if<
-    typename boost::is_same<
-      Expr
-    , typename DirectSolver_Context<SolverType>::result_type
+    typename boost::mpl::or_<
+      typename Evaluator<Expr>::type
+    , typename boost::is_same<
+        Expr
+      , typename DirectSolver_Context<SolverType>::result_type
+      >::type
     >::type
   , typename DirectSolver_Context<SolverType>::result_type
   >::type
-  evaluate( DirectSolver_Context<SolverType> & ctx, Expr const & e ) {
+  evaluate( DirectSolver_Context<SolverType> &ctx, Expr const &e ) {
     return boost::proto::eval(e, ctx);
   }
 
-  template <typename SolverType>
-  typename DirectSolver_Context<SolverType>::result_type
-  evaluate( DirectSolver_Context<SolverType> & ctx,
-            typename DirectSolver_Context<SolverType>::result_type r ) {
-    return r;
+  template < typename SolverType, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , typename DirectSolver_Context<SolverType>::result_type
+  >::type
+  evaluate( DirectSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverType>
