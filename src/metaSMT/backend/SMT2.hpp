@@ -7,6 +7,7 @@
 #include "../support/find_executable.hpp"
 #include "../io/SMT2_ResultParser.hpp"
 #include "../API/SymbolTable.hpp"
+#include "../support/Options.hpp"
 
 #include "../result_wrapper.hpp"
 
@@ -38,6 +39,9 @@ namespace metaSMT {
   struct set_symbol_table_cmd;
   struct simplify_cmd;
   struct write_comment;
+  struct setup_option_map_cmd;
+  struct get_option_cmd;
+  struct set_option_cmd;
 
   namespace features {
     struct stack_api;
