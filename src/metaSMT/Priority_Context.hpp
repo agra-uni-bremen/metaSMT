@@ -6,6 +6,8 @@
 #include "Features.hpp"
 #include "support/lazy.hpp"
 #include "support/protofy.hpp"
+#include "API/BoolEvaluator.hpp"
+#include "API/Options.hpp"
 #include "concurrent/Threaded_Worker.hpp"
 
 #include <boost/tuple/tuple.hpp>
@@ -163,6 +165,18 @@ namespace metaSMT {
     {
       worker1.push( call_command (*ctx1, cmd, a1) );
       worker2.push( call_command (*ctx2, cmd, a1) );
+    }
+
+    void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
+      opt.set(key, value);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key ) {
+      return opt.get(key);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key, std::string const &default_value ) {
+      return opt.get(key, default_value);
     }
 
     /** \endcond */
@@ -362,7 +376,8 @@ namespace metaSMT {
     }
 
 
-    private:
+  private:
+    Options opt;
     boost::shared_ptr<SolverContext1> ctx1;
     boost::shared_ptr<SolverContext2> ctx2;
 
@@ -397,16 +412,14 @@ namespace metaSMT {
       typename supports<Context2, Feature>::type
     >::type {};
 
-  }
+    template<typename Context1, typename Context2>
+    struct supports< Priority_Context<Context1, Context2>, get_option_cmd>
+    : boost::mpl::true_ {};
 
-  template <typename SolverType1, typename SolverType2, typename Expr>
-    typename boost::disable_if<
-    typename boost::is_same<Expr, typename Priority_Context<SolverType1, SolverType2>::result_type>::type,
-    typename Priority_Context<SolverType1, SolverType2>::result_type
-  >::type
-  evaluate( Priority_Context<SolverType1, SolverType2> & ctx, Expr const & e ) {
-    return ctx.evaluate(e);
-  }
+    template<typename Context1, typename Context2>
+    struct supports< Priority_Context<Context1, Context2>, set_option_cmd>
+    : boost::mpl::true_ {};
+  } // features
 
   template <typename SolverType1, typename SolverType2>
   typename Priority_Context<SolverType1, SolverType2>::result_type
@@ -414,6 +427,27 @@ namespace metaSMT {
         typename Priority_Context<SolverType1, SolverType2>::result_type r
   ) {
     return r;
+  }
+
+  template <typename SolverType1, typename SolverType2, typename Expr>
+    typename boost::disable_if<
+      typename boost::mpl::or_<
+        typename boost::is_same<Expr, typename Priority_Context<SolverType1, SolverType2>::result_type>::type
+      , typename Evaluator<Expr>::type
+      >::type
+    , typename Priority_Context<SolverType1, SolverType2>::result_type
+  >::type
+  evaluate( Priority_Context<SolverType1, SolverType2> & ctx, Expr const & e ) {
+    return ctx.evaluate(e);
+  }
+
+  template < typename SolverType1, typename SolverType2, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , typename Priority_Context<SolverType1, SolverType2>::result_type
+  >::type
+  evaluate( Priority_Context<SolverType1, SolverType2> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverType1, typename SolverType2>

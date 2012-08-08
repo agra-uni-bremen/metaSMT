@@ -135,13 +135,13 @@ namespace metaSMT {
 
     template < typename TagT >
     typename boost::enable_if< Evaluator<TagT>, result_type >::type
-    operator() (proto::tag::terminal, TagT tag) {
+    operator() ( proto::tag::terminal const &, TagT const &tag ) {
       return Evaluator<TagT>::eval(*this, tag);
     }
 
     template < typename TagT >
     typename boost::disable_if< Evaluator<TagT>, result_type >::type
-    operator() (proto::tag::terminal, TagT tag )
+    operator() ( proto::tag::terminal const &, TagT const &tag )
     {
       Tag t1 (tag);
       Op0LookupT::const_iterator ite = _op0Lookup.find( t1 );
@@ -372,7 +372,7 @@ namespace metaSMT {
 
   template <typename Expr>
   SMT_Expression evaluate( Graph_Context & ctx, Expr const & e ) {
-    check(e);
+    // check(e);
     return  proto::eval(e, ctx) ;
   }
 } // namespace metaSMT 

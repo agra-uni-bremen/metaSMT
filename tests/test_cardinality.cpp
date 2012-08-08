@@ -10,13 +10,15 @@ using namespace std;
 using namespace metaSMT;
 using namespace metaSMT::solver;
 using namespace metaSMT::logic;
+using namespace metaSMT::cardinality;
 using namespace boost::assign;
 namespace proto = boost::proto;
 
-BOOST_FIXTURE_TEST_SUITE(cardinality, Solver_Fixture )
+BOOST_FIXTURE_TEST_SUITE(cardinality_t, Solver_Fixture )
 
-BOOST_AUTO_TEST_CASE( test_one_hot )
-{
+BOOST_AUTO_TEST_CASE( test_one_hot ) {
+  set_option( ctx, "cardinality", "bdd" );
+
   predicate a = new_variable();
   predicate b = new_variable();
   predicate c = new_variable();
@@ -64,6 +66,8 @@ BOOST_AUTO_TEST_CASE( test_one_hot )
 
 BOOST_AUTO_TEST_CASE( test_cardinality_eq )
 {
+  set_option( ctx, "cardinality", "bdd" );
+
   predicate a = new_variable();
   predicate b = new_variable();
   predicate c = new_variable();
@@ -130,8 +134,9 @@ void assumeFromUnsigned(Context &ctx, std::vector<Boolean> const &vec, unsigned 
   }
 }
 
-BOOST_AUTO_TEST_CASE( test_cardinality_with_bv )
-{
+BOOST_AUTO_TEST_CASE( test_bdd_cardinality_with_bv ) {
+  set_option( ctx, "cardinality", "bdd" );
+
   unsigned const width = 8;
   std::vector<predicate> vec;
   for (unsigned u = 0; u < width; ++u) {
@@ -168,6 +173,44 @@ BOOST_AUTO_TEST_CASE( test_cardinality_with_bv )
   }
 }
 
+BOOST_AUTO_TEST_CASE( test_adder_cardinality_with_bv ) {
+  set_option( ctx, "cardinality", "adder" );
+
+  unsigned const width = 8;
+  std::vector<predicate> vec;
+  for (unsigned u = 0; u < width; ++u) {
+    vec.push_back(new_variable());
+  }
+
+  for (unsigned u = 0; u < (1 << width); ++u) {
+    unsigned count_u = 0;
+    for (unsigned v = u; v != 0; v >>= 1) {
+      count_u += v & 1;
+    }
+
+    for (unsigned r = 0; r <= width; ++r) {
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_geq(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u >= r );
+
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_leq(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u <= r );
+
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_gt(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u > r );
+
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_lt(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u < r );
+
+      assumeFromUnsigned(ctx, vec, u);
+      assumption(ctx, cardinality_eq(ctx, vec, r));
+      BOOST_REQUIRE_EQUAL( solve(ctx), count_u == r );
+    }
+  }
+}
 
 BOOST_AUTO_TEST_SUITE_END() //Solver
 

@@ -8,7 +8,9 @@
 #include "Features.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/Options.hpp"
 #include "API/BoolEvaluator.hpp"
+#include "support/Options.hpp"
 
 #include <boost/any.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -28,7 +30,18 @@ namespace metaSMT {
     : SolverContext
     , boost::proto::callable_context< DirectSolver_Context<SolverContext>, boost::proto::null_context >
   { 
-    DirectSolver_Context() {}
+    DirectSolver_Context() {
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, setup_option_map_cmd >::type
+      , /* then = */ option::SetupOptionMapCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( static_cast<SolverContext&>(*this), opt );
+    }
+
+    DirectSolver_Context(Options const &opt)
+      : opt(opt)
+    {}
 
     /// The returned expression type is the result_type of the SolverContext
     typedef typename SolverContext::result_type result_type;
@@ -275,27 +288,48 @@ namespace metaSMT {
 
     template < typename Tag >
     typename boost::enable_if< Evaluator<Tag>, result_type >::type
-    operator() (boost::proto::tag::terminal, Tag t) {
+    operator() ( boost::proto::tag::terminal const &, Tag const &t ) {
       return Evaluator<Tag>::eval(*this, t);
     }
 
     template < typename Tag >
     typename boost::disable_if< Evaluator<Tag>, result_type >::type
-    operator() (boost::proto::tag::terminal, Tag t) {
+    operator() ( boost::proto::tag::terminal const &, Tag const &t ) {
       return SolverContext::operator()( t, boost::any() );
     }
 
     void command( assertion_cmd const &, result_type e) {
       SolverContext::assertion(e);
     }
+
     void command( assumption_cmd const &, result_type e) {
       SolverContext::assumption(e);
     }
+
+    void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
+      opt.set(key, value);
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, set_option_cmd >::type
+      , /* then = */ option::SetOptionCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( static_cast<SolverContext&>(*this), opt, key, value );
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key ) {
+      return opt.get(key);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key, std::string const &default_value ) {
+      return opt.get(key, default_value);
+    }
+
     using SolverContext::command;
 
     private:
       typedef typename std::tr1::unordered_map<unsigned, result_type> VariableLookupT;
       VariableLookupT _variables;
+      Options opt;
 
       // disable copying DirectSolvers;
       DirectSolver_Context(DirectSolver_Context const & );
@@ -314,25 +348,45 @@ namespace metaSMT {
     template<typename Context>
     struct supports< DirectSolver_Context<Context>, assumption_cmd>
     : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, get_option_cmd>
+    : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< DirectSolver_Context<Context>, set_option_cmd>
+    : boost::mpl::true_ {};
   }
 
-  template <typename SolverType, typename Expr>
+  template < typename SolverType >
+  typename DirectSolver_Context<SolverType>::result_type
+  evaluate( DirectSolver_Context<SolverType> &ctx,
+            typename DirectSolver_Context<SolverType>::result_type r ) {
+    return r;
+  }
+
+  template < typename SolverType, typename Expr >
   typename boost::disable_if<
-    typename boost::is_same<
-      Expr
-    , typename DirectSolver_Context<SolverType>::result_type
+    typename boost::mpl::or_<
+      typename Evaluator<Expr>::type
+    , typename boost::is_same<
+        Expr
+      , typename DirectSolver_Context<SolverType>::result_type
+      >::type
     >::type
   , typename DirectSolver_Context<SolverType>::result_type
   >::type
-  evaluate( DirectSolver_Context<SolverType> & ctx, Expr const & e ) {
+  evaluate( DirectSolver_Context<SolverType> &ctx, Expr const &e ) {
     return boost::proto::eval(e, ctx);
   }
 
-  template <typename SolverType>
-  typename DirectSolver_Context<SolverType>::result_type
-  evaluate( DirectSolver_Context<SolverType> & ctx,
-            typename DirectSolver_Context<SolverType>::result_type r ) {
-    return r;
+  template < typename SolverType, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , typename DirectSolver_Context<SolverType>::result_type
+  >::type
+  evaluate( DirectSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverType>

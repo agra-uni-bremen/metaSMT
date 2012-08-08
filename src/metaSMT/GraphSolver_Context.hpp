@@ -4,8 +4,10 @@
 #include "Graph_Context.hpp"
 #include "result_wrapper.hpp"
 #include "Features.hpp"
+#include "support/Options.hpp"
 #include "API/Assertion.hpp"
 #include "API/Assumption.hpp"
+#include "API/Options.hpp"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -90,11 +92,18 @@ namespace metaSMT {
   struct GraphSolver_Context {
 
     GraphSolver_Context ( ) 
-      : _gtx( new Graph_Context() )
-    { }
+      : _gtx( new Graph_Context() ) {
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, setup_option_map_cmd >::type
+      , /* then = */ option::SetupOptionMapCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( _solver, _opt );
+    }
 
     explicit GraphSolver_Context ( const GraphSolver_Context & ctx )
-      : _gtx( ctx._gtx ) // share graph
+      : _opt( ctx._opt )
+      , _gtx( ctx._gtx ) // share graph
       , _solver() // create new solver
       , _lookup() // create new lookup table
       , _assertions( ctx._assertions )   // copy assertions
@@ -182,6 +191,23 @@ namespace metaSMT {
       assumption(e);
     }
 
+    void command( set_option_cmd const &tag, std::string const &key, std::string const &value ) {
+      _opt.set(key, value);
+      typedef typename boost::mpl::if_<
+        /* if   = */ typename features::supports< SolverContext, set_option_cmd >::type
+      , /* then = */ option::SetOptionCommand
+      , /* else = */ option::NOPCommand
+      >::type Command;
+      Command::template action( _solver, _opt );
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key ) {
+      return _opt.get(key);
+    }
+
+    std::string command( get_option_cmd const &, std::string const &key, std::string const &default_value ) {
+      return _opt.get(key, default_value);
+    }
 
     void sync() {
       BOOST_FOREACH( Cmd const & f, _cmd_queue) {
@@ -270,6 +296,7 @@ namespace metaSMT {
         return ret;
       };
 
+      Options _opt;
       boost::shared_ptr<Graph_Context> _gtx;
       solver_type _solver;
       typedef typename std::map<SMT_Expression, solver_result> LookupT;
@@ -294,11 +321,44 @@ namespace metaSMT {
     template<typename Context>
     struct supports< GraphSolver_Context<Context>, assumption_cmd>
     : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< GraphSolver_Context<Context>, set_option_cmd>
+    : boost::mpl::true_ {};
+
+    template<typename Context>
+    struct supports< GraphSolver_Context<Context>, get_option_cmd>
+    : boost::mpl::true_ {};
   }
 
-  template <typename SolverTypes, typename Expr>
-  SMT_Expression evaluate( GraphSolver_Context<SolverTypes> & ctx, Expr const & e ) {
-    return  ctx.evaluate(e) ;
+  template < typename SolverType >
+  SMT_Expression evaluate( GraphSolver_Context<SolverType> &ctx,
+                           SMT_Expression r ) {
+    return r;
+  }
+
+  template < typename SolverType, typename Expr >
+  typename boost::disable_if<
+    typename boost::mpl::or_<
+      typename Evaluator<Expr>::type
+    , typename boost::is_same<
+        Expr
+      , SMT_Expression
+      >::type
+    >::type
+  , SMT_Expression
+  >::type
+  evaluate( GraphSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return ctx.evaluate(e);
+  }
+
+  template < typename SolverType, typename Expr >
+  typename boost::enable_if<
+    typename Evaluator<Expr>::type
+  , SMT_Expression
+  >::type
+  evaluate( GraphSolver_Context<SolverType> &ctx, Expr const &e ) {
+    return Evaluator<Expr>::eval(ctx, e);
   }
 
   template <typename SolverTypes>
