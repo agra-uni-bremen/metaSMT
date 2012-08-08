@@ -4,7 +4,7 @@
 #include <boost/python.hpp>
 #include <metaSMT/support/enable_warnings.hpp>
 
-#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include "solvers.hpp"
 #include <metaSMT/expression/expression.hpp>
 

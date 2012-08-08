@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../support/SMT_Graph.hpp"
 #include "../tags/QF_BV.hpp"
-#include "../tags/Logics.hpp"
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
 #include "Array.hpp"
@@ -118,7 +116,6 @@ namespace metaSMT {
               proto::terminal< tag::bit0_tag >
             , proto::terminal< tag::bit1_tag >
             , proto::terminal< tag::var_tag > 
-            , proto::terminal< SMT_Expression > 
             , QF_BV_BitVector_Constant
             , QF_BV_Binary_Function
             , QF_BV_Binary_Predicate

@@ -1,6 +1,5 @@
-
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/frontend/QF_BV.hpp>
- 
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/GraphSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>

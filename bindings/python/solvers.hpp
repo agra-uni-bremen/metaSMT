@@ -1,7 +1,7 @@
 #ifndef SOLVERS_HPP
 #define SOLVERS_HPP
 
-#include <metaSMT/expression/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/expression/expression.hpp>
 
 #include <metaSMT/support/disable_warnings.hpp>

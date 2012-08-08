@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../support/SMT_Graph.hpp"
 #include "../tags/Array.hpp"
-#include "../tags/Logics.hpp"
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
 #include <boost/proto/core.hpp>
@@ -27,7 +25,6 @@ namespace metaSMT {
 	  proto::not_< proto::equal_to< proto::_, proto::_ > >
 	, proto::or_<
 	    proto::terminal< tag::array_var_tag >
-	  , proto::terminal< SMT_Expression >
 	  , proto::binary_expr<tag::select_tag, Array_Grammar, Array_Grammar>
 	//, proto::ternary_expr<tag::store_tag, Array_Grammar, Array_Grammar, Array_Grammar>
 	  , proto::nary_expr<tag::store_tag, proto::vararg<proto::_> >
