@@ -941,7 +941,7 @@ namespace metaSMT {
             // std::cout << "operator " << tag << std::endl;
            return _solver(tag, args);
           } catch (boost::bad_get) {
-            std::cout << "Error bad_get in operator " << tag << std::endl;
+            std::cout << "Error bad_get in operator " << typeid(tag).name() << std::endl;
             throw;
           }
         }
@@ -961,7 +961,7 @@ namespace metaSMT {
             , boost::get<result_base>(b)
           );
           } catch (boost::bad_get) {
-            std::cout << "Error bad_get in operator " << tag << std::endl;
+            std::cout << "Error bad_get in operator " << typeid(tag).name() << std::endl;
             throw;
           }
         }
@@ -975,7 +975,7 @@ namespace metaSMT {
             , boost::get<result_base>(c)
           );
           } catch (boost::bad_get) {
-            std::cout << "Error bad_get in operator " << tag << std::endl;
+            std::cout << "Error bad_get in operator " << typeid(tag).name() << std::endl;
             throw;
           }
         }
