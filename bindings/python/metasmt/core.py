@@ -32,6 +32,7 @@ def to_logic_expression( expr ):
     if   type( expr ) == bool:      return py_logic_term( expr )
     elif type( expr ) == predicate: return py_logic_predicate( expr )
     elif type( expr ) == bitvector: return py_logic_bv( expr )
+    elif type( expr ) == array:     return py_logic_array( expr )
     elif type( expr ) == str:
         if expr.startswith( 'x' ): return bv_hex( expr[1:] )
         else:                      return bv_bin( expr )
@@ -64,6 +65,12 @@ _bv = { _logic_unary: ['not', 'neg'],
 for ( w, fs ) in _bv.items():
     for f in fs:
         globals()["bv_%s" % f] = w( globals()["py_bv_%s" % f] )
+
+def array_store(array, index, value):
+    return py_array_store(to_logic_expression(array), to_logic_expression(index), to_logic_expression(value))
+
+def array_select(array, index):
+    return py_array_select(to_logic_expression(array), to_logic_expression(index))
 
 def concat( a, b ): return py_concat( to_logic_expression( a ), to_logic_expression( b ) )
 def extract( _from, width, expr ): return py_extract( _from, width, to_logic_expression( expr ) )

@@ -52,6 +52,18 @@ logic_expression make_hex_expression( const std::string& value )
   return bv_const<metaSMT::logic::QF_BV::tag::bvhex_tag>::hex( value );
 }
 
+logic_expression make_store_expression(const logic_expression &array,
+        const logic_expression &index, const logic_expression &value)
+{
+  return store_expression(array, index, value);
+}
+
+logic_expression make_select_expression(const logic_expression &array,
+        const logic_expression &index)
+{
+  return select_expression(array, index);
+}
+
 template<typename LogicTag, typename OpTag>
 logic_expression make_unary_expression( const logic_expression& expr )
 {
@@ -185,6 +197,21 @@ struct type_visitor : public boost::static_visitor<unsigned>
   {
     return (unsigned) -1;
   }
+
+  unsigned operator()( const metaSMT::logic::Array::array &expr ) const
+  {
+    return 2u;
+  }
+
+  unsigned operator()( const store_expression &expr ) const
+  {
+    return 2u;
+  }
+
+  unsigned operator()( const select_expression &expr ) const
+  {
+    return 1u;
+  }
 };
 
 unsigned py_logic_expression_type( const logic_expression& expr )
@@ -207,11 +234,15 @@ void export_expressions()
     .def( "type", &py_logic_expression_type )
     .def( "__repr__", &py_logic_expression_repr )
     ;
+  def( "py_array_store", &make_store_expression );
+  def( "py_array_select", &make_select_expression );
+
   def( "py_logic_term", &make_logic_expression<bool> );
   def( "py_bv_bit0", &make_bit0 );
   def( "py_bv_bit1", &make_bit1 );
   def( "py_logic_predicate", &make_logic_expression<metaSMT::logic::predicate> );
   def( "py_logic_bv", &make_logic_expression<metaSMT::logic::QF_BV::bitvector> );
+  def( "py_logic_array", &make_logic_expression<metaSMT::logic::Array::array> );
 
   def( "py_bv_uint", &make_uint_expression );
   def( "py_bv_sint", &make_sint_expression );
@@ -276,4 +307,11 @@ void export_expressions()
     .def( "width", &py_bitvector_width )
     ;
   def( "new_bitvector", &metaSMT::logic::QF_BV::new_bitvector );
+
+  class_<metaSMT::logic::Array::array>( "array" )
+      /* def index_width */
+      /* def value_width */
+    ;
+  /* new_array(elem_width, index_width) */
+  def( "new_array", &metaSMT::logic::Array::new_array );
 }

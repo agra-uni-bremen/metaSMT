@@ -54,6 +54,11 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
     return metaSMT::evaluate( _solver, bv );
   }
 
+  typename T::result_type operator()( const metaSMT::logic::Array::array& array ) const
+  {
+    return metaSMT::evaluate( _solver, array );
+  }
+
   typename T::result_type operator()( const bv_const<metaSMT::logic::QF_BV::tag::bvuint_tag>& expr ) const
   {
     return metaSMT::evaluate( _solver, metaSMT::logic::QF_BV::bvuint( expr.value, expr.width ) );
@@ -86,6 +91,16 @@ struct evaluate_expression_visitor : public boost::static_visitor<typename T::re
   typename T::result_type operator()( const ternary_expression<LogicTag, Tag>& expr ) const
   {
     return metaSMT::evaluate( _solver, boost::proto::make_expr<Tag>( boost::cref( boost::apply_visitor( *this, expr.expr1 ) ), boost::cref( boost::apply_visitor( *this, expr.expr2 ) ), boost::cref( boost::apply_visitor( *this, expr.expr3 ) ) ) );
+  }
+
+  typename T::result_type operator()( const select_expression &expr ) const
+  {
+    return metaSMT::evaluate( _solver, metaSMT::logic::Array::select( boost::apply_visitor( *this, expr.array ) , boost::apply_visitor( *this, expr.index ) ) );
+  }
+
+  typename T::result_type operator()( const store_expression &expr ) const
+  {
+    return metaSMT::evaluate( _solver, metaSMT::logic::Array::store( boost::apply_visitor( *this, expr.array ), boost::apply_visitor( *this, expr.index ), boost::apply_visitor( *this, expr.value ) ) );
   }
 
   // nary expressions
