@@ -193,7 +193,7 @@ namespace metaSMT {
       void initialize() {
         init_ = true;
         std::string smt_filename = opt_.get("smt_filename", "meta.smt2");
-        std::string sol_filename = opt_.get("smt_filename", "meta.smt2");
+        std::string sol_filename = opt_.get("sol_filename", "meta.sol");
         out_file_.reset( new std::ofstream(smt_filename.c_str()) );
         sol_file_.reset( new std::ofstream(sol_filename.c_str()) );
         out_.reset( new smt2_solver_pipe(*out_file_, *sol_file_, table_) );
@@ -230,6 +230,9 @@ namespace metaSMT {
 
       void command( set_option_cmd const &, std::string const &key, std::string const &value, Options const &opt ) {
         if ( init_ && key == "smt_filename" && (opt_.get(key) != value) ) {
+          assert( false && "Changing the filename on-the-fly is yet not allowed" );
+        }
+        else if ( init_ && key == "sol_filename" && (opt_.get(key) != value) ) {
           assert( false && "Changing the filename on-the-fly is yet not allowed" );
         }
         opt_ = opt;
