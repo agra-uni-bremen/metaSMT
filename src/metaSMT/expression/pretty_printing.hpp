@@ -3,6 +3,7 @@
 #include "expression.hpp"
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
+#include <set>
 
 namespace metaSMT {
   namespace expression {

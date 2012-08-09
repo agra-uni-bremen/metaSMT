@@ -5,9 +5,9 @@
 #include "../tags/SAT.hpp"
 #include "../Features.hpp"
 
-#include <vector>
-
 #include <boost/foreach.hpp>
+#include <vector>
+#include <set>
 
 namespace metaSMT
 {
