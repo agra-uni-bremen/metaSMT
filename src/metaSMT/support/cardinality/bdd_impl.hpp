@@ -11,13 +11,14 @@ namespace metaSMT {
   namespace cardinality {
     namespace bdd {
       /**
-       * Generalized cardinality constraint based on a construction using
-       * Binary Decision Diagrams (BDD) by E'{e}n and S\"orensson [1] and
-       * Bailleux et al. [2].
+       * Generalized cardinality constraint based on a construction
+       * using Binary Decision Diagrams (BDD) by E&eacute;n and
+       * S&ouml;rensson [1] and Bailleux et al. [2].
        *
-       * [1] N. E'{e}n and N. S\"orensson. Translating pseudo-boolean
-       * constraints into SAT.  In Journal on Satisfiability, Boolean
-       * Modeling and Computation, volume 2, pages 1-26, 2006.
+       * [1] N. E&eacute;n and N. S&ouml;rensson. Translating
+       * pseudo-boolean constraints into SAT.  In Journal on
+       * Satisfiability, Boolean Modeling and Computation, volume 2,
+       * pages 1-26, 2006.
        *
        * [2] O. Bailleux, Y. Boufkhad, and O. Roussel, A Translation of
        * Pseudo-Boolean Constraints to SAT, Journal on Satisfiability,
