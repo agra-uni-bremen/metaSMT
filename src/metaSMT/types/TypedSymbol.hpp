@@ -156,7 +156,7 @@ namespace metaSMT {
         : public boost::static_visitor<typename Context::result_type> {
       public:
         convert_to_bitvector_visitor(Context &ctx,
-                                     TypedSymbol<Context> &typed_symbol)
+                                     TypedSymbol<Context> const &typed_symbol)
           : ctx_(ctx)
           , s_(typed_symbol)
         {}
@@ -189,7 +189,7 @@ namespace metaSMT {
         }
 
         Context &ctx_;
-        TypedSymbol<Context> &s_;
+        TypedSymbol<Context> const &s_;
       }; // convert_to_bitvector_visitor
 
       /**
@@ -201,7 +201,7 @@ namespace metaSMT {
        */
       template < typename Context >
       typename Context::result_type to_bitvector(Context &ctx,
-                                                 TypedSymbol<Context> &sy) {
+                                                 TypedSymbol<Context> const &sy) {
         return boost::apply_visitor( convert_to_bitvector_visitor<Context>(ctx, sy),
                                      sy.type );
       }
@@ -211,7 +211,7 @@ namespace metaSMT {
         : public boost::static_visitor<typename Context::result_type> {
       public:
         convert_to_bool_visitor(Context &ctx,
-                                TypedSymbol<Context> &typed_symbol)
+                                TypedSymbol<Context> const &typed_symbol)
           : ctx_(ctx)
           , s_(typed_symbol)
         {}
@@ -239,7 +239,7 @@ namespace metaSMT {
         }
 
         Context &ctx_;
-        TypedSymbol<Context> &s_;
+        TypedSymbol<Context> const &s_;
       }; // convert_to_bool_visitor
 
       /**
@@ -251,7 +251,7 @@ namespace metaSMT {
        */
       template < typename Context >
       typename Context::result_type to_bool(Context &ctx,
-                                            TypedSymbol<Context> &sy) {
+                                            TypedSymbol<Context> const &sy) {
         return boost::apply_visitor( convert_to_bool_visitor<Context>(ctx, sy),
                                      sy.type );
       }
@@ -345,53 +345,55 @@ namespace metaSMT {
         return boost::get<Type>(type);
       }
 
-      inline result_type toBV(Context &ctx) {
+      inline result_type toBV(Context &ctx) const {
         return detail::to_bitvector(ctx, *this);
       }
 
       inline result_type toBV(bv::tag::zero_extend_tag const &,
-                                                Context &ctx,
-                                                unsigned const width) {
+                              Context &ctx,
+                              unsigned const width) const {
         if (isBool()) {
           return evaluate(ctx, bv::zero_extend(width-1,
-                                           detail::to_bitvector(ctx, *this)));
+                                 detail::to_bitvector(ctx, *this)));
         }
         else if (isBitVector()) {
           BitVector bvtype = getType(BitVector());
           assert(width > bvtype.width);
           return evaluate(ctx, bv::zero_extend(width-bvtype.width,
-                                           detail::to_bitvector(ctx, *this)));
+                                 detail::to_bitvector(ctx, *this)));
         }
         else {
           type::Array arraytype = getType(type::Array());
           unsigned const w = arraytype.elem_width*(1 << arraytype.index_width);
           assert(width > w);
-          return evaluate(ctx, bv::zero_extend(width-w, detail::to_bitvector(ctx, *this)));
+          return evaluate(ctx, bv::zero_extend(width-w,
+                                 detail::to_bitvector(ctx, *this)));
         }
       }
 
       inline result_type toBV(bv::tag::sign_extend_tag const &,
-                                                Context &ctx,
-                                                unsigned const width) {
+                              Context &ctx,
+                              unsigned const width) const {
         if (isBool()) {
           return evaluate(ctx, bv::sign_extend(width-1,
-                                           detail::to_bitvector(ctx, *this)));
+                                 detail::to_bitvector(ctx, *this)));
         }
         else if (isBitVector()) {
           BitVector bvtype = getType(BitVector());
           assert(width > bvtype.width);
           return evaluate(ctx, bv::sign_extend(width-bvtype.width,
-                                           detail::to_bitvector(ctx, *this)));
+                                 detail::to_bitvector(ctx, *this)));
         }
         else {
           type::Array arraytype = getType(type::Array());
           unsigned const w = arraytype.elem_width*(1 << arraytype.index_width);
           assert(width > w);
-          return evaluate(ctx, bv::sign_extend(width-w, detail::to_bitvector(ctx, *this)));
+          return evaluate(ctx, bv::sign_extend(width-w,
+                                 detail::to_bitvector(ctx, *this)));
         }
       }
 
-      inline result_type toBool(Context &ctx) {
+      inline result_type toBool(Context &ctx) const {
         return detail::to_bool(ctx, *this);
       }
 
