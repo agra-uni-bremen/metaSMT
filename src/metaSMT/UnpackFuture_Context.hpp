@@ -26,8 +26,7 @@ namespace metaSMT {
     /// The returned expression type is the result_type of the SolverContext
     typedef typename SolverContext::result_type result_type;
 
-    template< typename T>
-    result_type operator() (boost::shared_future<T> & e, boost::any const & any) {
+    result_type operator() (boost::shared_future<result_type> e, boost::any const & any) {
       return e.get();
     }
 
