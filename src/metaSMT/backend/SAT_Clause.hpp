@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <boost/foreach.hpp>
+#include <boost/any.hpp>
 
 namespace metaSMT
 {
