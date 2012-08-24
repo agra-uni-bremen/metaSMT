@@ -180,7 +180,7 @@ namespace metaSMT {
           unsigned long value = it->second.get<0>();
           unsigned long width = it->second.get<1>();
 
-          std::cout << "read_value: " << value << ' ' << width << std::endl;
+          //std::cout << "read_value: " << value << ' ' << width << std::endl;
 
           if (width == 0) {
             return result_wrapper(value == 1);
@@ -375,7 +375,7 @@ namespace metaSMT {
         } else {
           const int part1 = static_cast<int>(value);
           const int part2 = static_cast<int>(value<<ibits);
-          std::cout << "signed multipart: " << part2 << " | " << part1 << std::endl;
+          //std::cout << "signed multipart: " << part2 << " | " << part1 << std::endl;
           Z3_sort ty1 = Z3_mk_bv_sort(z3_, ibits);
           Z3_sort ty2 = Z3_mk_bv_sort(z3_, width-ibits);
           return Z3_mk_concat(z3_,
@@ -392,9 +392,9 @@ namespace metaSMT {
         bool first = true;
         result_type result;
         for (unsigned i = 0; i < len; i+=ubits) {
-          std::cout << i << "-" << (i+ubits) << ": " << s.substr(i, ubits) << std::endl;
+          //std::cout << i << "-" << (i+ubits) << ": " << s.substr(i, ubits) << std::endl;
           unsigned part = boost::dynamic_bitset<>(s, i, ubits).to_ulong();
-          std::cout << "part " << i << '-' << (i+std::min( len-i, ubits)) << ": " << part << std::endl;
+          //std::cout << "part " << i << '-' << (i+std::min( len-i, ubits)) << ": " << part << std::endl;
           Z3_sort ty = Z3_mk_bv_sort(z3_, std::min( len-i, ubits));
           if (first) {
             result = Z3_mk_unsigned_int(z3_, part, ty);
