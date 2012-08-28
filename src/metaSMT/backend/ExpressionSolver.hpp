@@ -51,21 +51,22 @@ namespace metaSMT {
       }
 
       result_type operator() ( expr::bv_const<bvtags::bvuint_tag> e ) const {
-        return solver(bvtags::bvuint_tag(), boost::make_tuple<unsigned long, unsigned long>(e.value, e.width));
+        return solver( bvtags::bvuint_tag(),
+          boost::any(boost::make_tuple<unsigned long, unsigned long>(e.value, e.width)) );
       }
 
       result_type operator() ( expr::bv_const<bvtags::bvsint_tag> e ) const {
         int const value = static_cast<long>( e.value );
-        // std::cerr << "Call backend solver: " << value << " " << e.width << '\n';
-        return solver(bvtags::bvsint_tag(), boost::make_tuple<long, unsigned long>(value, e.width));
+        return solver(bvtags::bvsint_tag(),
+          boost::any(boost::make_tuple<long, unsigned long>(value, e.width)) );
       }
 
       result_type operator() ( expr::bv_const<bvtags::bvhex_tag> e ) const {
-        return solver(bvtags::bvhex_tag(), e.str);
+        return solver(bvtags::bvhex_tag(), boost::any(e.str));
       }
 
       result_type operator() ( expr::bv_const<bvtags::bvbin_tag> e ) const {
-        return solver(bvtags::bvbin_tag(), e.str);
+        return solver(bvtags::bvbin_tag(), boost::any(e.str));
       }
 
       // variables
