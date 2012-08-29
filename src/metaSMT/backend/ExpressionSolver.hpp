@@ -388,7 +388,8 @@ namespace metaSMT {
       result_type operator() ( expr::store_expression e ) const {
         result_type array = boost::apply_visitor(*this, e.array);
         result_type index = boost::apply_visitor(*this, e.index);
-        return solver(arraytags::store_tag(), array, index);
+        result_type value = boost::apply_visitor(*this, e.value);
+        return solver(arraytags::store_tag(), array, index, value);
       }
 
       template < typename TagT >
