@@ -105,14 +105,14 @@ namespace metaSMT {
         if (cardinality == 0) {
           typename Context::result_type res = evaluate(ctx, logic::True);
           for (unsigned u = 0; u < ps.size(); ++u)
-            res = evaluate(ctx, And(res, Not(ps[u])));
+            res = evaluate(ctx, logic::And(res, logic::Not(ps[u])));
           return res;
         }
 
         if (ps.size() == cardinality) {
           typename Context::result_type res = evaluate(ctx, logic::True);
           for (unsigned u = 0; u < ps.size(); ++u)
-            res = evaluate(ctx, And(res, ps[u]));
+            res = evaluate(ctx, logic::And(res, ps[u]));
           return res;
         }
 
