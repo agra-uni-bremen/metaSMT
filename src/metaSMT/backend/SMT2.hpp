@@ -273,9 +273,7 @@ namespace metaSMT {
       }
 
       void assertion( result_type e ) {
-        pop();
-        dump_decls( e );
-        out() << "(assert " << e << ")\n";
+        assertions_.push_back( e );
       }
 
       void assumption( result_type e ) {
@@ -292,6 +290,12 @@ namespace metaSMT {
 
       bool solve() {
         pop();
+        BOOST_FOREACH( result_type const &e, assertions_ ) {
+          dump_decls( e );
+          out() << "(assert " << e << ")\n";
+        }
+        assertions_.clear();
+
         push();
 
         BOOST_FOREACH( result_type const &e, assumptions_ ) {
@@ -731,6 +735,7 @@ namespace metaSMT {
       boost::shared_ptr< std::ofstream > sol_file_;
       boost::shared_ptr< smt2_solver_pipe > out_;
       std::list< result_type > assumptions_;
+      std::list< result_type > assertions_;
       std::set< std::string > global_decls_;
       std::set< std::string > local_decls_;
     }; // SMT2
