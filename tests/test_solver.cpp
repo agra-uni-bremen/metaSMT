@@ -412,6 +412,30 @@ BOOST_AUTO_TEST_CASE( variable_equality )
   BOOST_CHECK( !cmp );
 }
 
+BOOST_AUTO_TEST_CASE( interleaved_read_assert )
+{
+   predicate p = new_variable();
+   predicate q = new_variable();
+   BOOST_REQUIRE( solve(ctx) );
+
+   bool vd;
+   vd = read_value(ctx, p);
+   assertion(ctx, nequal(p, vd));
+
+   vd = read_value(ctx, q);
+   assertion(ctx, nequal(q, vd));
+
+   BOOST_REQUIRE( solve(ctx) );
+
+   vd = read_value(ctx, p);
+   assertion(ctx, nequal(p, vd));
+
+   vd = read_value(ctx, q);
+   assertion(ctx, nequal(q, vd));
+
+   BOOST_REQUIRE( !solve(ctx) );
+}
+
 BOOST_AUTO_TEST_SUITE_END() //Solver
 
 //  vim: ft=cpp:ts=2:sw=2:expandtab
