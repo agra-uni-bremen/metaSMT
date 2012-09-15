@@ -156,20 +156,19 @@ if(Z3_FOUND)
   set(CMAKE_REQUIRED_INCLUDES ${Z3_INCLUDE_DIR})
   set(CMAKE_REQUIRED_LIBRARIES ${Z3_LIBRARIES})
 
-  check_CXX_source_runs("#include <z3.h>
-int main(int argc, const char *argv[])
-{
-  Z3_config cfg;
-  cfg = Z3_mk_config();
-	return 0;
+  check_CXX_source_runs("#include <z3++.h>
+int main(int argc, const char *argv[]) {
+  z3::context c;
+  z3::solver s(c);
+  s.check();
+  return 0;
 }"
   Z3_WORKS)
 
   if( NOT Z3_WORKS )
-    message(WARNING "Z3 backend found not working. Disabling Z3.")
+    message(WARNING "Disabling Z3. A version of Z3 >= 4.0 is required.")
     set( Z3_FOUND 0)
   endif()
-
 endif()
 
 if (metaSMT_DOC_Doxygen)
