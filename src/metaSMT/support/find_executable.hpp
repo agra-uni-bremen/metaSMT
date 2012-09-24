@@ -12,12 +12,13 @@ namespace metaSMT {
       return progname;
     }
 
-    int execute(const std::string& file, const std::vector<std::string>& argv) {
-      std::vector<const char*> av;
-      for (std::vector<std::string>::const_iterator i = argv.begin(); i != argv.end(); ++i)
-        av.push_back(i->c_str());
-      av.push_back(static_cast<const char*>(0));
-      return execvp(file.c_str(), const_cast<char * const* >(&av[0]));
+    int execvp(std::string const &file, std::vector<std::string> const &args) {
+      std::vector<char const *> av;
+      for ( std::vector<std::string>::const_iterator it = args.begin();
+            it != args.end(); ++it )
+        av.push_back( it->c_str() );
+      av.push_back(0);
+      return ::execvp(file.c_str(), const_cast<char * const *>(&av[0]));
     }
   } /* support */
 } /* metaSMT */

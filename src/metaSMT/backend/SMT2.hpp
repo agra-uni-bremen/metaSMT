@@ -83,14 +83,14 @@ namespace metaSMT {
           throw std::runtime_error("fork failed");
         }
 
-        if(cpid == 0 ) {
+        if ( cpid == 0 ) {
           // solver process
           close(toSolver[1]);   // unused
           close(fromSolver[0]); // unused
           dup2(toSolver[0],0);
           dup2(fromSolver[1],1);
           // std::cerr << "[DBG] Solver: " << executable << std::endl;
-          support::execute(executable.c_str(), args);
+          support::execvp(executable.c_str(), args);
           perror("exec");
           exit(1);
         } else {
