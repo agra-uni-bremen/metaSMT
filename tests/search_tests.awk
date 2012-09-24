@@ -13,8 +13,8 @@ $0 ~ "^ *BOOST_AUTO_TEST_SUITE_END *\\( *\\)" {
 }
 
 $0 ~ "^ *BOOST_AUTO_TEST_CASE *\\(" { 
-  sub("^.*\\( *", "");
-  sub(" *\\).*$", "");
+  sub("^ *BOOST_AUTO_TEST_CASE *\\( *", "")
+  sub(" *\\).*$", "")
   if ( PREFIX ) {
     printf "%s/%s\n", PREFIX, $0
   } else {

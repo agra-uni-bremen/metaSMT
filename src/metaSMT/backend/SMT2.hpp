@@ -91,7 +91,7 @@ namespace metaSMT {
           //execlp("cat", "cat", NULL);
           std::string z3 = support::find_executable("z3", "Z3_EXECUTABLE");
           // std::cerr << "[DBG] Using Z3: " << z3 << std::endl;
-          execlp(z3.c_str(), z3.c_str(), "-smt2", "-m", "-in", NULL);
+          execlp(z3.c_str(), z3.c_str(), "-smt2", "-in", NULL);
           perror("exec");
           exit(1);
         } else {

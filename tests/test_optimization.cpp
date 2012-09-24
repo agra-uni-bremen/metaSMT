@@ -41,37 +41,15 @@ void minimize_all( std::string const optimize_with, std::string const constrain_
   }
 }
 
-BOOST_AUTO_TEST_CASE( min10_bdd1 ) {
-  minimize_all( "bdd", "bdd", ctx,  10);
-}
+BOOST_AUTO_TEST_CASE( min10_bdd1 ) { minimize_all( "bdd", "bdd",   ctx,  10); }
+BOOST_AUTO_TEST_CASE( min20_bdd1 ) { minimize_all( "bdd", "bdd",   ctx,  20); }
+BOOST_AUTO_TEST_CASE( min10_bdd2 ) { minimize_all( "bdd", "adder", ctx,  10); }
+BOOST_AUTO_TEST_CASE( min20_bdd2 ) { minimize_all( "bdd", "adder", ctx,  20); }
 
-BOOST_AUTO_TEST_CASE( min20_bdd1 ) {
-  minimize_all( "bdd", "bdd", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( min10_bdd2 ) {
-  minimize_all( "bdd", "adder", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( min20_bdd2 ) {
-  minimize_all( "bdd", "adder", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( min10_adder1 ) {
-  minimize_all( "adder", "bdd", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( min20_adder1 ) {
-  minimize_all( "adder", "bdd", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( min10_adder2 ) {
-  minimize_all( "adder", "adder", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( min20_adder2 ) {
-  minimize_all( "adder", "adder", ctx,  20);
-}
+BOOST_AUTO_TEST_CASE( min10_adder1 ) { minimize_all( "adder", "bdd",   ctx,  10); }
+BOOST_AUTO_TEST_CASE( min20_adder1 ) { minimize_all( "adder", "bdd",   ctx,  20); }
+BOOST_AUTO_TEST_CASE( min10_adder2 ) { minimize_all( "adder", "adder", ctx,  10); }
+BOOST_AUTO_TEST_CASE( min20_adder2 ) { minimize_all( "adder", "adder", ctx,  20); }
 
 template < typename Context >
 void maximize_all( std::string const optimize_with, std::string const constrain_with,
@@ -96,36 +74,14 @@ void maximize_all( std::string const optimize_with, std::string const constrain_
   }
 }
 
-BOOST_AUTO_TEST_CASE( max10_bdd1 ) {
-  maximize_all( "bdd", "bdd", ctx,  10);
-}
+BOOST_AUTO_TEST_CASE( max10_bdd1 ) { maximize_all( "bdd", "bdd",   ctx,  10); }
+BOOST_AUTO_TEST_CASE( max20_bdd1 ) { maximize_all( "bdd", "bdd",   ctx,  20); }
+BOOST_AUTO_TEST_CASE( max10_bdd2 ) { maximize_all( "bdd", "adder", ctx,  10); }
+BOOST_AUTO_TEST_CASE( max20_bdd2 ) { maximize_all( "bdd", "adder", ctx,  20); }
 
-BOOST_AUTO_TEST_CASE( max20_bdd1 ) {
-  maximize_all( "bdd", "bdd", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( max10_bdd2 ) {
-  maximize_all( "bdd", "adder", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( max20_bdd2 ) {
-  maximize_all( "bdd", "adder", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( max10_adder1 ) {
-  maximize_all( "adder", "bdd", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( max20_adder1 ) {
-  maximize_all( "adder", "bdd", ctx,  20);
-}
-
-BOOST_AUTO_TEST_CASE( max10_adder2 ) {
-  maximize_all( "adder", "adder", ctx,  10);
-}
-
-BOOST_AUTO_TEST_CASE( max20_adder2 ) {
-  maximize_all( "adder", "adder", ctx,  20);
-}
+BOOST_AUTO_TEST_CASE( max10_adder1 ) { maximize_all( "adder", "bdd",   ctx,  10); }
+BOOST_AUTO_TEST_CASE( max20_adder1 ) { maximize_all( "adder", "bdd",   ctx,  20); }
+BOOST_AUTO_TEST_CASE( max10_adder2 ) { maximize_all( "adder", "adder", ctx,  10); }
+BOOST_AUTO_TEST_CASE( max20_adder2 ) { maximize_all( "adder", "adder", ctx,  20); }
 
 BOOST_AUTO_TEST_SUITE_END()
