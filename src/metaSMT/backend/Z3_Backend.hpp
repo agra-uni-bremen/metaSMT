@@ -15,6 +15,8 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>
 
+#include <gmp-x86_64.h>
+
 namespace metaSMT {
 
   // forward declare stack api
@@ -387,27 +389,15 @@ namespace metaSMT {
       }
 
       result_type operator() (bvtags::bvbin_tag , boost::any arg) {
-        const size_t ubits = std::numeric_limits<unsigned>::digits;
         std::string s = boost::any_cast<std::string>(arg);
-        const size_t len = s.size();
-        bool first = true;
-        Z3_ast result;
-        for (unsigned i = 0; i < len; i+=ubits) {
-          // std::cout << i << "-" << (i+ubits) << ": "
-          //           << s.substr(i, ubits) << std::endl;
-          unsigned part = boost::dynamic_bitset<>(s, i, ubits).to_ulong();
-          // std::cout << "part " << i << '-' << (i+std::min( len-i, ubits))
-          //           << ": " << part << std::endl;
-          Z3_sort ty = Z3_mk_bv_sort(ctx_, std::min( len-i, ubits));
-          if (first) {
-            result = Z3_mk_unsigned_int(ctx_, part, ty);
-            first = false;
-          } else {
-            result = Z3_mk_concat(ctx_, result,
-              Z3_mk_unsigned_int(ctx_, part, ty) );
-          }
-        }
-        return z3::to_expr(ctx_, result);
+        size_t const len = s.size();
+        mpz_t value;
+        mpz_init(value);
+        mpz_set_str(value, s.c_str(), 2);
+        std::string int_string( mpz_get_str(NULL, 10, value) );
+        result_type r = ctx_.bv_val(int_string.c_str(), len);
+        mpz_clear(value);
+        return r;
       }
 
       // XXX will be removed in a later revision
