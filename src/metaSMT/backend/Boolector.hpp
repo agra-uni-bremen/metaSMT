@@ -39,7 +39,7 @@ namespace metaSMT {
       }
 
       public:
-        typedef BtorExp* result_type;
+        typedef BtorNode* result_type;
 
         result_type ptr(result_type expr) {
           _exprs.push_back(expr);
