@@ -2,7 +2,12 @@ PROJECT(metaSMT)
 
 cmake_minimum_required(VERSION 2.8.2)
 include(CheckIncludeFileCXX)
-include(FeatureSummary)
+if(CMAKE_VERSION VERSION_LESS 2.8.3)
+  include(cmake/feature_summary_stub.cmake)
+else()
+  include(FeatureSummary)
+endif()
+
 include(CTest)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
@@ -262,9 +267,7 @@ endif()
 
 generate_config_files()
 
-
 Feature_Summary(WHAT ALL)
-
 
 ############################################################
 ##                CPack settings                          ##
