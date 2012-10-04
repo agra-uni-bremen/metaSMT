@@ -14,3 +14,4 @@ struct Solver_Fixture {
 #include "test_QF_BV.cpp"
 #include "test_graph_copy.cpp"
 #include "test_cardinality.cpp"
+#include "test_evaluator.cpp"

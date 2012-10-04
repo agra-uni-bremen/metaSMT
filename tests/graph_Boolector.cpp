@@ -25,3 +25,4 @@ struct Solver_Fixture {
 #include "test_group.cpp"
 #include "test_stack.cpp"
 #include "test_annotate.cpp"
+#include "test_evaluator.cpp"
