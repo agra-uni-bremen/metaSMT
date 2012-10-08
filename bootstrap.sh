@@ -11,7 +11,7 @@ REQUIRES="
 
 FREE="
   picosat-936
-  boolector-1.4.1
+  boolector-1.5.116
   aiger-20071012
   cudd-2.4.2
   minisat-git
