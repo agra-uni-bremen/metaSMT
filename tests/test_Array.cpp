@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( read_write_consistency ) {
   BOOST_REQUIRE( !solve(ctx) );
 }
 
-BOOST_AUTO_TEST_CASE( read_value_t ) {
+BOOST_AUTO_TEST_CASE( read_value_from_select ) {
   unsigned const elem_width = 8;
   unsigned const index_width = 4;
 
