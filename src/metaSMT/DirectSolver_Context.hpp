@@ -394,6 +394,12 @@ namespace metaSMT {
     return ctx.solve();
   }
 
+  template < typename SolverType, typename Expr >
+  typename boost::enable_if< Evaluator<Expr>, result_wrapper>::type
+  read_value( DirectSolver_Context<SolverType> &ctx, Expr const &expr ) {
+    return ctx.read_value( Evaluator<Expr>::eval(ctx, expr) );
+  }
+   
   template <typename SolverType>
   result_wrapper 
   read_value(
