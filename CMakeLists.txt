@@ -15,8 +15,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules )
 set(Boost_NO_BOOST_CMAKE true)
 set(Boost_NO_SYSTEM_PATHS true)
 set(Boost_ADDITIONAL_VERSIONS "1.50.0")
-find_package(Boost REQUIRED)
 find_package(Boost COMPONENTS iostreams thread python)
+
+if(NOT ${Boost_FOUND})
+  message(FATAL_ERROR "Boost could not be found.")
+endif()
+
 set_package_info(Boost "Portable C++ libraries")
 include_directories(${Boost_INCLUDE_DIRS})
 
