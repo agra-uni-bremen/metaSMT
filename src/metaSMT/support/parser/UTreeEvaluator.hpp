@@ -1,5 +1,9 @@
 #pragma once 
 
+#include "../../tags/QF_BV.hpp"
+#include "../../tags/Array.hpp"
+#include "../../result_wrapper.hpp"
+
 #include <iostream>
 #include <map>
 #include <stack>
@@ -20,7 +24,7 @@ struct UTreeEvaluator
 
   enum smt2operator
   {
-    other, smteq, smtxor, smtnot, smtimplies, smtor, smtand, smtite, smtbvmul, smtbvand, smtbvnot
+    other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite, smtbvmul, smtbvand, smtbvnot,
   };
 
   template<typename T1>
@@ -71,6 +75,8 @@ struct UTreeEvaluator
     operatorMap["bvmul"] = smtbvmul;
     operatorMap["bvand"] = smtbvand;
     operatorMap["bvnot"] = smtbvnot;
+    operatorMap["true"] = smttrue;
+    operatorMap["false"] = smtfalse;
   }
 
   void print(boost::spirit::utree ast)
@@ -100,9 +106,9 @@ struct UTreeEvaluator
         boost::spirit::utree logicalInstruction = *commandIterator;
 //        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
         if (pushed) {
-          metaSMTString += nestString("assumption ( ctx, ", translateLogicalInstruction(logicalInstruction), ");\n");
+          metaSMTString += nestString("assumption ( ctx, ", translateLogicalInstructionToString(logicalInstruction), ");\n");
         } else {
-          metaSMTString += nestString("assertion ( ctx, ", translateLogicalInstruction(logicalInstruction), ");\n");
+          metaSMTString += nestString("assertion ( ctx, ", translateLogicalInstructionToString(logicalInstruction), ");\n");
         }
         break;
       }
@@ -164,13 +170,14 @@ struct UTreeEvaluator
     return output;
   }
 
-  std::string translateLogicalInstruction(boost::spirit::utree tree)
+  std::string translateLogicalInstructionToString(boost::spirit::utree tree)
   {
     std::string output = "";
     switch (tree.which()) {
     case boost::spirit::utree::type::list_type: {
       for (boost::spirit::utree::iterator I = tree.begin() ; I != tree.end() ; ++I){
         std::string value = utreeToString(*I);
+//        std::cout << "value= " << value << std::endl;
         if(isOperator(value)){
           operatorStack.push(value);
         } else {
@@ -187,7 +194,9 @@ struct UTreeEvaluator
             operandStack.push(value);
           }
         }
+//        std::cout << "before: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
         consume();
+//        std::cout << "after: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
       }
       output += operandStack.top();
       operandStack.pop();
@@ -206,16 +215,26 @@ struct UTreeEvaluator
 
   void consume()
   {
-    if(!operatorStack.empty() && !operandStack.empty()){
+    if(!operatorStack.empty()){
       std::string op = operatorStack.top();
+//      std::cout << "op= " << op << std::endl;
       switch (operatorMap[op]) {
+      // constants
+      case smttrue:
+      case smtfalse:{
+        std::string newOperand = translateLogicalOeratorToString(op);
+        operandStack.push(newOperand);
+        operatorStack.pop();
+        consume();
+      }
+      break;
       // unary operators
       case smtnot:
       case smtbvnot:
         if(operandStack.size() > 0){
         	std::string op1 = operandStack.top();
         	operandStack.pop();
-          std::string newOperand = translateLogicalOerator(op) + op1 + ")";
+          std::string newOperand = translateLogicalOeratorToString(op) + op1 + ")";
           operandStack.push(newOperand);
           operatorStack.pop();
         }
@@ -233,7 +252,7 @@ struct UTreeEvaluator
           operandStack.pop();
           std::string op1 = operandStack.top();
           operandStack.pop();
-          std::string newOperand = translateLogicalOerator(op) + op1 + "," + op2 + ")";
+          std::string newOperand = translateLogicalOeratorToString(op) + op1 + "," + op2 + ")";
           operandStack.push(newOperand);
           operatorStack.pop();
         }
@@ -247,7 +266,7 @@ struct UTreeEvaluator
           operandStack.pop();
           std::string op1 = operandStack.top();
           operandStack.pop();
-          std::string newOperand = translateLogicalOerator(op) + op1 + "," + op2 + "," + op3 + ")";
+          std::string newOperand = translateLogicalOeratorToString(op) + op1 + "," + op2 + "," + op3 + ")";
           operandStack.push(newOperand);
           operatorStack.pop();
         }
@@ -272,6 +291,8 @@ struct UTreeEvaluator
     case smtbvmul:
     case smtbvand:
     case smtbvnot:
+    case smttrue:
+    case smtfalse:
       return true;
     case other:
     default:
@@ -309,9 +330,14 @@ struct UTreeEvaluator
     return output;
   }
 
-  std::string translateLogicalOerator(std::string op)
+  std::string translateLogicalOeratorToString(std::string op)
   {
+//    translateLogicalOeratorToVar_Tag(op);
     switch (operatorMap[op]) {
+    case smttrue:
+      return "true";
+    case smtfalse:
+      return "false";
     case smteq:
       return "metaSMT::logic::equal(";
     case smtnot:
@@ -333,7 +359,7 @@ struct UTreeEvaluator
     case smtbvnot:
       return "bvnot(";
     default:
-      return "undefinedOperator(";
+      return "undefinedOperator";
     }
     return "";
   }
@@ -352,6 +378,6 @@ private:
   std::stack<std::string> operatorStack;
   std::stack<std::string> operandStack;
 
-};
-}
-}
+}; // struct UTreeEvaluator
+} // namespace evaluator
+} // namespace metaSMT

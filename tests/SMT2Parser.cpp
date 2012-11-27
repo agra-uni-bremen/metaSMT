@@ -1,11 +1,10 @@
-
 #define BOOST_TEST_MODULE SMT2Parser 
 
 #include <metaSMT/support/parser/SMT2Parser.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
- 
+
 #include <boost/test/unit_test.hpp>
 
 using namespace std;
@@ -14,36 +13,36 @@ using namespace metaSMT::solver;
 using namespace metaSMT::evaluator;
 using namespace metaSMT::smt2;
 
-class Fixture {
-  public:
-    typedef DirectSolver_Context < Boolector > Context;
-    typedef UTreeEvaluator<Context>            Evaluator;
+class Fixture
+{
+public:
+  typedef DirectSolver_Context<Boolector> Context;
+  typedef UTreeEvaluator<Context> Evaluator;
 
-    Fixture () :
-       evaluator ( ctx )
-     , parser ( ast, evaluator ) {}
+  Fixture() :
+      evaluator(ctx), parser(ast, evaluator)
+  {
+  }
 
-    bool parse ()
-    {
-      return parser.parse ( buf, ast );
-    }
+  bool parse()
+  {
+    return parser.parse(buf, ast);
+  }
 
-    void print ()
-    {
+  void print()
+  {
 //      std::cout << "===============================" << std::endl;
 //      std::cout << " ast= "<< ast << " type= " << ast.which() << std::endl;
-      evaluator.print( ast );
-    }
+    evaluator.print(ast);
+  }
 
-
-  protected:
-    Context ctx;
-    Evaluator evaluator;
-    boost::spirit::utree::list_type ast;
-    SMT2Parser<Evaluator> parser;
-    std::stringstream buf;
+protected:
+  Context ctx;
+  Evaluator evaluator;
+  boost::spirit::utree::list_type ast;
+  SMT2Parser<Evaluator> parser;
+  std::stringstream buf;
 };
-
 
 BOOST_FIXTURE_TEST_SUITE(smt2parser, Fixture )
 
@@ -54,7 +53,7 @@ BOOST_AUTO_TEST_CASE( empty )
 BOOST_AUTO_TEST_CASE( failEvaluator )
 {
   buf << "(pop 1)" << endl;
-  buf << "(assert (= true true) )" << endl;
+  buf << "(assert (= true false) )" << endl;
   BOOST_REQUIRE ( parse () );
   print();
 }
@@ -258,7 +257,6 @@ BOOST_AUTO_TEST_CASE ( multiple_operators )
   buf << "(set-logic QF_AUFBV)" << endl;
   buf << "(push 1)" << endl;
   buf << "(assert (not (= false (not true))))" << endl;
-//  buf << "(assert (not = false not true)" << endl;
   buf << "(check-sat)" << endl;
   buf << "(exit)" << endl;
 
