@@ -22,9 +22,11 @@ struct UTreeEvaluator
     undefined, setlogic, setoption, checksat, assertion, declarefun, getvalue, push, pop, exit
   };
 
+  // TODO: check which bv constant/length/shift/comparison operators exist in SMT2
   enum smt2operator
   {
-    other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite, smtbvmul, smtbvand, smtbvnot,
+    other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite,
+    smtbvnot, smtbvand, smtbvor, smtbvxor, smtbvcomp, smtbvadd, smtbvmul, smtbvsub, smtbvdiv, smtbvrem
   };
 
   template<typename T1>
@@ -65,6 +67,8 @@ struct UTreeEvaluator
     symbolMap["pop"] = pop;
     symbolMap["exit"] = exit;
 
+    operatorMap["true"] = smttrue;
+    operatorMap["false"] = smtfalse;
     operatorMap["not"] = smtnot;
     operatorMap["="] = smteq;
     operatorMap["and"] = smtand;
@@ -72,11 +76,17 @@ struct UTreeEvaluator
     operatorMap["xor"] = smtxor;
     operatorMap["=>"] = smtimplies;
     operatorMap["ite"] = smtite;
-    operatorMap["bvmul"] = smtbvmul;
-    operatorMap["bvand"] = smtbvand;
     operatorMap["bvnot"] = smtbvnot;
-    operatorMap["true"] = smttrue;
-    operatorMap["false"] = smtfalse;
+    operatorMap["bvand"] = smtbvand;
+    operatorMap["bvor"] = smtbvor;
+    operatorMap["bvxor"] = smtbvxor;
+    operatorMap["bvcomp"] = smtbvcomp;
+    operatorMap["bvadd"] = smtbvadd;
+    operatorMap["bvmul"] = smtbvmul;
+    operatorMap["bvsub"] = smtbvsub;
+    operatorMap["bvdiv"] = smtbvdiv;
+    operatorMap["bvrem"] = smtbvrem;
+
   }
 
   void print(boost::spirit::utree ast)
@@ -245,8 +255,15 @@ struct UTreeEvaluator
       case smtor:
       case smtxor:
       case smtimplies:
-      case smtbvmul:
       case smtbvand:
+      case smtbvor:
+      case smtbvxor:
+      case smtbvcomp:
+      case smtbvadd:
+      case smtbvmul:
+      case smtbvsub:
+      case smtbvdiv:
+      case smtbvrem:
         if(operandStack.size() >= 2){
           std::string op2 = operandStack.top();
           operandStack.pop();
@@ -281,6 +298,8 @@ struct UTreeEvaluator
 
   bool isOperator(std::string op){
     switch (operatorMap[op]) {
+    case smttrue:
+    case smtfalse:
     case smteq:
     case smtnot:
     case smtand:
@@ -288,11 +307,15 @@ struct UTreeEvaluator
     case smtxor:
     case smtimplies:
     case smtite:
-    case smtbvmul:
     case smtbvand:
-    case smtbvnot:
-    case smttrue:
-    case smtfalse:
+    case smtbvor:
+    case smtbvxor:
+    case smtbvcomp:
+    case smtbvadd:
+    case smtbvmul:
+    case smtbvsub:
+    case smtbvdiv:
+    case smtbvrem:
       return true;
     case other:
     default:
@@ -352,12 +375,26 @@ struct UTreeEvaluator
       return "implies(";
     case smtite:
       return "Ite(";
-    case smtbvmul:
-      return "bvmul(";
-    case smtbvand:
-      return "bvand(";
     case smtbvnot:
       return "bvnot(";
+    case smtbvand:
+      return "bvand(";
+    case smtbvor:
+      return "bvor(";
+    case smtbvxor:
+      return "bvxor(";
+    case smtbvcomp:
+      return "bvcomp(";
+    case smtbvadd:
+      return "bvadd(";
+    case smtbvmul:
+      return "bvmul(";
+    case smtbvsub:
+      return "bvsub(";
+    case smtbvdiv:
+      return "bvdiv(";
+    case smtbvrem:
+      return "bvrem(";
     default:
       return "undefinedOperator";
     }
