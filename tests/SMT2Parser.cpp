@@ -36,9 +36,9 @@ public:
     evaluator.print(ast);
   }
 
-  void check()
+  void solve()
   {
-    evaluator.evaluate(ast);
+    return evaluator.solve(ast);
   }
 
 protected:
@@ -151,6 +151,7 @@ BOOST_AUTO_TEST_CASE ( simple_unsat )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -169,6 +170,7 @@ BOOST_AUTO_TEST_CASE ( simple_sat )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -181,6 +183,7 @@ BOOST_AUTO_TEST_CASE ( assertion_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -193,6 +196,7 @@ BOOST_AUTO_TEST_CASE ( assumption_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -205,6 +209,7 @@ BOOST_AUTO_TEST_CASE ( assertion_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -217,6 +222,7 @@ BOOST_AUTO_TEST_CASE ( assumption_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 

@@ -97,7 +97,7 @@ struct UTreeEvaluator
     std::cout << metaSMTString << std::endl;
   }
 
-  void evaluate(boost::spirit::utree ast)
+  void solve(boost::spirit::utree ast)
   {
     initialize();
     parseSymbolToResultType(ast);
@@ -118,6 +118,7 @@ struct UTreeEvaluator
         break;
       case checksat:
         pushed = false;
+        std::cout << ctx.solve() << std::endl;
         break;
       case assertion: {
         ++commandIterator;
