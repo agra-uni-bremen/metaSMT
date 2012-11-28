@@ -9,6 +9,7 @@
 #include <stack>
 
 #include <boost/spirit/include/support_utree.hpp>
+#include "boost/lexical_cast.hpp"
 
 namespace metaSMT {
 namespace evaluator {
@@ -38,6 +39,7 @@ struct UTreeEvaluator
   typedef std::map<std::string, boost::function<bool(boost::spirit::utree::list_type&)> > CommandMap;
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
+  typedef BtorExp* result_type;
 
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
@@ -93,8 +95,53 @@ struct UTreeEvaluator
   {
     initialize();
     parseSymbolToString(ast);
-//    std::cout << "Ergebnis= " << std::endl;
     std::cout << metaSMTString << std::endl;
+  }
+
+  void evaluate(boost::spirit::utree ast)
+  {
+    initialize();
+    parseSymbolToResultType(ast);
+  }
+
+  void parseSymbolToResultType(boost::spirit::utree ast)
+  {
+    bool pushed = false;
+    for (boost::spirit::utree::iterator I = ast.begin(); I != ast.end(); ++I) {
+      boost::spirit::utree command = *I;
+      boost::spirit::utree::iterator commandIterator = command.begin();
+      boost::spirit::utree symbol = *commandIterator;
+      std::string symbolString = utreeToString(symbol);
+
+      switch (symbolMap[symbolString]) {
+      case push:
+        pushed = true;
+        break;
+      case checksat:
+        pushed = false;
+        break;
+      case assertion: {
+        ++commandIterator;
+        boost::spirit::utree logicalInstruction = *commandIterator;
+//        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
+        if (pushed) {
+          ctx.assumption(0);
+        } else {
+          ctx.assertion(0);
+        }
+        break;
+      }
+      case declarefun:
+      case getvalue:
+      case setoption:
+      case setlogic:
+      case pop:
+      case exit:
+      case undefined:
+      default:
+        break;
+      }
+    }
   }
 
   void parseSymbolToString(boost::spirit::utree ast)
@@ -355,7 +402,6 @@ struct UTreeEvaluator
 
   std::string translateLogicalOeratorToString(std::string op)
   {
-//    std::cout << translateLogicalOeratorToVar_Tag(op) << std::endl;
     switch (operatorMap[op]) {
     case smttrue:
       return "true";
@@ -414,6 +460,7 @@ private:
   std::string metaSMTString;
   std::stack<std::string> operatorStack;
   std::stack<std::string> operandStack;
+  std::stack<result_type> resultTypeStack;
 
 }; // struct UTreeEvaluator
 } // namespace evaluator

@@ -36,6 +36,11 @@ public:
     evaluator.print(ast);
   }
 
+  void check()
+  {
+    evaluator.evaluate(ast);
+  }
+
 protected:
   Context ctx;
   Evaluator evaluator;
@@ -88,10 +93,10 @@ BOOST_AUTO_TEST_CASE ( simple_assertions )
 
 BOOST_AUTO_TEST_CASE ( nested_assertions )
 {
-  buf << "(assert true )";
-  buf << "(assert true )";
-  buf << "(assert true )";
-  buf << "(assert true )";
+  buf << "(assert (not false) )";
+  buf << "(assert (not false) )";
+  buf << "(assert (not false) )";
+  buf << "(assert (not false) )";
   buf << "(push 1)";
   buf << "(assert true )";
   buf << "(assert true )";
