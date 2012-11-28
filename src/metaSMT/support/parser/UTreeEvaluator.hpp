@@ -92,12 +92,12 @@ struct UTreeEvaluator
   void print(boost::spirit::utree ast)
   {
     initialize();
-    parseSymbol(ast);
+    parseSymbolToString(ast);
 //    std::cout << "Ergebnis= " << std::endl;
     std::cout << metaSMTString << std::endl;
   }
 
-  void parseSymbol(boost::spirit::utree ast)
+  void parseSymbolToString(boost::spirit::utree ast)
   {
     bool pushed = false;
     for (boost::spirit::utree::iterator I = ast.begin(); I != ast.end(); ++I) {
@@ -127,7 +127,7 @@ struct UTreeEvaluator
         break;
       }
       case declarefun: {
-        metaSMTString += translateDeclareFunction(command);
+        metaSMTString += translateDeclareFunctionToString(command);
         break;
       }
       case getvalue: {
@@ -147,7 +147,7 @@ struct UTreeEvaluator
     }
   }
 
-  std::string translateDeclareFunction(boost::spirit::utree function)
+  std::string translateDeclareFunctionToString(boost::spirit::utree function)
   {
     // (declare-fun var_1 () (_ BitVec 8))
     // bitvector x = new_bitvector(8);
@@ -205,7 +205,7 @@ struct UTreeEvaluator
           }
         }
 //        std::cout << "before: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
-        consume();
+        consumeToString();
 //        std::cout << "after: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
       }
       output += operandStack.top();
@@ -223,7 +223,7 @@ struct UTreeEvaluator
     return output;
   }
 
-  void consume()
+  void consumeToString()
   {
     if(!operatorStack.empty()){
       std::string op = operatorStack.top();
@@ -235,7 +235,7 @@ struct UTreeEvaluator
         std::string newOperand = translateLogicalOeratorToString(op);
         operandStack.push(newOperand);
         operatorStack.pop();
-        consume();
+        consumeToString();
       }
       break;
       // unary operators
@@ -355,7 +355,7 @@ struct UTreeEvaluator
 
   std::string translateLogicalOeratorToString(std::string op)
   {
-//    translateLogicalOeratorToVar_Tag(op);
+//    std::cout << translateLogicalOeratorToVar_Tag(op) << std::endl;
     switch (operatorMap[op]) {
     case smttrue:
       return "true";
