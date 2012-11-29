@@ -151,7 +151,7 @@ struct UTreeEvaluator
       for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
 ////        std::cout << "value= " << value << std::endl;
-        if (isOperator(value)) {
+        if (operatorMap[value] != other) {
           operatorStack.push(value);
         } else {
 //          // create var_tags
@@ -175,7 +175,7 @@ struct UTreeEvaluator
     }
     case boost::spirit::utree::type::string_type: {
       std::string value = utreeToString(tree);
-      if (isOperator(value)) {
+      if (operatorMap[value] != other) {
         operatorStack.push(value);
       } else {
         metaSMT::logic::tag::var_tag tag;
@@ -305,7 +305,7 @@ struct UTreeEvaluator
       for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
 //        std::cout << "value= " << value << std::endl;
-        if (isOperator(value)) {
+        if (operatorMap[value] != other) {
           operatorStack.push(value);
           std::pair<int,int> newOperandStackValue(numOperands(value), 0);
           neededOperandStack.push(newOperandStackValue);
@@ -446,36 +446,6 @@ struct UTreeEvaluator
       break;
     }
     return output;
-  }
-
-  bool isOperator(std::string op)
-  {
-    switch (operatorMap[op]) {
-    case smttrue:
-    case smtfalse:
-    case smteq:
-    case smtnot:
-    case smtand:
-    case smtor:
-    case smtxor:
-    case smtimplies:
-    case smtite:
-    case smtbvnot:
-    case smtbvand:
-    case smtbvor:
-    case smtbvxor:
-    case smtbvcomp:
-    case smtbvadd:
-    case smtbvmul:
-    case smtbvsub:
-    case smtbvdiv:
-    case smtbvrem:
-      return true;
-    case other:
-    default:
-      break;
-    }
-    return false;
   }
 
   int numOperands(std::string op)
