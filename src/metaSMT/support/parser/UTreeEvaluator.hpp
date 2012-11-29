@@ -245,13 +245,60 @@ struct UTreeEvaluator
       case smteq:
         result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1,op2));
         break;
+      case smtimplies:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::implies(op1,op2));
+        break;
+      case smtand:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::And(op1,op2));
+        break;
+      case smtor:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Or(op1,op2));
+        break;
+      case smtxor:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Xor(op1,op2));
+        break;
+      case smtbvand:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvand(op1,op2));
+        break;
+      case smtbvor:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvor(op1,op2));
+        break;
+      case smtbvxor:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvxor(op1,op2));
+        break;
+      case smtbvadd:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvadd(op1,op2));
+        break;
+      case smtbvmul:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvmul(op1,op2));
+        break;
+      case smtbvsub:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsub(op1,op2));
+        break;
+      case smtbvdiv:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsdiv(op1,op2));
+        break;
+      case smtbvrem:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(op1,op2));
+        break;
       default:
         break;
       }
     }
       break;
     // ternary operators
-    case 3:
+    case 3: {
+      result_type op1 = popResultType();
+      result_type op2 = popResultType();
+      result_type op3 = popResultType();
+      switch (operatorMap[op]) {
+      case smtite:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Ite(op1,op2,op3));
+        break;
+      default:
+        break;
+      }
+    }
       break;
     default:
       break;

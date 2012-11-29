@@ -131,10 +131,14 @@ BOOST_AUTO_TEST_CASE ( more_complex_assertion )
   buf << "(declare-fun bv1 () Bool )" << endl;
   buf << "(declare-fun bv3 () Bool )" << endl;
   buf << "(assertion (= bv1 true) )" << endl;
+  buf << "(check-sat)" << endl;
   buf << "(assertion (= bv2 true) )" << endl;
+  buf << "(check-sat)" << endl;
   buf << "(assertion (= (bvand bv1 bv2) bit1) )";
+  buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -160,6 +164,7 @@ BOOST_AUTO_TEST_CASE ( factorization )
   buf << "    (get-value (b))" << endl;
 
   BOOST_REQUIRE ( parse () );
+  solve();
   print();
 
 }
@@ -244,6 +249,7 @@ BOOST_AUTO_TEST_CASE ( complex_assert )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -253,6 +259,7 @@ BOOST_AUTO_TEST_CASE ( double_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -262,6 +269,7 @@ BOOST_AUTO_TEST_CASE ( first_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -271,6 +279,7 @@ BOOST_AUTO_TEST_CASE ( second_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -293,6 +302,7 @@ BOOST_AUTO_TEST_CASE ( multiple_operators )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -303,6 +313,7 @@ BOOST_AUTO_TEST_CASE ( op_and )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -313,6 +324,7 @@ BOOST_AUTO_TEST_CASE ( op_or )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -323,6 +335,7 @@ BOOST_AUTO_TEST_CASE ( op_xor )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -333,6 +346,7 @@ BOOST_AUTO_TEST_CASE ( op_implies )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -343,6 +357,7 @@ BOOST_AUTO_TEST_CASE ( op_ite )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
