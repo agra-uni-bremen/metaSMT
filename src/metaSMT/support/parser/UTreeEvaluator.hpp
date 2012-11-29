@@ -38,7 +38,7 @@ struct UTreeEvaluator
   typedef std::map<std::string, boost::function<bool(boost::spirit::utree::list_type&)> > CommandMap;
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
-  typedef BtorExp* result_type;
+  typedef typename Context::result_type result_type;
 
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
@@ -117,17 +117,18 @@ struct UTreeEvaluator
         break;
       case checksat:
         pushed = false;
-        std::cout << ctx.solve() << std::endl;
+        std::cout << metaSMT::solve(ctx) << std::endl;
         break;
       case assertion: {
         ++commandIterator;
         boost::spirit::utree logicalInstruction = *commandIterator;
 //        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
         if (pushed) {
-          ctx.assumption(translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assumption(ctx,translateLogicalInstructionToResultType(logicalInstruction));
         } else {
-          ctx.assertion(translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assertion(ctx,translateLogicalInstructionToResultType(logicalInstruction));
         }
+//        std::cout << "End: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         break;
       }
       case declarefun:
@@ -150,9 +151,11 @@ struct UTreeEvaluator
     case boost::spirit::utree::type::list_type: {
       for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
-////        std::cout << "value= " << value << std::endl;
+//        std::cout << "value= " << value << std::endl;
         if (operatorMap[value] != other) {
           operatorStack.push(value);
+          std::pair<int, int> newOperandStackValue(numOperands(value), 0);
+          neededOperandStack.push(newOperandStackValue);
         } else {
 //          // create var_tags
           if (value.compare("_") == 0) {
@@ -162,26 +165,32 @@ struct UTreeEvaluator
             metaSMT::logic::QF_BV::tag::var_tag tag;
             unsigned width = boost::lexical_cast<unsigned>(bitSize);
             tag.width = width;
-            resultTypeStack.push(ctx(tag));
+            pushResultType(ctx(tag));
           } else {
             metaSMT::logic::tag::var_tag tag;
-            resultTypeStack.push(ctx(tag));
+            pushResultType(ctx(tag));
           }
         }
-////        std::cout << "before: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
-        consumeToResultType();
-////        std::cout << "after: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << std::endl;
+        while (canConsume()) {
+//          std::cout << "before: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
+          consumeToResultType();
+//          std::cout << "after: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
+        }
       }
+      break;
     }
     case boost::spirit::utree::type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
         operatorStack.push(value);
+        std::pair<int, int> newOperandStackValue(numOperands(value), 0);
+        neededOperandStack.push(newOperandStackValue);
       } else {
         metaSMT::logic::tag::var_tag tag;
         resultTypeStack.push(ctx(tag));
       }
       consumeToResultType();
+      break;
     }
     default:
       break;
@@ -197,54 +206,77 @@ struct UTreeEvaluator
 
   void consumeToResultType()
   {
-    if (!operatorStack.empty()) {
-      std::string op = operatorStack.top();
-//      std::cout << "op= " << op << std::endl;
+    std::string op = operatorStack.top();
+    result_type result;
+    switch(numOperands(op)){
+    // constants
+    case 0:
       switch (operatorMap[op]) {
-      // constants
-      case smttrue: {
-        metaSMT::logic::tag::true_tag tag;
-        resultTypeStack.push(ctx(tag));
-        operatorStack.pop();
-        consumeToResultType();
-      }
+      case smttrue:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::True);
         break;
-      case smtfalse: {
-        metaSMT::logic::tag::false_tag tag;
-        resultTypeStack.push(ctx(tag));
-        operatorStack.pop();
-        consumeToResultType();
-      }
+      case smtfalse:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::False);
         break;
-        // unary operators
-      case smtnot:
-      case smtbvnot:
-        break;
-        // binary operators
-      case smteq:
-      case smtand:
-      case smtor:
-      case smtxor:
-      case smtimplies:
-      case smtbvand:
-      case smtbvor:
-      case smtbvxor:
-      case smtbvcomp:
-      case smtbvadd:
-      case smtbvmul:
-      case smtbvsub:
-      case smtbvdiv:
-      case smtbvrem:
-        break;
-        // ternary operators
-      case smtite:
-        break;
-      case other:
       default:
-//        std::cout << "couldn't recognize operator:" << op << std::endl;
+        break;
+      }
+      break;
+    // unary operators
+    case 1: {
+      result_type op1 = popResultType();
+      switch (operatorMap[op]) {
+      case smtnot:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Not(op1));
+        break;
+      case smtbvnot:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvnot(op1));
+        break;
+      default:
         break;
       }
     }
+      break;
+    // binary operators
+    case 2: {
+      result_type op1 = popResultType();
+      result_type op2 = popResultType();
+      switch (operatorMap[op]) {
+      case smteq:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1,op2));
+        break;
+      default:
+        break;
+      }
+    }
+      break;
+    // ternary operators
+    case 3:
+      break;
+    default:
+      break;
+    }
+
+    neededOperandStack.pop();
+    pushResultType(result);
+    operatorStack.pop();
+  }
+
+  void pushResultType(result_type op)
+  {
+    if (neededOperandStack.size() > 0) {
+      std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
+      neededOperandStack.pop();
+      neededOperandStack.push(newTop);
+    }
+    resultTypeStack.push(op);
+  }
+
+  result_type popResultType()
+  {
+    result_type op = resultTypeStack.top();
+    resultTypeStack.pop();
+    return op;
   }
 
   void parseSymbolToString(boost::spirit::utree ast)
@@ -307,7 +339,7 @@ struct UTreeEvaluator
 //        std::cout << "value= " << value << std::endl;
         if (operatorMap[value] != other) {
           operatorStack.push(value);
-          std::pair<int,int> newOperandStackValue(numOperands(value), 0);
+          std::pair<int, int> newOperandStackValue(numOperands(value), 0);
           neededOperandStack.push(newOperandStackValue);
         } else {
           // handle s.th. like ((_ bv123 32) a)
@@ -328,20 +360,19 @@ struct UTreeEvaluator
           consumeToString();
 //          std::cout << "after: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         }
-
       }
-      output += operandStack.top();
-      operandStack.pop();
       break;
     }
     case boost::spirit::utree::type::string_type: {
       std::string value = utreeToString(tree);
-      output += value;
+      operandStack.push(value);
       break;
     }
     default:
       break;
     }
+    output += operandStack.top();
+    operandStack.pop();
     return output;
   }
 
@@ -493,7 +524,7 @@ struct UTreeEvaluator
 
   void pushOperandToString(std::string op)
   {
-    if(neededOperandStack.size() > 0){
+    if (neededOperandStack.size() > 0) {
       std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
       neededOperandStack.pop();
       neededOperandStack.push(newTop);

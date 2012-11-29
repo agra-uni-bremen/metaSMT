@@ -38,7 +38,7 @@ public:
 
   void solve()
   {
-//    return evaluator.solve(ast);
+    evaluator.solve(ast);
   }
 
 protected:
@@ -76,6 +76,17 @@ BOOST_AUTO_TEST_CASE( check_sat )
   print();
 }
 
+BOOST_AUTO_TEST_CASE ( operator_not )
+{
+  buf << "(push 1)" << endl;
+  buf << "(assert (not false))" << endl;
+  buf << "(check-sat)" << endl;
+
+  BOOST_REQUIRE ( parse() );
+  solve();
+  print();
+}
+
 BOOST_AUTO_TEST_CASE ( declare_function )
 {
   buf << "(set-logic QF_AUFBV)" << endl;
@@ -86,13 +97,16 @@ BOOST_AUTO_TEST_CASE ( declare_function )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
 BOOST_AUTO_TEST_CASE ( simple_assertion )
 {
   buf << "(assertion (= bit0 bit1) )";
+  buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
@@ -106,6 +120,7 @@ BOOST_AUTO_TEST_CASE ( nested_assertion )
   buf << "(assert true )";
   buf << "(assert true )";
   buf << "(assert true )";
+  buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
   solve();
   print();
@@ -232,21 +247,6 @@ BOOST_AUTO_TEST_CASE ( complex_assert )
   print();
 }
 
-
-
-BOOST_AUTO_TEST_CASE ( operator_not )
-{
-  buf << "(set-logic QF_AUFBV)" << endl;
-  buf << "(push 1)" << endl;
-  buf << "(assert (not true))" << endl;
-  buf << "(check-sat)" << endl;
-  buf << "(exit)" << endl;
-
-  BOOST_REQUIRE ( parse() );
-  solve();
-  print();
-}
-
 BOOST_AUTO_TEST_CASE ( double_not )
 {
   buf << "(assert (= (not true) (not true)))" << endl;
@@ -280,6 +280,7 @@ BOOST_AUTO_TEST_CASE ( deep_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
+  solve();
   print();
 }
 
