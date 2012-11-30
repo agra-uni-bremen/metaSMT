@@ -36,9 +36,9 @@ public:
     evaluator.print(ast);
   }
 
-  void solve()
+  bool solve()
   {
-    evaluator.solve(ast);
+    return evaluator.solve(ast);
   }
 
 protected:
@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE( check_sat )
 {
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse () );
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -83,7 +84,7 @@ BOOST_AUTO_TEST_CASE ( operator_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -97,7 +98,7 @@ BOOST_AUTO_TEST_CASE ( declare_function )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -106,7 +107,7 @@ BOOST_AUTO_TEST_CASE ( simple_assertion )
   buf << "(assertion (= bit0 bit1) )";
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -122,7 +123,7 @@ BOOST_AUTO_TEST_CASE ( nested_assertion )
   buf << "(assert true )";
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -138,7 +139,7 @@ BOOST_AUTO_TEST_CASE ( more_complex_assertion )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -164,7 +165,7 @@ BOOST_AUTO_TEST_CASE ( factorization )
   buf << "    (get-value (b))" << endl;
 
   BOOST_REQUIRE ( parse () );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 
 }
@@ -184,7 +185,7 @@ BOOST_AUTO_TEST_CASE ( simple_sat )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -197,7 +198,7 @@ BOOST_AUTO_TEST_CASE ( assertion_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -210,7 +211,7 @@ BOOST_AUTO_TEST_CASE ( assumption_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -223,7 +224,7 @@ BOOST_AUTO_TEST_CASE ( assertion_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -236,7 +237,7 @@ BOOST_AUTO_TEST_CASE ( assumption_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -249,7 +250,7 @@ BOOST_AUTO_TEST_CASE ( complex_assert )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -259,7 +260,7 @@ BOOST_AUTO_TEST_CASE ( double_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -269,7 +270,7 @@ BOOST_AUTO_TEST_CASE ( first_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -279,7 +280,7 @@ BOOST_AUTO_TEST_CASE ( second_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -289,7 +290,7 @@ BOOST_AUTO_TEST_CASE ( deep_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -297,12 +298,12 @@ BOOST_AUTO_TEST_CASE ( multiple_operators )
 {
   buf << "(set-logic QF_AUFBV)" << endl;
   buf << "(push 1)" << endl;
-  buf << "(assert (not (= false (not true))))" << endl;
+  buf << "(assert (not (not (= false (not true)))))" << endl;
   buf << "(check-sat)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -313,7 +314,7 @@ BOOST_AUTO_TEST_CASE ( op_and )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -324,18 +325,18 @@ BOOST_AUTO_TEST_CASE ( op_or )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
 BOOST_AUTO_TEST_CASE ( op_xor )
 {
   buf << "(push 1)" << endl;
-  buf << "(assert (xor true true) )" << endl;
+  buf << "(assert (xor true false) )" << endl;
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -346,7 +347,7 @@ BOOST_AUTO_TEST_CASE ( op_implies )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -357,7 +358,7 @@ BOOST_AUTO_TEST_CASE ( op_ite )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  solve();
+  BOOST_REQUIRE ( solve () );
   print();
 }
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 #include <stack>
+#include <list>
 
 #include <boost/spirit/include/support_utree.hpp>
 #include "boost/lexical_cast.hpp"
@@ -43,6 +44,7 @@ struct UTreeEvaluator
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
   {
+    initialize();
   }
 
   boost::spirit::utree::list_type& operator()(boost::spirit::utree::list_type& ast) const
@@ -91,15 +93,18 @@ struct UTreeEvaluator
 
   void print(boost::spirit::utree ast)
   {
-    initialize();
     parseSymbolToString(ast);
     std::cout << metaSMTString << std::endl;
   }
 
-  void solve(boost::spirit::utree ast)
+  bool solve(boost::spirit::utree ast)
   {
-    initialize();
     parseSymbolToResultType(ast);
+    for (std::list<bool>::iterator I = results.begin(); I != results.end(); ++I) {
+      if(! *I)
+        return false;
+    }
+    return true;
   }
 
   void parseSymbolToResultType(boost::spirit::utree ast)
@@ -117,7 +122,7 @@ struct UTreeEvaluator
         break;
       case checksat:
         pushed = false;
-        std::cout << metaSMT::solve(ctx) << std::endl;
+        results.push_back(metaSMT::solve(ctx));
         break;
       case assertion: {
         ++commandIterator;
@@ -667,11 +672,12 @@ private:
   OperatorMap operatorMap;
 
   std::string metaSMTString;
-  std::stack<std::string> operatorStack;
   std::stack<std::string> operandStack;
-  std::stack<std::pair<int, int> > neededOperandStack;
 
+  std::stack<std::string> operatorStack;
+  std::stack<std::pair<int, int> > neededOperandStack;
   std::stack<result_type> resultTypeStack;
+  std::list<bool> results;
 
 };
 // struct UTreeEvaluator
