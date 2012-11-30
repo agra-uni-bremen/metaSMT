@@ -135,7 +135,9 @@ BOOST_AUTO_TEST_CASE ( more_complex_assertion )
   buf << "(check-sat)" << endl;
   buf << "(assertion (= bv2 true) )" << endl;
   buf << "(check-sat)" << endl;
-  buf << "(assertion (= (bvand bv1 bv2) bit1) )";
+  buf << "(assertion (= (bvand bv1 bv2) #b1) )";
+  buf << "(check-sat)" << endl;
+  buf << "(assertion (bvadd (_ bv1 1) (_ bv2 1)) )";
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -150,10 +152,10 @@ BOOST_AUTO_TEST_CASE ( factorization )
   buf << "    (declare-fun b () (_ BitVec 32))" << endl;
   buf << "    ; assert a*b == r (1234567)" << endl;
   buf << "    (assertion (=" << endl;
-  buf << "                (bvmul" << endl;
+  buf << "                (bvadd" << endl;
   buf << "                 ( a)" << endl;
   buf << "                 ( b))" << endl;
-  buf << "                (_ bv1234567 64 )" << endl;
+  buf << "                (_ bv1234567 32 )" << endl;
   buf << "               ))" << endl;
   buf << "    ; a and be must not be 1" << endl;
   buf << "    (assertion" << endl;
@@ -365,14 +367,18 @@ BOOST_AUTO_TEST_CASE ( op_ite )
 BOOST_AUTO_TEST_CASE ( var_bin )
 {
   buf << "(assert (= #b1 #b1))" << endl;
+  buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
+  BOOST_REQUIRE ( solve () );
   print();
 }
 
 BOOST_AUTO_TEST_CASE ( var_hex )
 {
   buf << "(assert (= #x1 #x1))" << endl;
+  buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
+  BOOST_REQUIRE ( solve () );
   print();
 }
 

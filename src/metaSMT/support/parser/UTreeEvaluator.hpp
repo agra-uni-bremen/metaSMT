@@ -158,22 +158,17 @@ struct UTreeEvaluator
         std::string value = utreeToString(*I);
 //        std::cout << "value= " << value << std::endl;
         if (operatorMap[value] != other) {
-          operatorStack.push(value);
-          std::pair<int, int> newOperandStackValue(numOperands(value), 0);
-          neededOperandStack.push(newOperandStackValue);
+          pushOperator(value);
         } else {
-//          // create var_tags
+          // handle bv values
           if (value.compare("_") == 0) {
             ++I;
+            std::string bvvalue = utreeToString(*I);
             ++I;
             std::string bitSize = utreeToString(*I);
-            metaSMT::logic::QF_BV::tag::var_tag tag;
-            unsigned width = boost::lexical_cast<unsigned>(bitSize);
-            tag.width = width;
-            pushResultType(ctx(tag));
+            pushResultType(createBvInt(bvvalue, bitSize));
           } else {
-            metaSMT::logic::tag::var_tag tag;
-            pushResultType(ctx(tag));
+        	  pushVarOrConstant(value);
           }
         }
         while (canConsume()) {
@@ -187,12 +182,9 @@ struct UTreeEvaluator
     case boost::spirit::utree::type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
-        operatorStack.push(value);
-        std::pair<int, int> newOperandStackValue(numOperands(value), 0);
-        neededOperandStack.push(newOperandStackValue);
+    	  pushOperator(value);
       } else {
-        metaSMT::logic::tag::var_tag tag;
-        resultTypeStack.push(ctx(tag));
+    	  pushVarOrConstant(value);
       }
       consumeToResultType();
       break;
@@ -314,6 +306,13 @@ struct UTreeEvaluator
     operatorStack.pop();
   }
 
+  void pushOperator(std::string op)
+  {
+    operatorStack.push(op);
+    std::pair<int, int> neededOperands(numOperands(op), 0);
+    neededOperandStack.push(neededOperands);
+  }
+
   void pushResultType(result_type op)
   {
     if (neededOperandStack.size() > 0) {
@@ -329,6 +328,37 @@ struct UTreeEvaluator
     result_type op = resultTypeStack.top();
     resultTypeStack.pop();
     return op;
+  }
+
+  void pushVarOrConstant(std::string value)
+  {
+    metaSMT::logic::tag::var_tag tag;
+    result_type var = metaSMT::evaluate(ctx, ctx(tag));
+    if (value.size() > 2) {
+      if (value.find("#", 0, 1) != value.npos) {
+        if (value.find("b", 1, 1) != value.npos) {
+          value.erase(0, 2);
+          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+        } else if (value.find("x", 1, 1) != value.npos) {
+          value.erase(0, 2);
+          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
+        }
+      }
+    }
+    pushResultType(var);
+  }
+
+  result_type createBvInt(std::string value, std::string bitSize)
+  {
+    unsigned number = 0;
+    if (value.size() > 2) {
+      if (value.find("bv", 0, 2) != value.npos) {
+        value.erase(0, 2);
+        number = boost::lexical_cast<unsigned>(value);
+      }
+    }
+    unsigned width = boost::lexical_cast<unsigned>(bitSize);
+    return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsint(number, width));
   }
 
   void parseSymbolToString(boost::spirit::utree ast)
