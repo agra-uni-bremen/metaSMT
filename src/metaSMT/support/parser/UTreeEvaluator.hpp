@@ -39,6 +39,8 @@ struct UTreeEvaluator
   typedef std::map<std::string, boost::function<bool(boost::spirit::utree::list_type&)> > CommandMap;
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
+  typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
+  typedef std::map<std::string, metaSMT::logic::QF_BV::bitvector> BitVectorMap;
   typedef typename Context::result_type result_type;
 
   UTreeEvaluator(Context& ctx) :
@@ -101,7 +103,7 @@ struct UTreeEvaluator
   {
     parseSymbolToResultType(ast);
     for (std::list<bool>::iterator I = results.begin(); I != results.end(); ++I) {
-      if(! *I)
+      if (!*I)
         return false;
     }
     return true;
@@ -129,14 +131,16 @@ struct UTreeEvaluator
         boost::spirit::utree logicalInstruction = *commandIterator;
 //        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
         if (pushed) {
-          metaSMT::assumption(ctx,translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assumption(ctx, translateLogicalInstructionToResultType(logicalInstruction));
         } else {
-          metaSMT::assertion(ctx,translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assertion(ctx, translateLogicalInstructionToResultType(logicalInstruction));
         }
 //        std::cout << "End: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         break;
       }
       case declarefun:
+        translateDeclareFunctionToVariable(command);
+        break;
       case getvalue:
       case setoption:
       case setlogic:
@@ -168,7 +172,7 @@ struct UTreeEvaluator
             std::string bitSize = utreeToString(*I);
             pushResultType(createBvInt(bvvalue, bitSize));
           } else {
-        	  pushVarOrConstant(value);
+            pushVarOrConstant(value);
           }
         }
         while (canConsume()) {
@@ -182,9 +186,9 @@ struct UTreeEvaluator
     case boost::spirit::utree::type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
-    	  pushOperator(value);
+        pushOperator(value);
       } else {
-    	  pushVarOrConstant(value);
+        pushVarOrConstant(value);
       }
       consumeToResultType();
       break;
@@ -205,7 +209,7 @@ struct UTreeEvaluator
   {
     std::string op = operatorStack.top();
     result_type result;
-    switch(numOperands(op)){
+    switch (numOperands(op)) {
     // constants
     case 0:
       switch (operatorMap[op]) {
@@ -219,7 +223,7 @@ struct UTreeEvaluator
         break;
       }
       break;
-    // unary operators
+      // unary operators
     case 1: {
       result_type op1 = popResultType();
       switch (operatorMap[op]) {
@@ -234,63 +238,63 @@ struct UTreeEvaluator
       }
     }
       break;
-    // binary operators
+      // binary operators
     case 2: {
       result_type op1 = popResultType();
       result_type op2 = popResultType();
       switch (operatorMap[op]) {
       case smteq:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1, op2));
         break;
       case smtimplies:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::implies(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::implies(op1, op2));
         break;
       case smtand:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::And(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::And(op1, op2));
         break;
       case smtor:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::Or(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Or(op1, op2));
         break;
       case smtxor:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::Xor(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Xor(op1, op2));
         break;
       case smtbvand:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvand(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvand(op1, op2));
         break;
       case smtbvor:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvor(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvor(op1, op2));
         break;
       case smtbvxor:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvxor(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvxor(op1, op2));
         break;
       case smtbvadd:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvadd(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvadd(op1, op2));
         break;
       case smtbvmul:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvmul(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvmul(op1, op2));
         break;
       case smtbvsub:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsub(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsub(op1, op2));
         break;
       case smtbvdiv:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsdiv(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsdiv(op1, op2));
         break;
       case smtbvrem:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(op1,op2));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(op1, op2));
         break;
       default:
         break;
       }
     }
       break;
-    // ternary operators
+      // ternary operators
     case 3: {
       result_type op1 = popResultType();
       result_type op2 = popResultType();
       result_type op3 = popResultType();
       switch (operatorMap[op]) {
       case smtite:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::Ite(op1,op2,op3));
+        result = metaSMT::evaluate(ctx, metaSMT::logic::Ite(op1, op2, op3));
         break;
       default:
         break;
@@ -330,19 +334,20 @@ struct UTreeEvaluator
     return op;
   }
 
+  /* pushes constant Bit/Hex value if value begins with #b/#x
+   * otherwise pushes variable if value is an identifier
+   * otherwise pushes empty result_type, should crash then
+   */
   void pushVarOrConstant(std::string value)
   {
-    metaSMT::logic::tag::var_tag tag;
-    result_type var = metaSMT::evaluate(ctx, ctx(tag));
-    if (value.size() > 2) {
-      if (value.find("#", 0, 1) != value.npos) {
-        if (value.find("b", 1, 1) != value.npos) {
-          value.erase(0, 2);
-          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
-        } else if (value.find("x", 1, 1) != value.npos) {
-          value.erase(0, 2);
-          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
-        }
+    result_type var = getVariable(value);
+    if (value.find("#", 0, 1) != value.npos) {
+      if (value.find("b", 1, 1) != value.npos) {
+        value.erase(0, 2);
+        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+      } else if (value.find("x", 1, 1) != value.npos) {
+        value.erase(0, 2);
+        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
       }
     }
     pushResultType(var);
@@ -359,6 +364,49 @@ struct UTreeEvaluator
     }
     unsigned width = boost::lexical_cast<unsigned>(bitSize);
     return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsint(number, width));
+  }
+
+  void translateDeclareFunctionToVariable(boost::spirit::utree function)
+  {
+    boost::spirit::utree::iterator functionIterator = function.begin();
+    ++functionIterator;
+    std::string functionName = utreeToString(*functionIterator);
+    ++functionIterator;
+    ++functionIterator;
+    boost::spirit::utree functionType = *functionIterator;
+
+    switch (functionType.which()) {
+    case boost::spirit::utree::type::list_type: {
+      boost::spirit::utree::iterator bitVecIterator = functionType.begin();
+      ++bitVecIterator;
+      ++bitVecIterator;
+      std::string bitSize = utreeToString(*bitVecIterator);
+      unsigned width = boost::lexical_cast<unsigned>(bitSize);
+      bitVectorMap[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
+      break;
+    }
+    case boost::spirit::utree::type::string_type: {
+      predicateMap[functionName] = metaSMT::logic::new_variable();
+      break;
+    }
+    default:
+      break;
+    }
+  }
+
+  result_type getVariable(std::string name)
+  {
+    // name is a variable Identifier, therfore unique and may only be in one map
+    PredicateMap::iterator IP = predicateMap.find(name);
+    BitVectorMap::iterator IBV = bitVectorMap.find(name);
+    result_type output;
+    if (IP != predicateMap.end()) {
+    	output = metaSMT::evaluate(ctx,predicateMap[name]);
+    }
+    if (IBV != bitVectorMap.end()) {
+      output = metaSMT::evaluate(ctx,bitVectorMap[name]);
+    }
+    return output;
   }
 
   void parseSymbolToString(boost::spirit::utree ast)
@@ -629,17 +677,17 @@ struct UTreeEvaluator
       output.erase(found, 1);
       found = output.find(" ");
     }
-    if (output.size() > 2) {
-      if (output.find("#", 0, 1) != output.npos) {
-        if (output.find("b", 1, 1) != output.npos) {
-          output.erase(0, 2);
-          output = "bvbin(\"" + output + "\")";
-        } else if (output.find("x", 1, 1) != output.npos) {
-          output.erase(0, 2);
-          output = "bvhex(\"" + output + "\")";
-        }
-      }
-    }
+//    if (output.size() > 2) {
+//      if (output.find("#", 0, 1) != output.npos) {
+//        if (output.find("b", 1, 1) != output.npos) {
+//          output.erase(0, 2);
+//          output = "bvbin(\"" + output + "\")";
+//        } else if (output.find("x", 1, 1) != output.npos) {
+//          output.erase(0, 2);
+//          output = "bvhex(\"" + output + "\")";
+//        }
+//      }
+//    }
     return output;
   }
 
@@ -700,6 +748,9 @@ private:
   CommandMap commandMap;
   SymbolMap symbolMap;
   OperatorMap operatorMap;
+
+  PredicateMap predicateMap;
+  BitVectorMap bitVectorMap;
 
   std::string metaSMTString;
   std::stack<std::string> operandStack;

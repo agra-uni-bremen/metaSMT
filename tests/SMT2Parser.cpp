@@ -104,10 +104,10 @@ BOOST_AUTO_TEST_CASE ( declare_function )
 
 BOOST_AUTO_TEST_CASE ( simple_assertion )
 {
-  buf << "(assertion (= bit0 bit1) )";
+  buf << "(assertion (= #b0 #b1) )";
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
+  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE ( nested_assertion )
 BOOST_AUTO_TEST_CASE ( more_complex_assertion )
 {
   buf << "(declare-fun bv1 () Bool )" << endl;
-  buf << "(declare-fun bv3 () Bool )" << endl;
+  buf << "(declare-fun bv2 () Bool )" << endl;
   buf << "(assertion (= bv1 true) )" << endl;
   buf << "(check-sat)" << endl;
   buf << "(assertion (= bv2 true) )" << endl;
