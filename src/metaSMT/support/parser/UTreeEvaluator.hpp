@@ -157,7 +157,7 @@ struct UTreeEvaluator
   {
     result_type output;
     switch (tree.which()) {
-    case boost::spirit::utree::type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
 //        std::cout << "value= " << value << std::endl;
@@ -183,7 +183,7 @@ struct UTreeEvaluator
       }
       break;
     }
-    case boost::spirit::utree::type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
         pushOperator(value);
@@ -376,7 +376,7 @@ struct UTreeEvaluator
     boost::spirit::utree functionType = *functionIterator;
 
     switch (functionType.which()) {
-    case boost::spirit::utree::type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       boost::spirit::utree::iterator bitVecIterator = functionType.begin();
       ++bitVecIterator;
       ++bitVecIterator;
@@ -385,7 +385,7 @@ struct UTreeEvaluator
       bitVectorMap[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
       break;
     }
-    case boost::spirit::utree::type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       predicateMap[functionName] = metaSMT::logic::new_variable();
       break;
     }
@@ -396,7 +396,7 @@ struct UTreeEvaluator
 
   result_type getVariable(std::string name)
   {
-    // name is a variable Identifier, therfore unique and may only be in one map
+    // name is a variable identifier, therfore unique and may only be in one map
     PredicateMap::iterator IP = predicateMap.find(name);
     BitVectorMap::iterator IBV = bitVectorMap.find(name);
     result_type output;
@@ -421,7 +421,7 @@ struct UTreeEvaluator
       switch (symbolMap[symbolString]) {
       case checksat:
         pushed = false;
-        metaSMTString += "BOOST_REQUIRE( solve(ctx) );\n";
+//        metaSMTString += "BOOST_REQUIRE( solve(ctx) );\n";
         break;
       case assertion: {
         ++commandIterator;
@@ -463,7 +463,7 @@ struct UTreeEvaluator
   {
     std::string output = "";
     switch (tree.which()) {
-    case boost::spirit::utree::type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
 //        std::cout << "value= " << value << std::endl;
@@ -493,7 +493,7 @@ struct UTreeEvaluator
       }
       break;
     }
-    case boost::spirit::utree::type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       std::string value = utreeToString(tree);
       operandStack.push(value);
       break;
@@ -591,7 +591,7 @@ struct UTreeEvaluator
     std::string output = "";
 
     switch (functionType.which()) {
-    case boost::spirit::utree::type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       boost::spirit::utree::iterator bitVecIterator = functionType.begin();
       ++bitVecIterator;
       ++bitVecIterator;
@@ -599,7 +599,7 @@ struct UTreeEvaluator
       output = "bitvector " + functionName + " = new_bitvector(" + bitSize + ");\n";
       break;
     }
-    case boost::spirit::utree::type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       output = "predicate " + functionName + " = new_variable();\n";
       break;
     }
