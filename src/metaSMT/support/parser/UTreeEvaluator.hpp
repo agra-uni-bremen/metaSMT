@@ -3,6 +3,7 @@
 #include "../../tags/QF_BV.hpp"
 #include "../../tags/Array.hpp"
 #include "../../result_wrapper.hpp"
+#include "../../API/Stack.hpp"
 
 #include <iostream>
 #include <map>
@@ -98,7 +99,6 @@ struct UTreeEvaluator
 
   void parseSymbol(utree ast)
   {
-    bool pushed = false;
     for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
       utree command = *I;
       utree::iterator commandIterator = command.begin();
@@ -106,32 +106,37 @@ struct UTreeEvaluator
       std::string symbolString = utreeToString(symbol);
 
       switch (symbolMap[symbolString]) {
-      case push:
-        pushed = true;
+      case push: {
+        ++commandIterator;
+        std::string pushValue = utreeToString(*commandIterator);
+        unsigned howmany = atoi(pushValue.c_str());
+        metaSMT::push(ctx, howmany);
         break;
+      }
       case checksat:
-        pushed = false;
         std::cerr << metaSMT::solve(ctx) << std::endl;
         break;
       case assertion: {
         ++commandIterator;
         utree logicalInstruction = *commandIterator;
 //        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
-        if (pushed) {
-          metaSMT::assumption(ctx, translateLogicalInstruction(logicalInstruction));
-        } else {
-          metaSMT::assertion(ctx, translateLogicalInstruction(logicalInstruction));
-        }
+        metaSMT::assertion(ctx, translateLogicalInstruction(logicalInstruction));
 //        std::cout << "End: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         break;
       }
       case declarefun:
         translateDeclareFunction(command);
         break;
+      case pop: {
+        ++commandIterator;
+        std::string popValue = utreeToString(*commandIterator);
+        unsigned howmany = atoi(popValue.c_str());
+        metaSMT::pop(ctx, howmany);
+        break;
+      }
       case getvalue:
       case setoption:
       case setlogic:
-      case pop:
       case exit:
       case undefined:
       default:

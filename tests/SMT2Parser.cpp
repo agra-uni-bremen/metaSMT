@@ -17,7 +17,7 @@ using namespace metaSMT::smt2;
 class Fixture
 {
 public:
-  typedef DirectSolver_Context<Boolector> Context;
+  typedef DirectSolver_Context<Stack<Boolector> > Context;
   typedef UTreeEvaluator<Context> Evaluator;
   typedef UTreeEvaluatorToCode<Context> EvaluatorToCode;
 
@@ -78,6 +78,7 @@ BOOST_AUTO_TEST_CASE ( operator_not )
   buf << "(push 1)" << endl;
   buf << "(assert (not false))" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -90,6 +91,7 @@ BOOST_AUTO_TEST_CASE ( declare_function )
   buf << "(declare-fun var_1 () Bool)" << endl;
   buf << "(assert (= var_1 var_1) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -115,6 +117,7 @@ BOOST_AUTO_TEST_CASE ( nested_assertion )
   buf << "(assert true )";
   buf << "(assert true )";
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   BOOST_REQUIRE ( parse() );
   print();
 }
@@ -175,6 +178,7 @@ BOOST_AUTO_TEST_CASE ( simple_sat )
   buf << "(push 1)" << endl;
   buf << "(assert false )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -186,6 +190,7 @@ BOOST_AUTO_TEST_CASE ( assertion_false )
   buf << "(assert false )" << endl;
   buf << "(push 1)" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -198,6 +203,7 @@ BOOST_AUTO_TEST_CASE ( assumption_false )
   buf << "(push 1)" << endl;
   buf << "(assert false )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -210,6 +216,7 @@ BOOST_AUTO_TEST_CASE ( assertion_true )
   buf << "(assert true )" << endl;
   buf << "(push 1)" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -222,6 +229,7 @@ BOOST_AUTO_TEST_CASE ( assumption_true )
   buf << "(push 1)" << endl;
   buf << "(assert true )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -234,6 +242,7 @@ BOOST_AUTO_TEST_CASE ( complex_assert )
   buf << "(push 1)" << endl;
   buf << "(assert (= true true) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -282,6 +291,7 @@ BOOST_AUTO_TEST_CASE ( multiple_operators )
   buf << "(push 1)" << endl;
   buf << "(assert (not (not (= false (not true)))))" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
@@ -293,6 +303,7 @@ BOOST_AUTO_TEST_CASE ( op_and )
   buf << "(push 1)" << endl;
   buf << "(assert (and true true) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -303,6 +314,7 @@ BOOST_AUTO_TEST_CASE ( op_or )
   buf << "(push 1)" << endl;
   buf << "(assert (or true false) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -313,6 +325,7 @@ BOOST_AUTO_TEST_CASE ( op_xor )
   buf << "(push 1)" << endl;
   buf << "(assert (xor true false) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -323,6 +336,7 @@ BOOST_AUTO_TEST_CASE ( op_implies )
   buf << "(push 1)" << endl;
   buf << "(assert (=> true false) )" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
@@ -333,6 +347,7 @@ BOOST_AUTO_TEST_CASE ( op_ite )
   buf << "(push 1)" << endl;
   buf << "(assert (ite true false false))" << endl;
   buf << "(check-sat)" << endl;
+  buf << "(pop 1)" << endl;
 
   BOOST_REQUIRE ( parse() );
   print();
