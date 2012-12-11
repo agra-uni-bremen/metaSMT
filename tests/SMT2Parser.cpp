@@ -4,6 +4,7 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
+#include <metaSMT/support/parser/UTreeEvaluatorToCode.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -18,9 +19,10 @@ class Fixture
 public:
   typedef DirectSolver_Context<Boolector> Context;
   typedef UTreeEvaluator<Context> Evaluator;
+  typedef UTreeEvaluatorToCode<Context> EvaluatorToCode;
 
   Fixture() :
-      evaluator(ctx), parser(ast, evaluator)
+      evaluator(ctx), parser(ast, evaluator), evaluatorToCode(ctx)
   {
   }
 
@@ -31,19 +33,14 @@ public:
 
   void print()
   {
-//      std::cout << "===============================" << std::endl;
-//      std::cout << " ast= "<< ast << " type= " << ast.which() << std::endl;
-    evaluator.print(ast);
-  }
-
-  bool solve()
-  {
-    return evaluator.solve(ast);
+    evaluatorToCode.print(ast);
+    evaluator.printSMT(ast);
   }
 
 protected:
   Context ctx;
   Evaluator evaluator;
+  EvaluatorToCode evaluatorToCode;
   boost::spirit::utree::list_type ast;
   SMT2Parser<Evaluator> parser;
   std::stringstream buf;
@@ -73,7 +70,6 @@ BOOST_AUTO_TEST_CASE( check_sat )
 {
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse () );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -84,7 +80,6 @@ BOOST_AUTO_TEST_CASE ( operator_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -98,7 +93,6 @@ BOOST_AUTO_TEST_CASE ( declare_function )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -107,7 +101,6 @@ BOOST_AUTO_TEST_CASE ( simple_assertion )
   buf << "(assertion (= #b0 #b1) )";
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -123,7 +116,6 @@ BOOST_AUTO_TEST_CASE ( nested_assertion )
   buf << "(assert true )";
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -141,7 +133,6 @@ BOOST_AUTO_TEST_CASE ( more_complex_assertion )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -167,7 +158,6 @@ BOOST_AUTO_TEST_CASE ( factorization )
   buf << "    (get-value (b))" << endl;
 
   BOOST_REQUIRE ( parse () );
-  BOOST_REQUIRE ( solve () );
   print();
 
 }
@@ -187,7 +177,6 @@ BOOST_AUTO_TEST_CASE ( simple_sat )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -200,7 +189,6 @@ BOOST_AUTO_TEST_CASE ( assertion_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -213,7 +201,6 @@ BOOST_AUTO_TEST_CASE ( assumption_false )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( !solve () );
   print();
 }
 
@@ -226,7 +213,6 @@ BOOST_AUTO_TEST_CASE ( assertion_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -239,7 +225,6 @@ BOOST_AUTO_TEST_CASE ( assumption_true )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -252,7 +237,6 @@ BOOST_AUTO_TEST_CASE ( complex_assert )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -262,7 +246,6 @@ BOOST_AUTO_TEST_CASE ( double_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -272,7 +255,6 @@ BOOST_AUTO_TEST_CASE ( first_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -282,7 +264,6 @@ BOOST_AUTO_TEST_CASE ( second_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -292,7 +273,6 @@ BOOST_AUTO_TEST_CASE ( deep_not )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -305,7 +285,6 @@ BOOST_AUTO_TEST_CASE ( multiple_operators )
   buf << "(exit)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -316,7 +295,6 @@ BOOST_AUTO_TEST_CASE ( op_and )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -327,7 +305,6 @@ BOOST_AUTO_TEST_CASE ( op_or )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -338,7 +315,6 @@ BOOST_AUTO_TEST_CASE ( op_xor )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -349,7 +325,6 @@ BOOST_AUTO_TEST_CASE ( op_implies )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -360,7 +335,6 @@ BOOST_AUTO_TEST_CASE ( op_ite )
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -369,7 +343,6 @@ BOOST_AUTO_TEST_CASE ( var_bin )
   buf << "(assert (= #b1 #b1))" << endl;
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
@@ -378,10 +351,7 @@ BOOST_AUTO_TEST_CASE ( var_hex )
   buf << "(assert (= #x1 #x1))" << endl;
   buf << "(check-sat)" << endl;
   BOOST_REQUIRE ( parse() );
-  BOOST_REQUIRE ( solve () );
   print();
 }
 
 BOOST_AUTO_TEST_SUITE_END() // result_wrapper
-
-//  vim: ft=cpp:ts=2:sw=2:expandtab

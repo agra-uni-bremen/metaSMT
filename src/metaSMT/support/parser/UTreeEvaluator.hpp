@@ -33,10 +33,10 @@ struct UTreeEvaluator
   template<typename T1>
   struct result
   {
-    typedef boost::spirit::utree::list_type type;
+    typedef utree::list_type type;
   };
 
-  typedef std::map<std::string, boost::function<bool(boost::spirit::utree::list_type&)> > CommandMap;
+  typedef std::map<std::string, boost::function<bool(utree::list_type&)> > CommandMap;
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
   typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
@@ -49,12 +49,10 @@ struct UTreeEvaluator
     initialize();
   }
 
-  boost::spirit::utree::list_type& operator()(boost::spirit::utree::list_type& ast) const
+  utree::list_type& operator()(utree::list_type& ast) const
   {
-
     assert( ast.which() == utree::list_type());
     std::cout << ast << std::endl;
-//        std::string command_name = ast.begin();
     ast.clear();
     return ast;
   }
@@ -93,29 +91,18 @@ struct UTreeEvaluator
     operatorMap["bvrem"] = smtbvrem;
   }
 
-  void print(boost::spirit::utree ast)
+  void printSMT(utree ast)
   {
-    parseSymbolToString(ast);
-    std::cout << metaSMTString << std::endl;
+    parseSymbol(ast);
   }
 
-  bool solve(boost::spirit::utree ast)
-  {
-    parseSymbolToResultType(ast);
-    for (std::list<bool>::iterator I = results.begin(); I != results.end(); ++I) {
-      if (!*I)
-        return false;
-    }
-    return true;
-  }
-
-  void parseSymbolToResultType(boost::spirit::utree ast)
+  void parseSymbol(utree ast)
   {
     bool pushed = false;
-    for (boost::spirit::utree::iterator I = ast.begin(); I != ast.end(); ++I) {
-      boost::spirit::utree command = *I;
-      boost::spirit::utree::iterator commandIterator = command.begin();
-      boost::spirit::utree symbol = *commandIterator;
+    for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
+      utree command = *I;
+      utree::iterator commandIterator = command.begin();
+      utree symbol = *commandIterator;
       std::string symbolString = utreeToString(symbol);
 
       switch (symbolMap[symbolString]) {
@@ -124,22 +111,22 @@ struct UTreeEvaluator
         break;
       case checksat:
         pushed = false;
-        results.push_back(metaSMT::solve(ctx));
+        std::cerr << metaSMT::solve(ctx) << std::endl;
         break;
       case assertion: {
         ++commandIterator;
-        boost::spirit::utree logicalInstruction = *commandIterator;
+        utree logicalInstruction = *commandIterator;
 //        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
         if (pushed) {
-          metaSMT::assumption(ctx, translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assumption(ctx, translateLogicalInstruction(logicalInstruction));
         } else {
-          metaSMT::assertion(ctx, translateLogicalInstructionToResultType(logicalInstruction));
+          metaSMT::assertion(ctx, translateLogicalInstruction(logicalInstruction));
         }
 //        std::cout << "End: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         break;
       }
       case declarefun:
-        translateDeclareFunctionToVariable(command);
+        translateDeclareFunction(command);
         break;
       case getvalue:
       case setoption:
@@ -153,18 +140,18 @@ struct UTreeEvaluator
     }
   }
 
-  result_type translateLogicalInstructionToResultType(boost::spirit::utree tree)
+  result_type translateLogicalInstruction(utree tree)
   {
     result_type output;
     switch (tree.which()) {
-    case boost::spirit::utree_type::list_type: {
-      for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
+    case utree_type::list_type: {
+      for (utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
 //        std::cout << "value= " << value << std::endl;
         if (operatorMap[value] != other) {
           pushOperator(value);
         } else {
-          // handle bv values
+          // handle bitvector
           if (value.compare("_") == 0) {
             ++I;
             std::string bvvalue = utreeToString(*I);
@@ -177,20 +164,20 @@ struct UTreeEvaluator
         }
         while (canConsume()) {
 //          std::cout << "before: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
-          consumeToResultType();
+          consume();
 //          std::cout << "after: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         }
       }
       break;
     }
-    case boost::spirit::utree_type::string_type: {
+    case utree_type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
         pushOperator(value);
       } else {
         pushVarOrConstant(value);
       }
-      consumeToResultType();
+      consume();
       break;
     }
     default:
@@ -205,7 +192,7 @@ struct UTreeEvaluator
     return output;
   }
 
-  void consumeToResultType()
+  void consume()
   {
     std::string op = operatorStack.top();
     result_type result;
@@ -366,18 +353,18 @@ struct UTreeEvaluator
     return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsint(number, width));
   }
 
-  void translateDeclareFunctionToVariable(boost::spirit::utree function)
+  void translateDeclareFunction(utree function)
   {
-    boost::spirit::utree::iterator functionIterator = function.begin();
+    utree::iterator functionIterator = function.begin();
     ++functionIterator;
     std::string functionName = utreeToString(*functionIterator);
     ++functionIterator;
     ++functionIterator;
-    boost::spirit::utree functionType = *functionIterator;
+    utree functionType = *functionIterator;
 
     switch (functionType.which()) {
-    case boost::spirit::utree_type::list_type: {
-      boost::spirit::utree::iterator bitVecIterator = functionType.begin();
+    case utree_type::list_type: {
+      utree::iterator bitVecIterator = functionType.begin();
       ++bitVecIterator;
       ++bitVecIterator;
       std::string bitSize = utreeToString(*bitVecIterator);
@@ -385,7 +372,7 @@ struct UTreeEvaluator
       bitVectorMap[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
       break;
     }
-    case boost::spirit::utree_type::string_type: {
+    case utree_type::string_type: {
       predicateMap[functionName] = metaSMT::logic::new_variable();
       break;
     }
@@ -405,206 +392,6 @@ struct UTreeEvaluator
     }
     if (IBV != bitVectorMap.end()) {
       output = metaSMT::evaluate(ctx,bitVectorMap[name]);
-    }
-    return output;
-  }
-
-  void parseSymbolToString(boost::spirit::utree ast)
-  {
-    bool pushed = false;
-    for (boost::spirit::utree::iterator I = ast.begin(); I != ast.end(); ++I) {
-      boost::spirit::utree command = *I;
-      boost::spirit::utree::iterator commandIterator = command.begin();
-      boost::spirit::utree symbol = *commandIterator;
-      std::string symbolString = utreeToString(symbol);
-
-      switch (symbolMap[symbolString]) {
-      case checksat:
-        pushed = false;
-//        metaSMTString += "BOOST_REQUIRE( solve(ctx) );\n";
-        break;
-      case assertion: {
-        ++commandIterator;
-        boost::spirit::utree logicalInstruction = *commandIterator;
-//        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
-        if (pushed) {
-          metaSMTString += nestString("assumption ( ctx, ", translateLogicalInstructionToString(logicalInstruction), ");\n");
-        } else {
-          metaSMTString += nestString("assertion ( ctx, ", translateLogicalInstructionToString(logicalInstruction), ");\n");
-        }
-        break;
-      }
-      case push: {
-        pushed = true;
-        break;
-      }
-      case declarefun: {
-        metaSMTString += translateDeclareFunctionToString(command);
-        break;
-      }
-      case getvalue: {
-        ++commandIterator;
-        boost::spirit::utree valueName = *commandIterator;
-        metaSMTString += nestString("read_value(ctx,", utreeToString(valueName), ");\n");
-        break;
-      }
-      case setoption:
-      case setlogic:
-      case pop:
-      case exit:
-      case undefined:
-      default:
-        break;
-      }
-    }
-  }
-
-  std::string translateLogicalInstructionToString(boost::spirit::utree tree)
-  {
-    std::string output = "";
-    switch (tree.which()) {
-    case boost::spirit::utree_type::list_type: {
-      for (boost::spirit::utree::iterator I = tree.begin(); I != tree.end(); ++I) {
-        std::string value = utreeToString(*I);
-//        std::cout << "value= " << value << std::endl;
-        if (operatorMap[value] != other) {
-          operatorStack.push(value);
-          std::pair<int, int> newOperandStackValue(numOperands(value), 0);
-          neededOperandStack.push(newOperandStackValue);
-        } else {
-          // handle s.th. like ((_ bv123 32) a)
-          if (value.compare("_") == 0) {
-            ++I;
-            std::string nextToken = utreeToString(*I);
-            nextToken.erase(0, 2);
-            ++I;
-            std::string bitSize = utreeToString(*I);
-            std::string operand = "bvsint(" + nextToken + "," + bitSize + ")";
-            pushOperandToString(operand);
-          } else {
-            pushOperandToString(value);
-          }
-        }
-        while (canConsume()) {
-//          std::cout << "before: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
-          consumeToString();
-//          std::cout << "after: " << "operand= " << operandStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
-        }
-      }
-      break;
-    }
-    case boost::spirit::utree_type::string_type: {
-      std::string value = utreeToString(tree);
-      operandStack.push(value);
-      break;
-    }
-    default:
-      break;
-    }
-    output += operandStack.top();
-    operandStack.pop();
-    return output;
-  }
-
-  void consumeToString()
-  {
-    std::string op = operatorStack.top();
-    switch (operatorMap[op]) {
-    // constants
-    case smttrue:
-    case smtfalse: {
-      std::string newOperand = translateLogicalOeratorToString(op);
-      neededOperandStack.pop();
-      pushOperandToString(newOperand);
-      operatorStack.pop();
-    }
-      break;
-      // unary operators
-    case smtnot:
-    case smtbvnot: {
-      std::string op1 = operandStack.top();
-      operandStack.pop();
-      std::string newOperand = translateLogicalOeratorToString(op) + op1 + ")";
-      neededOperandStack.pop();
-      pushOperandToString(newOperand);
-      operatorStack.pop();
-    }
-      break;
-      // binary operators
-    case smteq:
-    case smtand:
-    case smtor:
-    case smtxor:
-    case smtimplies:
-    case smtbvand:
-    case smtbvor:
-    case smtbvxor:
-    case smtbvcomp:
-    case smtbvadd:
-    case smtbvmul:
-    case smtbvsub:
-    case smtbvdiv:
-    case smtbvrem: {
-      std::string op2 = operandStack.top();
-      operandStack.pop();
-      std::string op1 = operandStack.top();
-      operandStack.pop();
-      std::string newOperand = translateLogicalOeratorToString(op) + op1 + "," + op2 + ")";
-      neededOperandStack.pop();
-      pushOperandToString(newOperand);
-      operatorStack.pop();
-    }
-      break;
-      // ternary operators
-    case smtite: {
-      std::string op3 = operandStack.top();
-      operandStack.pop();
-      std::string op2 = operandStack.top();
-      operandStack.pop();
-      std::string op1 = operandStack.top();
-      operandStack.pop();
-      std::string newOperand = translateLogicalOeratorToString(op) + op1 + "," + op2 + "," + op3 + ")";
-      neededOperandStack.pop();
-      pushOperandToString(newOperand);
-      operatorStack.pop();
-    }
-      break;
-    case other:
-    default:
-      std::cout << "couldn't recognize operator:" << op << std::endl;
-      break;
-    }
-  }
-
-  std::string translateDeclareFunctionToString(boost::spirit::utree function)
-  {
-    // (declare-fun var_1 () (_ BitVec 8))
-    // bitvector x = new_bitvector(8);
-    // (declare-fun var_1 () Bool)
-    // predicate x = new_variable();
-    boost::spirit::utree::iterator functionIterator = function.begin();
-    ++functionIterator;
-    std::string functionName = utreeToString(*functionIterator);
-    ++functionIterator;
-    ++functionIterator;
-    boost::spirit::utree functionType = *functionIterator;
-    std::string output = "";
-
-    switch (functionType.which()) {
-    case boost::spirit::utree_type::list_type: {
-      boost::spirit::utree::iterator bitVecIterator = functionType.begin();
-      ++bitVecIterator;
-      ++bitVecIterator;
-      std::string bitSize = utreeToString(*bitVecIterator);
-      output = "bitvector " + functionName + " = new_bitvector(" + bitSize + ");\n";
-      break;
-    }
-    case boost::spirit::utree_type::string_type: {
-      output = "predicate " + functionName + " = new_variable();\n";
-      break;
-    }
-    default:
-      break;
     }
     return output;
   }
@@ -652,17 +439,7 @@ struct UTreeEvaluator
     return false;
   }
 
-  void pushOperandToString(std::string op)
-  {
-    if (neededOperandStack.size() > 0) {
-      std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
-      neededOperandStack.pop();
-      neededOperandStack.push(newTop);
-    }
-    operandStack.push(op);
-  }
-
-  std::string utreeToString(boost::spirit::utree tree)
+  std::string utreeToString(utree tree)
   {
     std::stringstream stringStream;
     stringStream << tree;
@@ -677,90 +454,24 @@ struct UTreeEvaluator
       output.erase(found, 1);
       found = output.find(" ");
     }
-//    if (output.size() > 2) {
-//      if (output.find("#", 0, 1) != output.npos) {
-//        if (output.find("b", 1, 1) != output.npos) {
-//          output.erase(0, 2);
-//          output = "bvbin(\"" + output + "\")";
-//        } else if (output.find("x", 1, 1) != output.npos) {
-//          output.erase(0, 2);
-//          output = "bvhex(\"" + output + "\")";
-//        }
-//      }
-//    }
     return output;
   }
 
-  std::string translateLogicalOeratorToString(std::string op)
-  {
-    switch (operatorMap[op]) {
-    case smttrue:
-      return "true";
-    case smtfalse:
-      return "false";
-    case smteq:
-      return "metaSMT::logic::equal(";
-    case smtnot:
-      return "Not(";
-    case smtand:
-      return "And(";
-    case smtor:
-      return "Or(";
-    case smtxor:
-      return "Xor(";
-    case smtimplies:
-      return "implies(";
-    case smtite:
-      return "Ite(";
-    case smtbvnot:
-      return "bvnot(";
-    case smtbvand:
-      return "bvand(";
-    case smtbvor:
-      return "bvor(";
-    case smtbvxor:
-      return "bvxor(";
-    case smtbvcomp:
-      return "bvcomp(";
-    case smtbvadd:
-      return "bvadd(";
-    case smtbvmul:
-      return "bvmul(";
-    case smtbvsub:
-      return "bvsub(";
-    case smtbvdiv:
-      return "bvdiv(";
-    case smtbvrem:
-      return "bvrem(";
-    default:
-      return "undefinedOperator";
-    }
-    return "";
-  }
-
-  std::string nestString(std::string pre, std::string nest, std::string post)
-  {
-    return pre + nest + post;
-  }
-
-private:
+protected:
   Context& ctx;
   CommandMap commandMap;
   SymbolMap symbolMap;
   OperatorMap operatorMap;
 
-  PredicateMap predicateMap;
-  BitVectorMap bitVectorMap;
-
-  std::string metaSMTString;
-  std::stack<std::string> operandStack;
-
   std::stack<std::string> operatorStack;
   std::stack<std::pair<int, int> > neededOperandStack;
+
+  PredicateMap predicateMap;
+  BitVectorMap bitVectorMap;
   std::stack<result_type> resultTypeStack;
   std::list<bool> results;
 
 };
 // struct UTreeEvaluator
 }// namespace evaluator
-} // namespace metaSMT
+}// namespace metaSMT

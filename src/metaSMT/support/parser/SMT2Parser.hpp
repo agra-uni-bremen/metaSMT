@@ -141,16 +141,6 @@ namespace metaSMT
       qi::rule<Iterator, utree::list_type(), whitespace < Iterator> > command;
       qi::rule<Iterator > end_of_word;  
 
-      //      qi::rule<Iterator , utree()                           , whitespace < Iterator > > spec_constant;
-      //      qi::rule<Iterator , boost::spirit::utf8_string(), whitespace < Iterator > > symbol;
-      //      qi::rule<Iterator , boost::spirit::utf8_string(), whitespace < Iterator > > keyword;
-      //      qi::rule<Iterator , boost::spirit::utf8_string(), whitespace < Iterator > > identifier;
-      //      qi::rule<Iterator , utree::list_type()                           , whitespace < Iterator > > command;
-      //      qi::rule<Iterator , utree::list_type()                , whitespace < Iterator > > script;
-      //      qi::rule<Iterator , utree::list_type()                , whitespace < Iterator > > spec_expr;
-      //      qi::rule<Iterator , utree::list_type()                           , whitespace < Iterator > > attribute      , sort;
-      //      qi::rule<Iterator , utree()                           , whitespace < Iterator > > numeral        , decimal , hexadecimal , binary , string;
-      //
       phoenix::function<ErrorHandler> const error;
       phoenix::function<Evaluator> const evaluate;
 
