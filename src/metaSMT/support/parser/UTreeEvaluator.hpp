@@ -22,7 +22,7 @@ struct UTreeEvaluator
 {
   enum smt2Symbol
   {
-    undefined, setlogic, setoption, checksat, assertion, declarefun, getvalue, push, pop, exit
+    undefined, setlogic, setoption, getoption, checksat, assertion, declarefun, getvalue, push, pop, exit
   };
 
   // TODO: check which bv constant/length/shift/comparison operators exist in SMT2
@@ -62,6 +62,7 @@ struct UTreeEvaluator
   {
     symbolMap["set-logic"] = setlogic;
     symbolMap["set-option"] = setoption;
+    symbolMap["get-option"] = getoption;
     symbolMap["check-sat"] = checksat;
     symbolMap["assertion"] = assertion;
     symbolMap["assert"] = assertion;
@@ -134,8 +135,14 @@ struct UTreeEvaluator
         metaSMT::pop(ctx, howmany);
         break;
       }
-      case getvalue:
+      case getvalue: {
+        ++commandIterator;
+        std::string value = utreeToString(*commandIterator);
+        std:: cerr << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
+        break;
+      }
       case setoption:
+      case getoption:
       case setlogic:
       case exit:
       case undefined:
@@ -458,6 +465,16 @@ struct UTreeEvaluator
     while (found != output.npos) {
       output.erase(found, 1);
       found = output.find(" ");
+    }
+    found = output.find("(");
+    while (found != output.npos) {
+      output.erase(found, 1);
+      found = output.find("(");
+    }
+    found = output.find(")");
+    while (found != output.npos) {
+      output.erase(found, 1);
+      found = output.find(")");
     }
     return output;
   }
