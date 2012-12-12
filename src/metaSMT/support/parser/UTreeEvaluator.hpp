@@ -359,14 +359,7 @@ struct UTreeEvaluator
     if (value.find("#", 0, 1) != value.npos) {
       if (value.find("b", 1, 1) != value.npos) {
         value.erase(0, 2);
-        unsigned number = boost::lexical_cast<unsigned>(value);
-        if(number == 1){
-          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit1);
-        } else if(number == 0){
-          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit0);
-        } else {
-          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
-        }
+        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
       } else if (value.find("x", 1, 1) != value.npos) {
         value.erase(0, 2);
         var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
