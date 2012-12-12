@@ -2,7 +2,8 @@
 
 #include <metaSMT/support/parser/SMT2Parser.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/backend/Boolector.hpp>
+//#include <metaSMT/backend/Boolector.hpp>
+#include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
 #include <metaSMT/support/parser/UTreeEvaluatorToCode.hpp>
 
@@ -17,7 +18,8 @@ using namespace metaSMT::smt2;
 class Fixture
 {
 public:
-  typedef DirectSolver_Context<Stack<Boolector> > Context;
+//  typedef DirectSolver_Context<Stack<Boolector> > Context;
+  typedef DirectSolver_Context<Stack<Z3_Backend> > Context;
   typedef UTreeEvaluator<Context> Evaluator;
   typedef UTreeEvaluatorToCode<Context> EvaluatorToCode;
 
@@ -130,9 +132,9 @@ BOOST_AUTO_TEST_CASE ( more_complex_assertion )
   buf << "(check-sat)" << endl;
   buf << "(assertion (= bv2 true) )" << endl;
   buf << "(check-sat)" << endl;
-  buf << "(assertion (= (bvand bv1 bv2) #b1) )";
+  buf << "(assertion (= (and bv1 bv2) true) )";
   buf << "(check-sat)" << endl;
-  buf << "(assertion (bvadd (_ bv1 1) (_ bv2 1)) )";
+  buf << "(assertion (bvsle (_ bv1 1) (_ bv0 1)) )";
   buf << "(check-sat)" << endl;
 
   BOOST_REQUIRE ( parse() );

@@ -209,6 +209,8 @@ struct UTreeEvaluatorToCode: UTreeEvaluator<Context>
     case UTreeE::other:
     default:
       std::cout << "couldn't recognize operator:" << op << std::endl;
+      UTreeE::neededOperandStack.pop();
+      UTreeE::operatorStack.pop();
       break;
     }
   }

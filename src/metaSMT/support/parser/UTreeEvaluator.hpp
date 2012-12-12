@@ -28,7 +28,7 @@ struct UTreeEvaluator
   // TODO: check which bv constant/length/shift/comparison operators exist in SMT2
   enum smt2operator
   {
-    other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite, smtbvnot, smtbvand, smtbvor, smtbvxor, smtbvcomp, smtbvadd, smtbvmul, smtbvsub, smtbvdiv, smtbvrem
+    other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite, smtbvnot, smtbvand, smtbvor, smtbvxor, smtbvcomp, smtbvadd, smtbvmul, smtbvsub, smtbvdiv, smtbvrem, smtbvsle, smtbvsge, smtbvslt, smtbvsgt
   };
 
   template<typename T1>
@@ -91,6 +91,10 @@ struct UTreeEvaluator
     operatorMap["bvsub"] = smtbvsub;
     operatorMap["bvdiv"] = smtbvdiv;
     operatorMap["bvrem"] = smtbvrem;
+    operatorMap["bvsle"] = smtbvsle;
+    operatorMap["bvsge"] = smtbvsge;
+    operatorMap["bvslt"] = smtbvslt;
+    operatorMap["bvsgt"] = smtbvsgt;
   }
 
   void printSMT(utree ast)
@@ -110,7 +114,7 @@ struct UTreeEvaluator
       case push: {
         ++commandIterator;
         std::string pushValue = utreeToString(*commandIterator);
-        unsigned howmany = atoi(pushValue.c_str());
+        unsigned howmany = boost::lexical_cast<unsigned>(pushValue);
         metaSMT::push(ctx, howmany);
         break;
       }
@@ -131,7 +135,7 @@ struct UTreeEvaluator
       case pop: {
         ++commandIterator;
         std::string popValue = utreeToString(*commandIterator);
-        unsigned howmany = atoi(popValue.c_str());
+        unsigned howmany = boost::lexical_cast<unsigned>(popValue);
         metaSMT::pop(ctx, howmany);
         break;
       }
@@ -281,6 +285,18 @@ struct UTreeEvaluator
       case smtbvrem:
         result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(op1, op2));
         break;
+      case smtbvsle:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsle(op1, op2));
+        break;
+      case smtbvsge:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsge(op1, op2));
+        break;
+      case smtbvslt:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvslt(op1, op2));
+        break;
+      case smtbvsgt:
+        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsgt(op1, op2));
+        break;
       default:
         break;
       }
@@ -343,7 +359,14 @@ struct UTreeEvaluator
     if (value.find("#", 0, 1) != value.npos) {
       if (value.find("b", 1, 1) != value.npos) {
         value.erase(0, 2);
-        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+        unsigned number = boost::lexical_cast<unsigned>(value);
+        if(number == 1){
+          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit1);
+        } else if(number == 0){
+          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit0);
+        } else {
+          var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+        }
       } else if (value.find("x", 1, 1) != value.npos) {
         value.erase(0, 2);
         var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
@@ -362,6 +385,13 @@ struct UTreeEvaluator
       }
     }
     unsigned width = boost::lexical_cast<unsigned>(bitSize);
+    if(width == 1){
+      if(number == 1){
+        return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit1);
+      } else if(number == 0){
+        return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit0);
+      }
+    }
     return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsint(number, width));
   }
 
@@ -431,6 +461,10 @@ struct UTreeEvaluator
     case smtbvsub:
     case smtbvdiv:
     case smtbvrem:
+    case smtbvsle:
+    case smtbvsge:
+    case smtbvslt:
+    case smtbvsgt:
       return 2;
     case smtite:
       return 3;
