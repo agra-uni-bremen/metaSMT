@@ -280,9 +280,10 @@ namespace metaSMT {
         , type(type::Array(elem_width, index_width))
       {}
 
-      TypedSymbol(result_type s,
+      template < typename Primitive >
+      TypedSymbol(Primitive p,
                   any_type ty)
-        : value(s)
+        : value(p)
         , type(ty)
       {}
 

@@ -38,8 +38,12 @@ namespace metaSMT {
           omit[ quotted_symbol | simple_symbol ]
           ;
 
+        select_expr =
+          lit("(select") >> *( char_-lit(')') ) >> lit("))")
+          ;
+
         start =
-          lit("((") >> symbol_name >> omit[ *space ] >> +( char_('#') | alnum ) >> lit("))")
+          lit("((") >> (symbol_name | select_expr) >> omit[ *space ] >> +( char_('#') | alnum ) >> lit("))")
           ;
 
         //start.name("start");
@@ -49,6 +53,7 @@ namespace metaSMT {
       qi::rule<Iterator> quotted_symbol;
       qi::rule<Iterator> simple_symbol;
       qi::rule<Iterator> symbol_name;
+      qi::rule<Iterator> select_expr;
       qi::rule<Iterator, std::string()> start;
     }; // smt2_response_grammar
 

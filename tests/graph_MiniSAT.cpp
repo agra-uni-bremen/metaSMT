@@ -19,3 +19,4 @@ struct Solver_Fixture
 // #include "test_group.cpp"
 #include "test_unsat.cpp"
 #include "test_lazy.cpp"
+#include "test_evaluator.cpp"

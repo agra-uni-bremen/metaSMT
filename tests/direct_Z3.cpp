@@ -25,3 +25,4 @@ struct Solver_Fixture {
 #include "test_Types.cpp"
 #include "test_simplify.cpp"
 #include "test_optimization.cpp"
+#include "test_evaluator.cpp"

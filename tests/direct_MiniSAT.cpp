@@ -22,3 +22,4 @@ struct Solver_Fixture
 #include "test_unsat.cpp"
 #include "test_cardinality.cpp"
 #include "test_optimization.cpp"
+#include "test_evaluator.cpp"
