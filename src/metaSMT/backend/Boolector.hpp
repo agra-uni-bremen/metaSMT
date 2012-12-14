@@ -39,9 +39,9 @@ namespace metaSMT {
       }
 
       public:
-        typedef BtorExp* result_type;
+        typedef BtorNode* result_type;
 
-        result_type ptr(BtorExp* expr) {
+        result_type ptr(result_type expr) {
           _exprs.push_back(expr);
           return expr;
         }
@@ -55,7 +55,7 @@ namespace metaSMT {
         }
 
         ~Boolector() {
-          for( std::list<BtorExp*>::iterator ite = _exprs.begin(); ite!=_exprs.end(); ++ite)
+          for( std::list<result_type>::iterator ite = _exprs.begin(); ite!=_exprs.end(); ++ite)
           {
             boolector_release(_btor, *ite);
           }
@@ -291,9 +291,9 @@ namespace metaSMT {
           return ptr(boolector_false(_btor));
         }
 
-        template< BtorExp* (*FN) (Btor*, BtorExp*, BtorExp*) >
+        template< result_type (*FN) (Btor*, result_type, result_type) >
         struct Btor_F2 {
-          static BtorExp* exec(Btor* b , BtorExp* x, BtorExp* y)
+          static result_type exec(Btor* b , result_type x, result_type y)
           { return (*FN)(b,x,y);}
         };
 
@@ -372,7 +372,7 @@ namespace metaSMT {
 
       private:
         Btor *_btor;
-        std::list<BtorExp*> _exprs;
+        std::list<result_type> _exprs;
     };
 
     /**@}*/

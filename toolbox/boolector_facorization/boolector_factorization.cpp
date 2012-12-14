@@ -51,11 +51,11 @@ int run_btor () {
   boolector_enable_inc_usage(btor);
   boolector_enable_model_gen(btor);
 
-  BtorExp* a = boolector_var(btor, width, "a");
-  BtorExp* b = boolector_var(btor, width, "b");
-  BtorExp* c = boolector_var(btor, 2*width, "c");
+  BtorNode* a = boolector_var(btor, width, "a");
+  BtorNode* b = boolector_var(btor, width, "b");
+  BtorNode* c = boolector_var(btor, 2*width, "c");
 
-  BtorExp* zero = boolector_var(btor,width, "zero");
+  BtorNode* zero = boolector_var(btor,width, "zero");
   boolector_assert( btor, boolector_eq(btor, zero, boolector_zero(btor, width)) );
   boolector_assert( btor, boolector_ne(btor, a, boolector_unsigned_int(btor, 1, width)) );
   boolector_assert( btor, boolector_ne(btor, b, boolector_unsigned_int(btor, 1, width)) );
