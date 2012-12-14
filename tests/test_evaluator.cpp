@@ -14,8 +14,8 @@ namespace metaSMT {
   struct Evaluator<char> : public boost::mpl::true_ {
     template < typename Context >
     static typename Context::result_type eval(Context &ctx, char const &c) {
-      assert( (c == '1' || c == '0' || c == 'X' || c == 'x') &&
-              "has to be 0, 1, X, or x character" );
+      // assert( (c == '1' || c == '0' || c == 'X' || c == 'x') &&
+      //         "has to be 0, 1, X, or x character" );
 
       if ( c == '1' ) {
         return evaluate(ctx, True);
