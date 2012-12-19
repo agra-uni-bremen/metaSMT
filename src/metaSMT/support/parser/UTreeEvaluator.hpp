@@ -25,7 +25,6 @@ struct UTreeEvaluator
     undefined, setlogic, setoption, getoption, checksat, assertion, declarefun, getvalue, push, pop, exit
   };
 
-  // TODO: check which bv constant/length/shift/comparison operators exist in SMT2
   enum smt2operator
   {
     other, smttrue, smtfalse, smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite, smtbvnot, smtbvand, smtbvor, smtbvxor, smtbvcomp, smtbvadd, smtbvmul, smtbvsub, smtbvdiv, smtbvrem, smtbvsle, smtbvsge, smtbvslt, smtbvsgt
@@ -37,7 +36,6 @@ struct UTreeEvaluator
     typedef utree::list_type type;
   };
 
-  typedef std::map<std::string, boost::function<bool(utree::list_type&)> > CommandMap;
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
   typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
@@ -48,14 +46,6 @@ struct UTreeEvaluator
       ctx(ctx)
   {
     initialize();
-  }
-
-  utree::list_type& operator()(utree::list_type& ast) const
-  {
-    assert( ast.which() == utree::list_type());
-    std::cout << ast << std::endl;
-    ast.clear();
-    return ast;
   }
 
   void initialize()
@@ -119,14 +109,16 @@ struct UTreeEvaluator
         break;
       }
       case checksat:
-        std::cerr << metaSMT::solve(ctx) << std::endl;
+        if(metaSMT::solve(ctx)){
+          std::cout << "sat" << std::endl;
+        } else {
+          std::cout << "unsat" << std::endl;
+        }
         break;
       case assertion: {
         ++commandIterator;
         utree logicalInstruction = *commandIterator;
-//        std::cout << "logicalInstruction: " << logicalInstruction << std::endl;
         metaSMT::assertion(ctx, translateLogicalInstruction(logicalInstruction));
-//        std::cout << "End: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         break;
       }
       case declarefun:
@@ -142,7 +134,7 @@ struct UTreeEvaluator
       case getvalue: {
         ++commandIterator;
         std::string value = utreeToString(*commandIterator);
-        std:: cerr << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
+        std::cout << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
         break;
       }
       case setoption:
@@ -163,7 +155,6 @@ struct UTreeEvaluator
     case utree_type::list_type: {
       for (utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
-//        std::cout << "value= " << value << std::endl;
         if (operatorMap[value] != other) {
           pushOperator(value);
         } else {
@@ -179,9 +170,7 @@ struct UTreeEvaluator
           }
         }
         while (canConsume()) {
-//          std::cout << "before: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
           consume();
-//          std::cout << "after: " << "operand= " << resultTypeStack.size() << " operator= " << operatorStack.size() << " neededStack= " << neededOperandStack.size() << std::endl;
         }
       }
       break;
