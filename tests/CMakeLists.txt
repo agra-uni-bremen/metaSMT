@@ -81,8 +81,10 @@ add_test_executable( direct_Boolector direct_Boolector.cpp
   REQUIRES Boolector_FOUND )
 add_test_executable( graph_Boolector graph_Boolector.cpp
   REQUIRES Boolector_FOUND )
-add_test_executable( SMT2Parser SMT2Parser.cpp 
-  REQUIRES Boolector_FOUND )
+add_test_executable( SMT2Parser SMT2Parser.cpp
+  REQUIRES Z3_FOUND
+  LIBRARIES ${Boost_IOSTREAMS_LIBRARY} 
+  )
 
 add_test_executable( direct_Z3 direct_Z3.cpp REQUIRES Z3_FOUND )
 add_test_executable( graph_Z3 graph_Z3.cpp REQUIRES Z3_FOUND )

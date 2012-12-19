@@ -134,7 +134,9 @@ struct UTreeEvaluator
       case getvalue: {
         ++commandIterator;
         std::string value = utreeToString(*commandIterator);
+//        std::cerr << "printing value: " << value << " result: " << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
         std::cout << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
+//        metaSMT::read_value(ctx, getVariable(value));
         break;
       }
       case setoption:
@@ -497,7 +499,6 @@ struct UTreeEvaluator
 
 protected:
   Context& ctx;
-  CommandMap commandMap;
   SymbolMap symbolMap;
   OperatorMap operatorMap;
 

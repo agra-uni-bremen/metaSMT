@@ -208,11 +208,9 @@ namespace metaSMT
       class SMT2Parser
       {
         public:
-          SMT2Parser ( boost::spirit::utree::list_type& utree, Evaluator& evaluator  ) : 
-            ast ( utree )
-          , evaluator ( evaluator )
+          SMT2Parser ( Evaluator& evaluator )
+          : evaluator ( evaluator )
         {
-
         }
 
           bool parse ( std::istream& instream, boost::spirit::utree::list_type& ast )
@@ -258,7 +256,6 @@ namespace metaSMT
           }
 
         private:
-          boost::spirit::utree::list_type& ast;
           Evaluator&                       evaluator;
       };
   }

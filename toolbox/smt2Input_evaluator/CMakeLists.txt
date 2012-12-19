@@ -1,4 +1,4 @@
-add_tool_executable( metaSMT-smt2File_Evaluator
+add_tool_executable( metaSMT-smt2Input_Evaluator
   SOURCES
     main.cpp
   REQUIRES
