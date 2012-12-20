@@ -628,8 +628,6 @@ namespace metaSMT {
         ConstIterator it = assign_str.begin();
         ConstIterator ie = assign_str.end();
 
-        std::cout << assign_str << std::endl;
-
         static qi::rule<ConstIterator, std::string() > name_rule
           = +(qi::char_ - qi::char_(" ()"))
           ;
