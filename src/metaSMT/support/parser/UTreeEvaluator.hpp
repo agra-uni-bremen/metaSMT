@@ -108,13 +108,14 @@ struct UTreeEvaluator
         metaSMT::push(ctx, howmany);
         break;
       }
-      case checksat:
+      case checksat: {
         if(metaSMT::solve(ctx)){
           std::cout << "sat" << std::endl;
         } else {
           std::cout << "unsat" << std::endl;
         }
         break;
+      }
       case assertion: {
         ++commandIterator;
         utree logicalInstruction = *commandIterator;
@@ -134,9 +135,21 @@ struct UTreeEvaluator
       case getvalue: {
         ++commandIterator;
         std::string value = utreeToString(*commandIterator);
-//        std::cerr << "printing value: " << value << " result: " << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
-        std::cout << metaSMT::read_value(ctx, getVariable(value)) << std::endl;
-//        metaSMT::read_value(ctx, getVariable(value));
+        result_type *variable = new result_type;
+        int err = getVariable(value, *variable);
+        if (err == 1) {
+          std::string boolvalue;
+          if (metaSMT::read_value(ctx, *variable)) {
+            boolvalue = "true";
+          } else {
+            boolvalue = "false";
+          }
+          std::cout << "((" << value << " " << boolvalue << "))" << std::endl;
+        } else if (err == 2) {
+          std::cout << "((" << value << " #x" << metaSMT::read_value(ctx, *variable) << "))" << std::endl;
+        } else {
+          std::cerr << "Error could not determine Variable: " << value << std::endl;
+        }
         break;
       }
       case setoption:
@@ -234,8 +247,8 @@ struct UTreeEvaluator
       break;
       // binary operators
     case 2: {
-      result_type op1 = popResultType();
       result_type op2 = popResultType();
+      result_type op1 = popResultType();
       switch (operatorMap[op]) {
       case smteq:
         result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1, op2));
@@ -295,9 +308,9 @@ struct UTreeEvaluator
       break;
       // ternary operators
     case 3: {
-      result_type op1 = popResultType();
-      result_type op2 = popResultType();
       result_type op3 = popResultType();
+      result_type op2 = popResultType();
+      result_type op1 = popResultType();
       switch (operatorMap[op]) {
       case smtite:
         result = metaSMT::evaluate(ctx, metaSMT::logic::Ite(op1, op2, op3));
@@ -346,26 +359,29 @@ struct UTreeEvaluator
    */
   void pushVarOrConstant(std::string value)
   {
-    result_type var = getVariable(value);
+    result_type *variable = new result_type;
+    getVariable(value, *variable);
     if (value.find("#", 0, 1) != value.npos) {
       if (value.find("b", 1, 1) != value.npos) {
         value.erase(0, 2);
-        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+        delete variable;
+        *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
       } else if (value.find("x", 1, 1) != value.npos) {
         value.erase(0, 2);
-        var = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
+        delete variable;
+        *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
       }
     }
-    pushResultType(var);
+    pushResultType(*variable);
   }
 
   result_type createBvInt(std::string value, std::string bitSize)
   {
-    unsigned number = 0;
+    unsigned long number = 0;
     if (value.size() > 2) {
       if (value.find("bv", 0, 2) != value.npos) {
         value.erase(0, 2);
-        number = boost::lexical_cast<unsigned>(value);
+        number = boost::lexical_cast<unsigned long>(value);
       }
     }
     unsigned width = boost::lexical_cast<unsigned>(bitSize);
@@ -407,19 +423,20 @@ struct UTreeEvaluator
     }
   }
 
-  result_type getVariable(std::string name)
+  int getVariable(std::string name, result_type &result)
   {
     // name is a variable identifier, therfore unique and may only be in one map
     PredicateMap::iterator IP = predicateMap.find(name);
     BitVectorMap::iterator IBV = bitVectorMap.find(name);
-    result_type output;
     if (IP != predicateMap.end()) {
-    	output = metaSMT::evaluate(ctx,predicateMap[name]);
+      result = metaSMT::evaluate(ctx,predicateMap[name]);
+      return 1;
     }
     if (IBV != bitVectorMap.end()) {
-      output = metaSMT::evaluate(ctx,bitVectorMap[name]);
+      result = metaSMT::evaluate(ctx,bitVectorMap[name]);
+      return 2;
     }
-    return output;
+    return -1;
   }
 
   int numOperands(std::string op)
