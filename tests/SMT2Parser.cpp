@@ -23,7 +23,7 @@ public:
 };
 
 #include "test_solver.cpp"
-//#include "test_QF_BV.cpp"
+#include "test_QF_BV.cpp"
 //#include "test_QF_UF.cpp"
 //#include "test_annotate.cpp"
 //#include "test_stack.cpp"
