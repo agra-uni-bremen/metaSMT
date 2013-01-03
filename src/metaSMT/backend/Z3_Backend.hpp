@@ -15,7 +15,7 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/adapted/std_pair.hpp>
 
-#include <gmp-x86_64.h>
+#include <gmp.h>
 
 namespace metaSMT {
 
