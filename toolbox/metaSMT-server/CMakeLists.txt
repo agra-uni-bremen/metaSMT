@@ -63,6 +63,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 
+SET (CMAKE_C_COMPILER             "/usr/bin/clang")
+SET (CMAKE_CXX_COMPILER           "/usr/bin/clang++")
+
 add_tool_executable( metaSMT-server
   SOURCES
     main.cpp
