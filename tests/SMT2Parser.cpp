@@ -16,7 +16,7 @@ public:
   typedef DirectSolver_Context< SMT2 > ContextType;
   Solver_Fixture()
   {
-    set_option(ctx,"solver_executable","toolbox/smt2Input_evaluator/metaSMT-smt2Input_Evaluator");
+    set_option(ctx,"solver_executable","toolbox/smt2Input_evaluator/metaSMT-smt2Input_Evaluator_z3");
     set_option(ctx,"solver_arguments","");
   }
   ContextType ctx;

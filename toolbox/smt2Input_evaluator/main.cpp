@@ -1,6 +1,4 @@
 #include <metaSMT/support/parser/SMT2Parser.hpp>
-#include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/backend/Z3_Backend.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
 
 #include <string>
@@ -14,7 +12,6 @@ using namespace metaSMT::smt2;
 
 int main(int argc, char **argv)
 {
-  typedef DirectSolver_Context<Stack<Z3_Backend> > Context;
   typedef UTreeEvaluator<Context> Evaluator;
 
   char inputline[1024];
