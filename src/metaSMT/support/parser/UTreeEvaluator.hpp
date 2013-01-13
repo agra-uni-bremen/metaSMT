@@ -4,18 +4,18 @@
 #include "../../tags/Array.hpp"
 #include "../../result_wrapper.hpp"
 #include "../../API/Stack.hpp"
+#include "../../io/SMT2_ResultParser.hpp"
+
+#include <boost/spirit/include/support_utree.hpp>
+#include "boost/lexical_cast.hpp"
 
 #include <iostream>
 #include <map>
 #include <stack>
 #include <list>
 
-#include <boost/spirit/include/support_utree.hpp>
-#include "boost/lexical_cast.hpp"
-
 namespace metaSMT {
 namespace evaluator {
-using namespace boost::spirit;
 
 template<typename Context>
 struct UTreeEvaluator
@@ -28,20 +28,46 @@ struct UTreeEvaluator
   enum smt2operator
   {
     other,
-    smttrue, smtfalse,
-    smtnot, smteq, smtand, smtor, smtxor, smtimplies, smtite,
-    smtbvnot, smtbvneg, smtbvand, smtbvnand, smtbvor,smtbvnor,
-    smtbvxor, smtbvxnor, smtbvcomp,
-    smtbvadd, smtbvmul, smtbvsub, smtbvsdiv, smtbvsrem, smtbvudiv, smtbvurem,
-    smtbvsle, smtbvsge, smtbvslt, smtbvsgt, smtbvule, smtbvuge, smtbvult, smtbvugt,
-    smtbvshl, smtbvshr, smtbvashr,
-    smtconcat, smtextract, smtzero_extend, smtsign_extend
-  };
-
-  template<typename T1>
-  struct result
-  {
-    typedef utree::list_type type;
+    smttrue,
+    smtfalse,
+    smtnot,
+    smteq,
+    smtand,
+    smtor,
+    smtxor,
+    smtimplies,
+    smtite,
+    smtbvnot,
+    smtbvneg,
+    smtbvand,
+    smtbvnand,
+    smtbvor,
+    smtbvnor,
+    smtbvxor,
+    smtbvxnor,
+    smtbvcomp,
+    smtbvadd,
+    smtbvmul,
+    smtbvsub,
+    smtbvsdiv,
+    smtbvsrem,
+    smtbvudiv,
+    smtbvurem,
+    smtbvsle,
+    smtbvsge,
+    smtbvslt,
+    smtbvsgt,
+    smtbvule,
+    smtbvuge,
+    smtbvult,
+    smtbvugt,
+    smtbvshl,
+    smtbvshr,
+    smtbvashr,
+    smtconcat,
+    smtextract,
+    smtzero_extend,
+    smtsign_extend
   };
 
   typedef std::map<std::string, smt2Symbol> SymbolMap;
@@ -49,6 +75,13 @@ struct UTreeEvaluator
   typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
   typedef std::map<std::string, metaSMT::logic::QF_BV::bitvector> BitVectorMap;
   typedef typename Context::result_type result_type;
+  typedef boost::spirit::utree utree;
+
+  template<typename T1>
+  struct result
+  {
+    typedef utree::list_type type;
+  };
 
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
@@ -134,7 +167,7 @@ struct UTreeEvaluator
         break;
       }
       case checksat: {
-        if(metaSMT::solve(ctx)){
+        if (metaSMT::solve(ctx)) {
           std::cout << "sat" << std::endl;
         } else {
           std::cout << "unsat" << std::endl;
@@ -177,11 +210,13 @@ struct UTreeEvaluator
         }
         break;
       }
+      case undefined:
+        std::cerr << "Error could not determine Symbol: " << symbolString << std::endl;
+        break;
       case setoption:
       case getoption:
       case setlogic:
       case exit:
-      case undefined:
       default:
         break;
       }
@@ -192,7 +227,7 @@ struct UTreeEvaluator
   {
     result_type output;
     switch (tree.which()) {
-    case utree_type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       for (utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
         if (operatorMap[value] != other) {
@@ -202,7 +237,7 @@ struct UTreeEvaluator
           if (value.compare("_") == 0) {
             ++I;
             std::string bvvalue = utreeToString(*I);
-            if(operatorMap[bvvalue] == smtzero_extend || operatorMap[bvvalue] == smtsign_extend){
+            if (operatorMap[bvvalue] == smtzero_extend || operatorMap[bvvalue] == smtsign_extend) {
               pushOperator(bvvalue);
               ++I;
               int op1 = boost::lexical_cast<int>(utreeToString(*I));
@@ -230,7 +265,7 @@ struct UTreeEvaluator
       }
       break;
     }
-    case utree_type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       std::string value = utreeToString(tree);
       if (operatorMap[value] != other) {
         pushOperator(value);
@@ -270,7 +305,7 @@ struct UTreeEvaluator
         break;
       }
       break;
-      // unary operators
+    // unary operators
     case 1: {
       result_type op1 = popResultType();
       switch (operatorMap[op]) {
@@ -286,11 +321,11 @@ struct UTreeEvaluator
       default:
         break;
       }
-    }
       break;
-      // binary operators
+    }
+    // binary operators
     case 2: {
-      if(operatorMap[op] == smtzero_extend || operatorMap[op] == smtsign_extend){
+      if (operatorMap[op] == smtzero_extend || operatorMap[op] == smtsign_extend) {
         int op1 = popModBvLengthParam();
         result_type op2 = popResultType();
         switch (operatorMap[op]) {
@@ -402,9 +437,9 @@ struct UTreeEvaluator
           break;
         }
       }
-    }
       break;
-      // ternary operators
+    }
+    // ternary operators
     case 3: {
       result_type op3 = popResultType();
       switch (operatorMap[op]) {
@@ -423,8 +458,8 @@ struct UTreeEvaluator
       default:
         break;
       }
-    }
       break;
+    }
     default:
       break;
     }
@@ -483,13 +518,29 @@ struct UTreeEvaluator
   {
     result_type *variable = new result_type;
     getVariable(value, *variable);
-    size_t start = 0;
-    size_t length = 2;
-    if (value.find("#b", start, length) != value.npos) {
+
+    typedef std::string::const_iterator ConstIterator;
+    metaSMT::io::smt2_response_grammar<ConstIterator> parser;
+    ConstIterator it = value.begin(), ie = value.end();
+    static boost::spirit::qi::rule< ConstIterator, unsigned long() > binary_rule
+      = boost::spirit::qi::lit("#b") >> boost::spirit::qi::uint_parser<unsigned long, 2, 1, 64>()
+      ;
+    static boost::spirit::qi::rule< ConstIterator, unsigned long() > hex_rule
+      = boost::spirit::qi::lit("#x") >> boost::spirit::qi::uint_parser<unsigned long, 16, 1, 16>()
+      ;
+
+    unsigned long number;
+    it = value.begin(), ie = value.end();
+    if ( boost::spirit::qi::parse(it, ie, binary_rule, number) ) {
+      assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
       delete variable;
       *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
-    } else if (value.find("#x", start, length) != value.npos) {
+    }
+
+    it = value.begin(), ie = value.end();
+    if ( boost::spirit::qi::parse(it, ie, hex_rule, number) ) {
+      assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
       delete variable;
       *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
@@ -507,10 +558,10 @@ struct UTreeEvaluator
       }
     }
     unsigned width = boost::lexical_cast<unsigned>(bitSize);
-    if(width == 1){
-      if(number == 1){
+    if (width == 1) {
+      if (number == 1) {
         return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit1);
-      } else if(number == 0){
+      } else if (number == 0) {
         return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit0);
       }
     }
@@ -527,7 +578,7 @@ struct UTreeEvaluator
     utree functionType = *functionIterator;
 
     switch (functionType.which()) {
-    case utree_type::list_type: {
+    case boost::spirit::utree_type::list_type: {
       utree::iterator bitVecIterator = functionType.begin();
       ++bitVecIterator;
       ++bitVecIterator;
@@ -536,7 +587,7 @@ struct UTreeEvaluator
       bitVectorMap[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
       break;
     }
-    case utree_type::string_type: {
+    case boost::spirit::utree_type::string_type: {
       predicateMap[functionName] = metaSMT::logic::new_variable();
       break;
     }
@@ -551,11 +602,11 @@ struct UTreeEvaluator
     PredicateMap::iterator IP = predicateMap.find(name);
     BitVectorMap::iterator IBV = bitVectorMap.find(name);
     if (IP != predicateMap.end()) {
-      result = metaSMT::evaluate(ctx,predicateMap[name]);
+      result = metaSMT::evaluate(ctx, predicateMap[name]);
       return 1;
     }
     if (IBV != bitVectorMap.end()) {
-      result = metaSMT::evaluate(ctx,bitVectorMap[name]);
+      result = metaSMT::evaluate(ctx, bitVectorMap[name]);
       return 2;
     }
     return -1;
@@ -670,4 +721,4 @@ protected:
 };
 // struct UTreeEvaluator
 }// namespace evaluator
-}// namespace metaSMT
+} // namespace metaSMT
