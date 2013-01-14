@@ -160,7 +160,7 @@ struct SynthNet
         connect(ncx, i-1, i);
       } else {
         comment(ctx, "equal to cex");
-        assertion(ctx,
+        metaSMT::assertion(ctx,
           net[ncx][i]->equal_to(ctx, cex)
         );
       }
@@ -211,7 +211,7 @@ struct SynthNet
     }
     for (unsigned i = 0; i < num_lines; i++) {
       comment(ctx, "equal or exchange");
-      assertion(ctx, ops[i]);
+      metaSMT::assertion(ctx, ops[i]);
     }
   }
 
@@ -225,7 +225,7 @@ struct SynthNet
     }
     gate_vars.push_back(ei);
     comment(ctx, "swap cardinality");
-    assertion(ctx, cardinality_leq(ctx, vars, num_lines/2u));
+    metaSMT::assertion(ctx, cardinality_leq(ctx, vars, num_lines/2u));
   }
 
   bool synth() {
