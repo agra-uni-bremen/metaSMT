@@ -8,6 +8,7 @@
 
 #include <boost/spirit/include/support_utree.hpp>
 #include "boost/lexical_cast.hpp"
+#include <boost/shared_ptr.hpp>
 
 #include <iostream>
 #include <map>
@@ -74,6 +75,8 @@ struct UTreeEvaluator
   typedef std::map<std::string, smt2operator> OperatorMap;
   typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
   typedef std::map<std::string, metaSMT::logic::QF_BV::bitvector> BitVectorMap;
+  typedef boost::shared_ptr<PredicateMap> PredicateMap_ptr;
+  typedef boost::shared_ptr<BitVectorMap> BitVectorMap_ptr;
   typedef typename Context::result_type result_type;
   typedef boost::spirit::utree utree;
 
@@ -85,6 +88,14 @@ struct UTreeEvaluator
 
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
+  {
+    predicateMap = PredicateMap_ptr(new PredicateMap());;
+    bitVectorMap = BitVectorMap_ptr(new BitVectorMap());;
+    initialize();
+  }
+
+  UTreeEvaluator(Context& ctx, BitVectorMap_ptr bvmap, PredicateMap_ptr pmap) :
+      ctx(ctx), bitVectorMap(bvmap), predicateMap(pmap)
   {
     initialize();
   }
@@ -584,11 +595,11 @@ struct UTreeEvaluator
       ++bitVecIterator;
       std::string bitSize = utreeToString(*bitVecIterator);
       unsigned width = boost::lexical_cast<unsigned>(bitSize);
-      bitVectorMap[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
+      (*bitVectorMap)[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
       break;
     }
     case boost::spirit::utree_type::string_type: {
-      predicateMap[functionName] = metaSMT::logic::new_variable();
+      (*predicateMap)[functionName] = metaSMT::logic::new_variable();
       break;
     }
     default:
@@ -599,14 +610,14 @@ struct UTreeEvaluator
   int getVariable(std::string name, result_type &result)
   {
     // name is a variable identifier, therfore unique and may only be in one map
-    PredicateMap::iterator IP = predicateMap.find(name);
-    BitVectorMap::iterator IBV = bitVectorMap.find(name);
-    if (IP != predicateMap.end()) {
-      result = metaSMT::evaluate(ctx, predicateMap[name]);
+    PredicateMap::iterator IP = (*predicateMap).find(name);
+    BitVectorMap::iterator IBV = (*bitVectorMap).find(name);
+    if (IP != (*predicateMap).end()) {
+      result = metaSMT::evaluate(ctx, (*predicateMap)[name]);
       return 1;
     }
-    if (IBV != bitVectorMap.end()) {
-      result = metaSMT::evaluate(ctx, bitVectorMap[name]);
+    if (IBV != (*bitVectorMap).end()) {
+      result = metaSMT::evaluate(ctx, (*bitVectorMap)[name]);
       return 2;
     }
     return -1;
@@ -713,8 +724,8 @@ protected:
   std::stack<int> modBvLengthParamStack;
   std::stack<std::pair<int, int> > neededOperandStack;
 
-  PredicateMap predicateMap;
-  BitVectorMap bitVectorMap;
+  PredicateMap_ptr predicateMap;
+  BitVectorMap_ptr bitVectorMap;
   std::stack<result_type> resultTypeStack;
   std::list<bool> results;
 
