@@ -31,6 +31,7 @@ namespace metaSMT {
     class PicoSAT
     {
       public:
+        typedef SAT::tag::lit_tag result_type;
         PicoSAT ()
         {
           //          if ( in_use == USED )
@@ -47,31 +48,31 @@ namespace metaSMT {
         }
 
 
-        int toLit ( SAT::tag::lit_tag lit )
+        int toLit ( result_type lit )
         {
           return lit.id; 
         }
 
-        void clause ( std::vector < SAT::tag::lit_tag > const& clause)
+        void clause ( std::vector < result_type > const& clause)
         {
-          BOOST_FOREACH ( SAT::tag::lit_tag const& lit, clause )
+          BOOST_FOREACH ( result_type const& lit, clause )
             picosat_add ( toLit ( lit ) );
           picosat_add ( 0 ); 
         }
 
-        void command ( addclause_cmd const&, std::vector < SAT::tag::lit_tag > const& cls )
+        void command ( addclause_cmd const&, std::vector < result_type > const& cls )
         {
           clause ( cls );
         }
 
 
-        void assertion ( SAT::tag::lit_tag lit )
+        void assertion ( result_type lit )
         {
           picosat_add ( toLit ( lit ) ); 
           picosat_add ( 0 ); 
         }
 
-        void assumption ( SAT::tag::lit_tag lit )
+        void assumption ( result_type lit )
         {
           picosat_assume ( toLit ( lit ) ); 
         }
@@ -92,7 +93,7 @@ namespace metaSMT {
           }
         }
 
-        result_wrapper read_value ( SAT::tag::lit_tag lit ) 
+        result_wrapper read_value ( result_type lit )
         {
 
           switch ( picosat_deref ( toLit ( lit ) ) )
