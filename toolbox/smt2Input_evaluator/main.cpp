@@ -12,11 +12,11 @@ using namespace metaSMT::smt2;
 
 int main(int argc, char **argv)
 {
-  typedef UTreeEvaluator<Context> Evaluator;
+  typedef UTreeEvaluator<ContextType> Evaluator;
   char inputline[1024];
   string line;
   stringstream *buf = new stringstream;
-  Context ctx;
+  ContextType ctx;
   Evaluator evaluator(ctx);
   SMT2Parser<Evaluator> parser(evaluator);
   while(!cin.eof()){

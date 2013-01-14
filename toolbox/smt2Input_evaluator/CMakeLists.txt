@@ -47,12 +47,12 @@ add_tool_executable( smt2InputEvaluator_MiniSAT
     MiniSat_FOUND
 )
 
-#add_tool_executable( smt2InputEvaluator_PicoSAT
-#  SOURCES
-#    PicoSAT_main.cpp
-#  REQUIRES
-#    PicoSAT_FOUND
-#)
+add_tool_executable( smt2InputEvaluator_PicoSAT
+  SOURCES
+    PicoSAT_main.cpp
+  REQUIRES
+    PicoSAT_FOUND
+)
 
 add_tool_executable( smt2InputEvaluator_SAT_Aiger
   SOURCES
