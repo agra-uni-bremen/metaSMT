@@ -1,3 +1,10 @@
+add_tool_executable( smt2InputEvaluator_Aiger
+  SOURCES
+    Aiger_main.cpp
+  REQUIRES
+    Aiger_FOUND
+)
+
 add_tool_executable( smt2InputEvaluator_Boolector
   SOURCES
     Boolector_main.cpp
@@ -9,35 +16,35 @@ add_tool_executable( smt2InputEvaluator_ClauseWriter
   SOURCES
     ClauseWriter_main.cpp
   REQUIRES
-    ClauseWriter_FOUND
+    CW_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_CUDD_Context
   SOURCES
     CUDD_Context_main.cpp
   REQUIRES
-    CUDD_Context_FOUND
+    CUDD_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_CUDD_Distributed
   SOURCES
     CUDD_Distributed_main.cpp
   REQUIRES
-    CUDD_Distributed_FOUND
+    CUDD_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_ExpressionSolver
   SOURCES
     ExpressionSolver_main.cpp
   REQUIRES
-    ExpressionSolver_FOUND
+    ExprSolver_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_MiniSAT
   SOURCES
     MiniSAT_main.cpp
   REQUIRES
-    MiniSAT_FOUND
+    MiniSat_FOUND
 )
 
 #add_tool_executable( smt2InputEvaluator_PicoSAT
@@ -58,7 +65,7 @@ add_tool_executable( smt2InputEvaluator_SAT_Clause
   SOURCES
     SAT_Clause_main.cpp
   REQUIRES
-    SAT_Clause_FOUND
+    CW_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_SMT2
