@@ -12,7 +12,8 @@ namespace metaSMT {
       return progname;
     }
 
-    int execvp(std::string const &file, std::vector<std::string> const &args) {
+    inline int execvp(std::string const &file,
+                      std::vector<std::string> const &args) {
       std::vector<char const *> av;
       for ( std::vector<std::string>::const_iterator it = args.begin();
             it != args.end(); ++it )
