@@ -32,9 +32,10 @@ namespace metaSMT {
   namespace solver {
 
     class MiniSAT {
-
       public:
-        Minisat::Lit toLit ( SAT::tag::lit_tag lit )
+        typedef SAT::tag::lit_tag result_type;
+
+        Minisat::Lit toLit ( result_type lit )
         {
           while ( solver_.nVars() <= abs ( lit.id ) )
             solver_.newVar();
@@ -42,11 +43,11 @@ namespace metaSMT {
           return Minisat::mkLit ( abs ( lit.id ), lit.id < 0 ); 
         }
 
-        void clause ( std::vector < SAT::tag::lit_tag > const& clause)
+        void clause ( std::vector < result_type > const& clause)
         {
           const size_t s = clause.size(); 
            
-           // BOOST_FOREACH ( SAT::tag::lit_tag const& lit, clause )
+           // BOOST_FOREACH ( result_type const& lit, clause )
            //   std::cout << lit.id << " ";
            // std::cout << "0" << std::endl;
 
@@ -80,17 +81,17 @@ namespace metaSMT {
         }
 
 
-        void assertion ( SAT::tag::lit_tag lit )
+        void assertion ( result_type lit )
         {
           solver_.addClause ( toLit ( lit ) ); 
         }
 
-        void assumption ( SAT::tag::lit_tag lit )
+        void assumption ( result_type lit )
         {
           assumption_.push ( toLit ( lit ) ); 
         }
 
-        void command ( addclause_cmd const&, std::vector < SAT::tag::lit_tag > const& cls )
+        void command ( addclause_cmd const&, std::vector < result_type > const& cls )
         {
           clause ( cls );
         }
@@ -110,7 +111,7 @@ namespace metaSMT {
           return r;
         }
 
-        result_wrapper read_value ( SAT::tag::lit_tag lit ) 
+        result_wrapper read_value ( result_type lit ) 
         {
           using namespace Minisat;
            
