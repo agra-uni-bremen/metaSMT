@@ -1,5 +1,5 @@
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/API/Stack.hpp>
 #include <metaSMT/backend/SMT2.hpp>
-typedef metaSMT::DirectSolver_Context<metaSMT::Stack<metaSMT::solver::SMT2> > ContextType;
+typedef metaSMT::DirectSolver_Context< metaSMT::solver::SMT2 > ContextType;
 #include "main.cpp"

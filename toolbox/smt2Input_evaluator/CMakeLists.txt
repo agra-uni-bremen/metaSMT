@@ -72,7 +72,9 @@ add_tool_executable( smt2InputEvaluator_SMT2
   SOURCES
     SMT2_main.cpp
   REQUIRES
-    SMT2_FOUND
+    Z3_FOUND
+  LIBRARIES
+    ${Boost_IOSTREAMS_LIBRARY} 
 )
 
 add_tool_executable( smt2InputEvaluator_STP
