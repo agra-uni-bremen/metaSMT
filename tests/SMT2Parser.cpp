@@ -8,14 +8,12 @@
 using namespace std;
 using namespace metaSMT;
 using namespace metaSMT::solver;
-struct Solver_Fixture
-{
+struct Solver_Fixture {
 public:
   typedef DirectSolver_Context< SMT2 > ContextType;
-  Solver_Fixture()
-  {
-    set_option(ctx,"solver_executable","toolbox/smt2Input_evaluator/metaSMT-smt2Input_Evaluator_z3");
-    set_option(ctx,"solver_arguments","");
+  Solver_Fixture() {
+    set_option(ctx, "solver_executable", "smt2InputEvaluator_Z3_Backend");
+    set_option(ctx, "solver_arguments", "");
   }
   ContextType ctx;
 };
