@@ -1,6 +1,4 @@
 #define BOOST_TEST_MODULE SMT2Parser 
-#include <iostream>
-
 #include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/API/Stack.hpp>
