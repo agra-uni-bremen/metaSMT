@@ -527,8 +527,8 @@ struct UTreeEvaluator
    */
   void pushVarOrConstant(std::string value)
   {
-    result_type *variable = new result_type;
-    getVariable(value, *variable);
+    result_type variable;
+    getVariable(value, variable);
 
     typedef std::string::const_iterator ConstIterator;
     metaSMT::io::smt2_response_grammar<ConstIterator> parser;
@@ -545,18 +545,16 @@ struct UTreeEvaluator
     if ( boost::spirit::qi::parse(it, ie, binary_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      delete variable;
-      *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+      variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
     }
 
     it = value.begin(), ie = value.end();
     if ( boost::spirit::qi::parse(it, ie, hex_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      delete variable;
-      *variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
+      variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
     }
-    pushResultType(*variable);
+    pushResultType(variable);
   }
 
   result_type createBvInt(std::string value, std::string bitSize)
