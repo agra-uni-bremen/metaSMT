@@ -44,7 +44,6 @@ endfunction()
 
 function( generate_config_files )
 
-  list(INSERT metaSMT_LIBS 0 ${CMAKE_INSTALL_PREFIX}/lib/libmetaSMT.a)
   list(INSERT metaSMT_INCLUDES 0 ${CMAKE_INSTALL_PREFIX}/include)
 
   set(metaSMT_MLIBS "")
@@ -52,6 +51,7 @@ function( generate_config_files )
   foreach( lib  ${metaSMT_LIBS} )
     _append_real_library( ${lib} metaSMT_MLIBS )
   endforeach(lib)
+  set( metaSMT_MLIBS "${CMAKE_INSTALL_PREFIX}/lib/libmetaSMT.a ${metaSMT_MLIBS}")
 
   string(REPLACE ";" " -I" metaSMT_MINCLUDES ";${metaSMT_INCLUDES}")
 
