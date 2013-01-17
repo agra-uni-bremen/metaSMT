@@ -346,6 +346,9 @@ struct UTreeEvaluator
         case smtsign_extend:
           result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::sign_extend(op1, op2));
           break;
+        default:
+          assert( false && "Unreachable" );
+          break;
         }
       } else {
         result_type op2 = popResultType();
