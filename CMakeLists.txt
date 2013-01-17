@@ -237,6 +237,14 @@ if (PicoSAT_FOUND)
   list(APPEND metaSMT_INCLUDES ${PicoSAT_INCLUDE_DIR})
 endif (PicoSAT_FOUND)
 
+if( Boost_IOSTREAMS_FOUND )
+  list(APPEND metaSMT_LIBS ${Boost_IOSTREAMS_LIBRARY})
+endif()
+
+if( Boost_THREAD_FOUND )
+  list(APPEND metaSMT_LIBS ${Boost_THREAD_LIBRARY})
+endif()
+
 ############################################################
 ############# RPATH ########################################
 ############################################################
