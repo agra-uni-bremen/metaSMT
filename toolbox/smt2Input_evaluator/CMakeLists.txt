@@ -16,7 +16,7 @@ add_tool_executable( smt2InputEvaluator_PicoSAT
   SOURCES
     PicoSAT_main.cpp
   REQUIRES
-    PicoSAT_FOUND
+    picosat_FOUND
 )
 
 add_tool_executable( smt2InputEvaluator_SMT2
