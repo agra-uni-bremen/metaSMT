@@ -104,7 +104,10 @@ if [ "$BUILD_CMAKE" = "yes" ]; then
   export PATH="$DEPS/$CMAKE_PACKAGE/bin:$PATH"
 fi
 
-./build "$DEPS" $REQUIRES &&
+./build "$DEPS" $REQUIRES || {
+  echo "building dependencies $REQUIRES failed."
+  exit 3
+}
 cd $BUILD_DIR && 
 
 PREFIX_PATH=$(echo $REQUIRES| sed "s@[ ^] *@;$DEPS/@g")
