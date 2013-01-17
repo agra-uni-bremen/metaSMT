@@ -60,12 +60,12 @@ add_test_executable( graph_SWORD graph_SWORD2.cpp REQUIRES SWORD_FOUND )
 find_library(PTHREAD pthread)
 
 add_test_executable( direct_Threaded_SWORD direct_Threaded_SWORD.cpp 
-  REQUIRES SWORD_FOUND
-  LIBRARIES ${Boost_THREAD_LIBRARY} ${PTHREAD}
+  REQUIRES SWORD_FOUND Boost_THREAD_FOUND Boost_SYSTEM_FOUND
+  LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${PTHREAD}
 )
 add_test_executable( direct_Priority_Boolector_CUDD direct_Priority_Boolector_CUDD.cpp 
-  REQUIRES Boolector_FOUND CUDD_FOUND Boost_THREAD_LIBRARY
-  LIBRARIES ${Boost_THREAD_LIBRARY} ${PTHREAD}
+  REQUIRES Boolector_FOUND CUDD_FOUND Boost_THREAD_FOUND Boost_SYSTEM_FOUND
+  LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${PTHREAD}
 )
 
 add_test_executable( direct_CUDD direct_CUDD.cpp REQUIRES CUDD_FOUND )
