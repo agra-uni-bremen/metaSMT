@@ -1,7 +1,7 @@
 #pragma once
 
+#include "string_concat.hpp"
 #include "../tags/Logics.hpp"
-
 #include <boost/mpl/map/map50.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -14,7 +14,7 @@ namespace metaSMT {
   namespace mpl = boost::mpl;
 
   /** \cond **/
-  typedef mpl::map42<
+  typedef mpl::map46<
       mpl::pair<predtags::true_tag,    mpl::string<'t', 'r', 'u', 'e'> >
     , mpl::pair<predtags::false_tag,   mpl::string<'f', 'a', 'l', 's', 'e'> >
     , mpl::pair<bvtags::bvult_tag,     mpl::string<'b', 'v', 'u', 'l', 't'> >
@@ -62,7 +62,18 @@ namespace metaSMT {
     , mpl::pair<arraytags::store_tag,  mpl::string<'s', 't', 'o', 'r', 'e'> >
     , mpl::pair<bvtags::bvshl_tag,     mpl::string<'b', 'v', 's', 'h', 'l'> >    
     , mpl::pair<bvtags::bvshr_tag,     mpl::string<'b', 'v', 'l', 's', 'h', 'r'> >    
-    , mpl::pair<bvtags::bvashr_tag,     mpl::string<'b', 'v', 'a', 's', 'h', 'r'> >    
+    , mpl::pair<bvtags::bvashr_tag,    mpl::string<'b', 'v', 'a', 's', 'h', 'r'> >    
+
+    , mpl::pair<bvtags::extract_tag,      mpl::string<'e', 'x', 't', 'r', 'a', 'c', 't'> >
+    , mpl::pair<bvtags::repeat_tag,       mpl::string<'r', 'e', 'p', 'e', 'a', 't'> >
+    , mpl::pair<bvtags::zero_extend_tag,  string_concat<
+                                            mpl::string<'z', 'e', 'r', 'o', '_'>,
+                                            mpl::string<'e', 'x', 't', 'e', 'n', 'd'>
+                                          >::type >
+    , mpl::pair<bvtags::sign_extend_tag,  string_concat<
+                                            mpl::string<'s', 'i', 'g', 'n', '_'>,
+                                            mpl::string<'e', 'x', 't', 'e', 'n', 'd'>
+                                          >::type >
   > SMT_NameMap;
   /** \endcond **/
 
