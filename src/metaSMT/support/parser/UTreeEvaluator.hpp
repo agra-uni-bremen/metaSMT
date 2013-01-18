@@ -156,13 +156,7 @@ struct UTreeEvaluator
     operatorMap["sign_extend"] = smtsign_extend;
   }
 
-  void printSMT(utree ast)
-  {
-    parseSymbol(ast);
-  }
-
-  void parseSymbol(utree ast)
-  {
+  void evaluateInstance(utree ast) {
     for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
       utree command = *I;
       utree::iterator commandIterator = command.begin();

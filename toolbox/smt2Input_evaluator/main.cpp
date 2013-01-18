@@ -10,8 +10,7 @@ using namespace metaSMT::solver;
 using namespace metaSMT::evaluator;
 using namespace metaSMT::smt2;
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   typedef UTreeEvaluator<ContextType> Evaluator;
   char inputline[1024];
   string line;
@@ -27,7 +26,7 @@ int main(int argc, char **argv)
     if(line.compare("(check-sat)") == 0 || found != line.npos){
       boost::spirit::utree::list_type ast;
       parser.parse(*buf, ast);
-      evaluator.printSMT(ast);
+      evaluator.evaluateInstance(ast);
       delete buf;
       buf = new stringstream;
     }
