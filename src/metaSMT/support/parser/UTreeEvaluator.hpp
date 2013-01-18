@@ -80,12 +80,6 @@ struct UTreeEvaluator
   typedef typename Context::result_type result_type;
   typedef boost::spirit::utree utree;
 
-  template<typename T1>
-  struct result
-  {
-    typedef utree::list_type type;
-  };
-
   UTreeEvaluator(Context& ctx) :
       ctx(ctx)
   {
