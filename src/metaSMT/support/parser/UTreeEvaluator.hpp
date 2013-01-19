@@ -1,13 +1,12 @@
 #pragma once 
 
 #include "../../tags/QF_BV.hpp"
-#include "../../tags/Array.hpp"
 #include "../../result_wrapper.hpp"
 #include "../../API/Stack.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
 
 #include <boost/spirit/include/support_utree.hpp>
-#include "boost/lexical_cast.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <iostream>
@@ -16,7 +15,8 @@
 #include <list>
 
 namespace metaSMT {
-namespace evaluator {
+  namespace evaluator {
+    namespace QF_BV = metaSMT::logic::QF_BV;
 
 template<typename Context>
 struct UTreeEvaluator
@@ -73,8 +73,8 @@ struct UTreeEvaluator
 
   typedef std::map<std::string, smt2Symbol> SymbolMap;
   typedef std::map<std::string, smt2operator> OperatorMap;
-  typedef std::map<std::string, metaSMT::logic::predicate> PredicateMap;
-  typedef std::map<std::string, metaSMT::logic::QF_BV::bitvector> BitVectorMap;
+  typedef std::map<std::string, logic::predicate> PredicateMap;
+  typedef std::map<std::string, QF_BV::bitvector> BitVectorMap;
   typedef typename Context::result_type result_type;
   typedef boost::spirit::utree utree;
 
@@ -190,7 +190,7 @@ struct UTreeEvaluator
         break;
       }
       case checksat: {
-        if (metaSMT::solve(ctx)) {
+        if (solve(ctx)) {
           std::cout << "sat" << std::endl;
         } else {
           std::cout << "unsat" << std::endl;
@@ -220,14 +220,14 @@ struct UTreeEvaluator
         int err = getVariable(value, *variable);
         if (err == 1) {
           std::string boolvalue;
-          if (metaSMT::read_value(ctx, *variable)) {
+          if (read_value(ctx, *variable)) {
             boolvalue = "true";
           } else {
             boolvalue = "false";
           }
           std::cout << "((" << value << " " << boolvalue << "))" << std::endl;
         } else if (err == 2) {
-          std::cout << "((" << value << " #b" << metaSMT::read_value(ctx, *variable) << "))" << std::endl;
+          std::cout << "((" << value << " #b" << read_value(ctx, *variable) << "))" << std::endl;
         } else {
           std::cerr << "Error could not determine Variable: " << value << std::endl;
         }
@@ -246,8 +246,7 @@ struct UTreeEvaluator
     }
   }
 
-  result_type translateLogicalInstruction(utree tree)
-  {
+  result_type translateLogicalInstruction(utree tree) {
     result_type output;
     switch (tree.which()) {
     case boost::spirit::utree_type::list_type: {
@@ -310,8 +309,7 @@ struct UTreeEvaluator
     return output;
   }
 
-  void consume()
-  {
+  void consume() {
     std::string op = operatorStack.top();
     result_type result;
     switch (numOperands(op)) {
@@ -319,12 +317,13 @@ struct UTreeEvaluator
     case 0:
       switch (operatorMap[op]) {
       case smttrue:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::True);
+        result = evaluate(ctx, logic::True);
         break;
       case smtfalse:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::False);
+        result = evaluate(ctx, logic::False);
         break;
       default:
+        assert( false );
         break;
       }
       break;
@@ -333,15 +332,16 @@ struct UTreeEvaluator
       result_type op1 = popResultType();
       switch (operatorMap[op]) {
       case smtnot:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::Not(op1));
+        result = evaluate(ctx, logic::Not(op1));
         break;
       case smtbvnot:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvnot(op1));
+        result = evaluate(ctx, QF_BV::bvnot(op1));
         break;
       case smtbvneg:
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvneg(op1));
+        result = evaluate(ctx, QF_BV::bvneg(op1));
         break;
       default:
+        assert( false );
         break;
       }
       break;
@@ -353,113 +353,115 @@ struct UTreeEvaluator
         result_type op2 = popResultType();
         switch (operatorMap[op]) {
         case smtzero_extend:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::zero_extend(op1, op2));
+          result = evaluate(ctx, QF_BV::zero_extend(op1, op2));
           break;
         case smtsign_extend:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::sign_extend(op1, op2));
+          result = evaluate(ctx, QF_BV::sign_extend(op1, op2));
           break;
         default:
           assert( false && "Unreachable" );
           break;
         }
-      } else {
+      }
+      else {
         result_type op2 = popResultType();
         result_type op1 = popResultType();
         switch (operatorMap[op]) {
         case smteq:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::equal(op1, op2));
+          result = evaluate(ctx, logic::equal(op1, op2));
           break;
         case smtimplies:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::implies(op1, op2));
+          result = evaluate(ctx, logic::implies(op1, op2));
           break;
         case smtand:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::And(op1, op2));
+          result = evaluate(ctx, logic::And(op1, op2));
           break;
         case smtor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::Or(op1, op2));
+          result = evaluate(ctx, logic::Or(op1, op2));
           break;
         case smtxor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::Xor(op1, op2));
+          result = evaluate(ctx, logic::Xor(op1, op2));
           break;
         case smtbvand:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvand(op1, op2));
+          result = evaluate(ctx, QF_BV::bvand(op1, op2));
           break;
         case smtbvnand:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvnand(op1, op2));
+          result = evaluate(ctx, QF_BV::bvnand(op1, op2));
           break;
         case smtbvor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvor(op1, op2));
+          result = evaluate(ctx, QF_BV::bvor(op1, op2));
           break;
         case smtbvnor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvnor(op1, op2));
+          result = evaluate(ctx, QF_BV::bvnor(op1, op2));
           break;
         case smtbvxor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvxor(op1, op2));
+          result = evaluate(ctx, QF_BV::bvxor(op1, op2));
           break;
         case smtbvxnor:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvxnor(op1, op2));
+          result = evaluate(ctx, QF_BV::bvxnor(op1, op2));
           break;
         case smtbvcomp:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvcomp(op1, op2));
+          result = evaluate(ctx, QF_BV::bvcomp(op1, op2));
           break;
         case smtbvadd:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvadd(op1, op2));
+          result = evaluate(ctx, QF_BV::bvadd(op1, op2));
           break;
         case smtbvmul:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvmul(op1, op2));
+          result = evaluate(ctx, QF_BV::bvmul(op1, op2));
           break;
         case smtbvsub:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsub(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsub(op1, op2));
           break;
         case smtbvsdiv:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsdiv(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsdiv(op1, op2));
           break;
         case smtbvsrem:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsrem(op1, op2));
           break;
         case smtbvudiv:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvudiv(op1, op2));
+          result = evaluate(ctx, QF_BV::bvudiv(op1, op2));
           break;
         case smtbvurem:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvurem(op1, op2));
+          result = evaluate(ctx, QF_BV::bvurem(op1, op2));
           break;
         case smtbvsle:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsle(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsle(op1, op2));
           break;
         case smtbvsge:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsge(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsge(op1, op2));
           break;
         case smtbvslt:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvslt(op1, op2));
+          result = evaluate(ctx, QF_BV::bvslt(op1, op2));
           break;
         case smtbvsgt:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsgt(op1, op2));
+          result = evaluate(ctx, QF_BV::bvsgt(op1, op2));
           break;
         case smtbvule:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvule(op1, op2));
+          result = evaluate(ctx, QF_BV::bvule(op1, op2));
           break;
         case smtbvuge:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvuge(op1, op2));
+          result = evaluate(ctx, QF_BV::bvuge(op1, op2));
           break;
         case smtbvult:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvult(op1, op2));
+          result = evaluate(ctx, QF_BV::bvult(op1, op2));
           break;
         case smtbvugt:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvugt(op1, op2));
+          result = evaluate(ctx, QF_BV::bvugt(op1, op2));
           break;
         case smtbvshl:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvshl(op1, op2));
+          result = evaluate(ctx, QF_BV::bvshl(op1, op2));
           break;
         case smtbvshr:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvshr(op1, op2));
+          result = evaluate(ctx, QF_BV::bvshr(op1, op2));
           break;
         case smtbvashr:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvashr(op1, op2));
+          result = evaluate(ctx, QF_BV::bvashr(op1, op2));
           break;
         case smtconcat:
-          result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::concat(op1, op2));
+          result = evaluate(ctx, QF_BV::concat(op1, op2));
           break;
         default:
+          assert( false );
           break;
         }
       }
@@ -472,21 +474,23 @@ struct UTreeEvaluator
       case smtite: {
         result_type op2 = popResultType();
         result_type op1 = popResultType();
-        result = metaSMT::evaluate(ctx, metaSMT::logic::Ite(op1, op2, op3));
+        result = evaluate(ctx, logic::Ite(op1, op2, op3));
         break;
       }
       case smtextract: {
         int op2 = popModBvLengthParam();
         int op1 = popModBvLengthParam();
-        result = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::extract(op1, op2, op3));
+        result = evaluate(ctx, QF_BV::extract(op1, op2, op3));
         break;
       }
       default:
+        assert( false );
         break;
       }
       break;
     }
     default:
+      assert( false );
       break;
     }
 
@@ -546,7 +550,7 @@ struct UTreeEvaluator
     getVariable(value, variable);
 
     typedef std::string::const_iterator ConstIterator;
-    metaSMT::io::smt2_response_grammar<ConstIterator> parser;
+    io::smt2_response_grammar<ConstIterator> parser;
     ConstIterator it = value.begin(), ie = value.end();
     static boost::spirit::qi::rule< ConstIterator, unsigned long() > binary_rule
       = boost::spirit::qi::lit("#b") >> boost::spirit::qi::uint_parser<unsigned long, 2, 1, 64>()
@@ -560,14 +564,14 @@ struct UTreeEvaluator
     if ( boost::spirit::qi::parse(it, ie, binary_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvbin(value));
+      variable = evaluate(ctx, QF_BV::bvbin(value));
     }
 
     it = value.begin(), ie = value.end();
     if ( boost::spirit::qi::parse(it, ie, hex_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      variable = metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvhex(value));
+      variable = evaluate(ctx, QF_BV::bvhex(value));
     }
     pushResultType(variable);
   }
@@ -584,16 +588,15 @@ struct UTreeEvaluator
     unsigned width = boost::lexical_cast<unsigned>(bitSize);
     if (width == 1) {
       if (number == 1) {
-        return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit1);
+        return evaluate(ctx, QF_BV::bit1);
       } else if (number == 0) {
-        return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bit0);
+        return evaluate(ctx, QF_BV::bit0);
       }
     }
-    return metaSMT::evaluate(ctx, metaSMT::logic::QF_BV::bvsint(number, width));
+    return evaluate(ctx, QF_BV::bvsint(number, width));
   }
 
-  void translateDeclareFunction(utree function)
-  {
+  void translateDeclareFunction(utree function) {
     utree::iterator functionIterator = function.begin();
     ++functionIterator;
     std::string functionName = utreeToString(*functionIterator);
@@ -608,11 +611,11 @@ struct UTreeEvaluator
       ++bitVecIterator;
       std::string bitSize = utreeToString(*bitVecIterator);
       unsigned width = boost::lexical_cast<unsigned>(bitSize);
-      bv_map[functionName] = metaSMT::logic::QF_BV::new_bitvector(width);
+      bv_map[functionName] = QF_BV::new_bitvector(width);
       break;
     }
     case boost::spirit::utree_type::string_type: {
-      pred_map[functionName] = metaSMT::logic::new_variable();
+      pred_map[functionName] = logic::new_variable();
       break;
     }
     default:
@@ -624,13 +627,13 @@ struct UTreeEvaluator
     // name is a variable identifier, therfore unique and may only be in one map
     PredicateMap::iterator pred_it = pred_map.find(name);
     if (pred_it != pred_map.end()) {
-      result = metaSMT::evaluate(ctx, pred_it->second);
+      result = evaluate(ctx, pred_it->second);
       return 1;
     }
 
     BitVectorMap::iterator bv_it = bv_map.find(name);
     if (bv_it != bv_map.end()) {
-      result = metaSMT::evaluate(ctx, bv_it->second);
+      result = evaluate(ctx, bv_it->second);
       return 2;
     }
 
@@ -686,6 +689,7 @@ struct UTreeEvaluator
       return 3;
     case other:
     default:
+      assert( false );
       break;
     }
     return 0;
@@ -701,8 +705,7 @@ struct UTreeEvaluator
     return false;
   }
 
-  std::string utreeToString(utree tree)
-  {
+  std::string utreeToString(utree tree) {
     std::stringstream stringStream;
     stringStream << tree;
     std::string output = stringStream.str();
