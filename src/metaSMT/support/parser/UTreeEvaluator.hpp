@@ -96,8 +96,7 @@ struct UTreeEvaluator
     initialize();
   }
 
-  void initialize()
-  {
+  void initialize() {
     symbolMap["set-logic"] = setlogic;
     symbolMap["set-option"] = setoption;
     symbolMap["get-option"] = getoption;
@@ -480,15 +479,13 @@ struct UTreeEvaluator
     operatorStack.pop();
   }
 
-  void pushOperator(std::string op)
-  {
+  void pushOperator(std::string op) {
     operatorStack.push(op);
     std::pair<int, int> neededOperands(numOperands(op), 0);
     neededOperandStack.push(neededOperands);
   }
 
-  void pushResultType(result_type op)
-  {
+  void pushResultType(result_type op) {
     if (neededOperandStack.size() > 0) {
       std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
       neededOperandStack.pop();
@@ -497,15 +494,13 @@ struct UTreeEvaluator
     resultTypeStack.push(op);
   }
 
-  result_type popResultType()
-  {
+  result_type popResultType() {
     result_type op = resultTypeStack.top();
     resultTypeStack.pop();
     return op;
   }
 
-  void pushModBvLengthParam(int op)
-  {
+  void pushModBvLengthParam(int op) {
     if (neededOperandStack.size() > 0) {
       std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
       neededOperandStack.pop();
@@ -514,8 +509,7 @@ struct UTreeEvaluator
     modBvLengthParamStack.push(op);
   }
 
-  int popModBvLengthParam()
-  {
+  int popModBvLengthParam() {
     int op = modBvLengthParamStack.top();
     modBvLengthParamStack.pop();
     return op;
@@ -525,8 +519,7 @@ struct UTreeEvaluator
    * otherwise pushes variable if value is an identifier
    * otherwise pushes empty result_type, should crash then
    */
-  void pushVarOrConstant(std::string value)
-  {
+  void pushVarOrConstant(std::string value) {
     boost::optional<TypedSymbolPtr> var = getVariable(value);
     if ( var ) {
       pushResultType((*var)->eval(ctx));
@@ -562,8 +555,7 @@ struct UTreeEvaluator
     pushResultType(result);
   }
 
-  result_type createBvInt(std::string value, std::string bitSize)
-  {
+  result_type createBvInt(std::string value, std::string bitSize) const {
     unsigned long number = 0;
     if (value.size() > 2) {
       if (value.find("bv", 0, 2) != value.npos) {
@@ -610,7 +602,7 @@ struct UTreeEvaluator
   }
 
   boost::optional<TypedSymbolPtr>
-  getVariable( std::string const name ) const {
+  getVariable( std::string const &name ) const {
     typename VarMap::const_iterator it = var_map.find(name);
     if (it != var_map.end()) {
       return boost::optional<TypedSymbolPtr>(it->second);
@@ -620,7 +612,7 @@ struct UTreeEvaluator
     }
   }
 
-  int numOperands(std::string op) {
+  unsigned char numOperands(std::string const op) const {
     boost::optional< logic::index > const idx = get_index<SMT_NameMap>(op);
     assert( idx );
     switch ( *idx ) {
@@ -675,21 +667,18 @@ struct UTreeEvaluator
     return 0;
   }
 
-  bool canConsume()
-  {
-    if (!operatorStack.empty()) {
-      if (neededOperandStack.top().first == neededOperandStack.top().second) {
-        return true;
-      }
-    }
-    return false;
+  bool canConsume() const {
+    if ( operatorStack.empty() )
+      return false;
+
+    return (neededOperandStack.top().first == neededOperandStack.top().second);
   }
 
-  std::string utreeToString(utree tree) {
-    std::stringstream stringStream;
-    stringStream << tree;
-    std::string output = stringStream.str();
-    size_t found = output.find("\"");
+  std::string utreeToString(utree const tree) const {
+    std::stringstream ss;
+    ss << tree;
+    std::string output = ss.str();
+    std::size_t found = output.find("\"");
     while (found != output.npos) {
       output.erase(found, 1);
       found = output.find("\"");
@@ -713,7 +702,7 @@ struct UTreeEvaluator
   }
 
 protected:
-  Context& ctx;
+  Context &ctx;
   SymbolMap symbolMap;
 
   std::stack<std::string> operatorStack;
