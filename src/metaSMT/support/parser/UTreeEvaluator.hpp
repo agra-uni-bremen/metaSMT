@@ -4,10 +4,15 @@
 #include "../../result_wrapper.hpp"
 #include "../../API/Stack.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
+#include "../../support/SMT_Tag_Mapping.hpp"
+#include "../../support/index/Logics.hpp"
 
 #include <boost/spirit/include/support_utree.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
+#include <boost/mpl/string.hpp>
+#include <boost/mpl/for_each.hpp>
 
 #include <iostream>
 #include <map>
@@ -17,6 +22,49 @@
 namespace metaSMT {
   namespace evaluator {
     namespace QF_BV = metaSMT::logic::QF_BV;
+    namespace mpl = boost::mpl;
+
+    namespace detail {
+      struct IndexVisitor {
+        IndexVisitor(bool &found,
+                     logic::index &idx,
+                     std::string const &name)
+          : found(found)
+          , idx(idx)
+          , name(name)
+        {}
+
+        template < typename Pair >
+        void operator()( Pair const & ) {
+          typedef typename Pair::first Tag;
+          typedef typename Pair::second Name;
+          if ( !found &&
+               mpl::c_str<Name>::value == name ) {          
+            found = true;
+            idx = logic::Index<Tag>::value;
+          }
+        }
+
+        bool &found;
+        logic::index &idx;
+        std::string const name;
+      }; // IndexVisitor
+    } // detail
+
+    template < typename NameMap >
+    inline boost::optional< logic::index >
+    get_index( std::string const &name ) {
+      bool found = false;
+      logic::index idx = 0;
+      detail::IndexVisitor visitor(found, idx, name);
+      mpl::for_each< NameMap >( visitor );
+      if ( found ) {
+        return boost::optional< logic::index >(idx);
+      }
+      else {
+        return boost::optional< logic::index >();
+      }
+    }
 
 template<typename Context>
 struct UTreeEvaluator
@@ -26,53 +74,7 @@ struct UTreeEvaluator
     undefined, setlogic, setoption, getoption, checksat, assertion, declarefun, getvalue, push, pop, exit
   };
 
-  enum smt2operator
-  {
-    other,
-    smttrue,
-    smtfalse,
-    smtnot,
-    smteq,
-    smtand,
-    smtor,
-    smtxor,
-    smtimplies,
-    smtite,
-    smtbvnot,
-    smtbvneg,
-    smtbvand,
-    smtbvnand,
-    smtbvor,
-    smtbvnor,
-    smtbvxor,
-    smtbvxnor,
-    smtbvcomp,
-    smtbvadd,
-    smtbvmul,
-    smtbvsub,
-    smtbvsdiv,
-    smtbvsrem,
-    smtbvudiv,
-    smtbvurem,
-    smtbvsle,
-    smtbvsge,
-    smtbvslt,
-    smtbvsgt,
-    smtbvule,
-    smtbvuge,
-    smtbvult,
-    smtbvugt,
-    smtbvshl,
-    smtbvshr,
-    smtbvashr,
-    smtconcat,
-    smtextract,
-    smtzero_extend,
-    smtsign_extend
-  };
-
   typedef std::map<std::string, smt2Symbol> SymbolMap;
-  typedef std::map<std::string, smt2operator> OperatorMap;
   typedef std::map<std::string, logic::predicate> PredicateMap;
   typedef std::map<std::string, QF_BV::bitvector> BitVectorMap;
   typedef typename Context::result_type result_type;
@@ -109,47 +111,6 @@ struct UTreeEvaluator
     symbolMap["push"] = push;
     symbolMap["pop"] = pop;
     symbolMap["exit"] = exit;
-
-    operatorMap["true"] = smttrue;
-    operatorMap["false"] = smtfalse;
-    operatorMap["not"] = smtnot;
-    operatorMap["="] = smteq;
-    operatorMap["and"] = smtand;
-    operatorMap["or"] = smtor;
-    operatorMap["xor"] = smtxor;
-    operatorMap["=>"] = smtimplies;
-    operatorMap["ite"] = smtite;
-    operatorMap["bvnot"] = smtbvnot;
-    operatorMap["bvneg"] = smtbvneg;
-    operatorMap["bvand"] = smtbvand;
-    operatorMap["bvnand"] = smtbvnand;
-    operatorMap["bvor"] = smtbvor;
-    operatorMap["bvnor"] = smtbvnor;
-    operatorMap["bvxor"] = smtbvxor;
-    operatorMap["bvxnor"] = smtbvxnor;
-    operatorMap["bvcomp"] = smtbvcomp;
-    operatorMap["bvadd"] = smtbvadd;
-    operatorMap["bvmul"] = smtbvmul;
-    operatorMap["bvsub"] = smtbvsub;
-    operatorMap["bvsdiv"] = smtbvsdiv;
-    operatorMap["bvsrem"] = smtbvsrem;
-    operatorMap["bvudiv"] = smtbvudiv;
-    operatorMap["bvurem"] = smtbvurem;
-    operatorMap["bvsle"] = smtbvsle;
-    operatorMap["bvsge"] = smtbvsge;
-    operatorMap["bvslt"] = smtbvslt;
-    operatorMap["bvsgt"] = smtbvsgt;
-    operatorMap["bvule"] = smtbvule;
-    operatorMap["bvuge"] = smtbvuge;
-    operatorMap["bvult"] = smtbvult;
-    operatorMap["bvugt"] = smtbvugt;
-    operatorMap["bvshl"] = smtbvshl;
-    operatorMap["bvlshr"] = smtbvshr;
-    operatorMap["bvashr"] = smtbvashr;
-    operatorMap["concat"] = smtconcat;
-    operatorMap["extract"] = smtextract;
-    operatorMap["zero_extend"] = smtzero_extend;
-    operatorMap["sign_extend"] = smtsign_extend;
   }
 
   result_type evaluateExpressions(utree ast) {
@@ -252,19 +213,29 @@ struct UTreeEvaluator
     case boost::spirit::utree_type::list_type: {
       for (utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
-        if (operatorMap[value] != other) {
+        boost::optional< logic::index > idx = get_index<SMT_NameMap>(value);
+        if ( idx ) {
           pushOperator(value);
-        } else {
+        }
+        else {
           // handle bitvector
           if (value.compare("_") == 0) {
             ++I;
             std::string bvvalue = utreeToString(*I);
-            if (operatorMap[bvvalue] == smtzero_extend || operatorMap[bvvalue] == smtsign_extend) {
+            boost::optional< logic::index > idx = get_index<SMT_NameMap>(bvvalue);
+            if ( !idx ) {
+              ++I;
+              std::string bitSize = utreeToString(*I);
+              pushResultType(createBvInt(bvvalue, bitSize));
+            }
+            else if ( *idx == logic::Index<bvtags::zero_extend_tag>::value ||
+                      *idx == logic::Index<bvtags::sign_extend_tag>::value ) {
               pushOperator(bvvalue);
               ++I;
               int op1 = boost::lexical_cast<int>(utreeToString(*I));
               pushModBvLengthParam(op1);
-            } else if (operatorMap[bvvalue] == smtextract) {
+            }
+            else if ( *idx == logic::Index<bvtags::extract_tag>::value ) {
               pushOperator(bvvalue);
               ++I;
               int op1 = boost::lexical_cast<int>(utreeToString(*I));
@@ -272,15 +243,13 @@ struct UTreeEvaluator
               ++I;
               int op2 = boost::lexical_cast<int>(utreeToString(*I));
               pushModBvLengthParam(op2);
-            } else {
-              ++I;
-              std::string bitSize = utreeToString(*I);
-              pushResultType(createBvInt(bvvalue, bitSize));
             }
-          } else {
+          }
+          else {
             pushVarOrConstant(value);
           }
         }
+
         while (canConsume()) {
           consume();
         }
@@ -289,10 +258,12 @@ struct UTreeEvaluator
     }
     case boost::spirit::utree_type::string_type: {
       std::string value = utreeToString(tree);
-      if (operatorMap[value] != other) {
+      boost::optional< logic::index > idx = get_index<SMT_NameMap>(value);
+      if ( idx ) {
         pushOperator(value);
         consume();
-      } else {
+      }
+      else {
         pushVarOrConstant(value);
       }
       break;
@@ -314,12 +285,14 @@ struct UTreeEvaluator
     result_type result;
     switch (numOperands(op)) {
     // constants
-    case 0:
-      switch (operatorMap[op]) {
-      case smttrue:
+    case 0: {
+      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      assert( idx );
+      switch ( *idx ) {
+      case logic::Index<predtags::true_tag>::value :
         result = evaluate(ctx, logic::True);
         break;
-      case smtfalse:
+      case logic::Index<predtags::false_tag>::value :
         result = evaluate(ctx, logic::False);
         break;
       default:
@@ -327,17 +300,20 @@ struct UTreeEvaluator
         break;
       }
       break;
+    }
     // unary operators
     case 1: {
       result_type op1 = popResultType();
-      switch (operatorMap[op]) {
-      case smtnot:
+      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      assert( idx );
+      switch ( *idx ) {
+      case logic::Index<predtags::not_tag>::value :
         result = evaluate(ctx, logic::Not(op1));
         break;
-      case smtbvnot:
+      case logic::Index<bvtags::bvnot_tag>::value :
         result = evaluate(ctx, QF_BV::bvnot(op1));
         break;
-      case smtbvneg:
+      case logic::Index<bvtags::bvneg_tag>::value :
         result = evaluate(ctx, QF_BV::bvneg(op1));
         break;
       default:
@@ -348,14 +324,17 @@ struct UTreeEvaluator
     }
     // binary operators
     case 2: {
-      if (operatorMap[op] == smtzero_extend || operatorMap[op] == smtsign_extend) {
+      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      assert( idx );
+      if ( *idx == logic::Index<bvtags::zero_extend_tag>::value ||
+           *idx == logic::Index<bvtags::sign_extend_tag>::value ) {
         int op1 = popModBvLengthParam();
         result_type op2 = popResultType();
-        switch (operatorMap[op]) {
-        case smtzero_extend:
+        switch ( *idx ) {
+        case logic::Index<bvtags::zero_extend_tag>::value :
           result = evaluate(ctx, QF_BV::zero_extend(op1, op2));
           break;
-        case smtsign_extend:
+        case logic::Index<bvtags::sign_extend_tag>::value :
           result = evaluate(ctx, QF_BV::sign_extend(op1, op2));
           break;
         default:
@@ -366,98 +345,98 @@ struct UTreeEvaluator
       else {
         result_type op2 = popResultType();
         result_type op1 = popResultType();
-        switch (operatorMap[op]) {
-        case smteq:
+        switch ( *idx ) {
+        case logic::Index<predtags::equal_tag>::value :
           result = evaluate(ctx, logic::equal(op1, op2));
           break;
-        case smtimplies:
+        case logic::Index<predtags::implies_tag>::value :
           result = evaluate(ctx, logic::implies(op1, op2));
           break;
-        case smtand:
+        case logic::Index<predtags::and_tag>::value:
           result = evaluate(ctx, logic::And(op1, op2));
           break;
-        case smtor:
+        case logic::Index<predtags::or_tag>::value:
           result = evaluate(ctx, logic::Or(op1, op2));
           break;
-        case smtxor:
+        case logic::Index<predtags::xor_tag>::value:
           result = evaluate(ctx, logic::Xor(op1, op2));
           break;
-        case smtbvand:
+        case logic::Index<bvtags::bvand_tag>::value:
           result = evaluate(ctx, QF_BV::bvand(op1, op2));
           break;
-        case smtbvnand:
+        case logic::Index<bvtags::bvnand_tag>::value:
           result = evaluate(ctx, QF_BV::bvnand(op1, op2));
           break;
-        case smtbvor:
+        case logic::Index<bvtags::bvor_tag>::value:
           result = evaluate(ctx, QF_BV::bvor(op1, op2));
           break;
-        case smtbvnor:
+        case logic::Index<bvtags::bvnor_tag>::value:
           result = evaluate(ctx, QF_BV::bvnor(op1, op2));
           break;
-        case smtbvxor:
+        case logic::Index<bvtags::bvxor_tag>::value:
           result = evaluate(ctx, QF_BV::bvxor(op1, op2));
           break;
-        case smtbvxnor:
+        case logic::Index<bvtags::bvxnor_tag>::value:
           result = evaluate(ctx, QF_BV::bvxnor(op1, op2));
           break;
-        case smtbvcomp:
+        case logic::Index<bvtags::bvcomp_tag>::value:
           result = evaluate(ctx, QF_BV::bvcomp(op1, op2));
           break;
-        case smtbvadd:
+        case logic::Index<bvtags::bvadd_tag>::value:
           result = evaluate(ctx, QF_BV::bvadd(op1, op2));
           break;
-        case smtbvmul:
+        case logic::Index<bvtags::bvmul_tag>::value:
           result = evaluate(ctx, QF_BV::bvmul(op1, op2));
           break;
-        case smtbvsub:
+        case logic::Index<bvtags::bvsub_tag>::value:
           result = evaluate(ctx, QF_BV::bvsub(op1, op2));
           break;
-        case smtbvsdiv:
+        case logic::Index<bvtags::bvsdiv_tag>::value:
           result = evaluate(ctx, QF_BV::bvsdiv(op1, op2));
           break;
-        case smtbvsrem:
+        case logic::Index<bvtags::bvsrem_tag>::value:
           result = evaluate(ctx, QF_BV::bvsrem(op1, op2));
           break;
-        case smtbvudiv:
+        case logic::Index<bvtags::bvudiv_tag>::value:
           result = evaluate(ctx, QF_BV::bvudiv(op1, op2));
           break;
-        case smtbvurem:
+        case logic::Index<bvtags::bvurem_tag>::value:
           result = evaluate(ctx, QF_BV::bvurem(op1, op2));
           break;
-        case smtbvsle:
+        case logic::Index<bvtags::bvsle_tag>::value:
           result = evaluate(ctx, QF_BV::bvsle(op1, op2));
           break;
-        case smtbvsge:
+        case logic::Index<bvtags::bvsge_tag>::value:
           result = evaluate(ctx, QF_BV::bvsge(op1, op2));
           break;
-        case smtbvslt:
+        case logic::Index<bvtags::bvslt_tag>::value:
           result = evaluate(ctx, QF_BV::bvslt(op1, op2));
           break;
-        case smtbvsgt:
+        case logic::Index<bvtags::bvsgt_tag>::value:
           result = evaluate(ctx, QF_BV::bvsgt(op1, op2));
           break;
-        case smtbvule:
+        case logic::Index<bvtags::bvule_tag>::value:
           result = evaluate(ctx, QF_BV::bvule(op1, op2));
           break;
-        case smtbvuge:
+        case logic::Index<bvtags::bvuge_tag>::value:
           result = evaluate(ctx, QF_BV::bvuge(op1, op2));
           break;
-        case smtbvult:
+        case logic::Index<bvtags::bvult_tag>::value:
           result = evaluate(ctx, QF_BV::bvult(op1, op2));
           break;
-        case smtbvugt:
+        case logic::Index<bvtags::bvugt_tag>::value:
           result = evaluate(ctx, QF_BV::bvugt(op1, op2));
           break;
-        case smtbvshl:
+        case logic::Index<bvtags::bvshl_tag>::value:
           result = evaluate(ctx, QF_BV::bvshl(op1, op2));
           break;
-        case smtbvshr:
+        case logic::Index<bvtags::bvshr_tag>::value:
           result = evaluate(ctx, QF_BV::bvshr(op1, op2));
           break;
-        case smtbvashr:
+        case logic::Index<bvtags::bvashr_tag>::value:
           result = evaluate(ctx, QF_BV::bvashr(op1, op2));
           break;
-        case smtconcat:
+        case logic::Index<bvtags::concat_tag>::value:
           result = evaluate(ctx, QF_BV::concat(op1, op2));
           break;
         default:
@@ -470,14 +449,16 @@ struct UTreeEvaluator
     // ternary operators
     case 3: {
       result_type op3 = popResultType();
-      switch (operatorMap[op]) {
-      case smtite: {
+      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      assert( idx );
+      switch ( *idx ) {
+      case logic::Index<predtags::ite_tag>::value: {
         result_type op2 = popResultType();
         result_type op1 = popResultType();
         result = evaluate(ctx, logic::Ite(op1, op2, op3));
         break;
       }
-      case smtextract: {
+      case logic::Index<bvtags::extract_tag>::value: {
         int op2 = popModBvLengthParam();
         int op1 = popModBvLengthParam();
         result = evaluate(ctx, QF_BV::extract(op1, op2, op3));
@@ -640,54 +621,54 @@ struct UTreeEvaluator
     return -1;
   }
 
-  int numOperands(std::string op)
-  {
-    switch (operatorMap[op]) {
-    case smttrue:
-    case smtfalse:
+  int numOperands(std::string op) {
+    boost::optional< logic::index > const idx = get_index<SMT_NameMap>(op);
+    assert( idx );
+    switch ( *idx ) {
+    case logic::Index<predtags::true_tag>::value:
+    case logic::Index<predtags::false_tag>::value:
       return 0;
-    case smtnot:
-    case smtbvnot:
-    case smtbvneg:
+    case logic::Index<predtags::not_tag>::value:
+    case logic::Index<bvtags::bvnot_tag>::value:
+    case logic::Index<bvtags::bvneg_tag>::value:
       return 1;
-    case smteq:
-    case smtand:
-    case smtor:
-    case smtxor:
-    case smtimplies:
-    case smtbvand:
-    case smtbvnand:
-    case smtbvor:
-    case smtbvnor:
-    case smtbvxor:
-    case smtbvxnor:
-    case smtbvcomp:
-    case smtbvadd:
-    case smtbvmul:
-    case smtbvsub:
-    case smtbvsdiv:
-    case smtbvsrem:
-    case smtbvudiv:
-    case smtbvurem:
-    case smtbvsle:
-    case smtbvsge:
-    case smtbvslt:
-    case smtbvsgt:
-    case smtbvule:
-    case smtbvuge:
-    case smtbvult:
-    case smtbvugt:
-    case smtbvshl:
-    case smtbvshr:
-    case smtbvashr:
-    case smtconcat:
-    case smtzero_extend:
-    case smtsign_extend:
+    case logic::Index<predtags::equal_tag>::value:
+    case logic::Index<predtags::and_tag>::value:
+    case logic::Index<predtags::or_tag>::value:
+    case logic::Index<predtags::xor_tag>::value:
+    case logic::Index<predtags::implies_tag>::value:
+    case logic::Index<bvtags::bvand_tag>::value:
+    case logic::Index<bvtags::bvnand_tag>::value:
+    case logic::Index<bvtags::bvor_tag>::value:
+    case logic::Index<bvtags::bvnor_tag>::value:
+    case logic::Index<bvtags::bvxor_tag>::value:
+    case logic::Index<bvtags::bvxnor_tag>::value:
+    case logic::Index<bvtags::bvcomp_tag>::value:
+    case logic::Index<bvtags::bvadd_tag>::value:
+    case logic::Index<bvtags::bvmul_tag>::value:
+    case logic::Index<bvtags::bvsub_tag>::value:
+    case logic::Index<bvtags::bvsdiv_tag>::value:
+    case logic::Index<bvtags::bvsrem_tag>::value:
+    case logic::Index<bvtags::bvudiv_tag>::value:
+    case logic::Index<bvtags::bvurem_tag>::value:
+    case logic::Index<bvtags::bvsle_tag>::value:
+    case logic::Index<bvtags::bvsge_tag>::value:
+    case logic::Index<bvtags::bvslt_tag>::value:
+    case logic::Index<bvtags::bvsgt_tag>::value:
+    case logic::Index<bvtags::bvule_tag>::value:
+    case logic::Index<bvtags::bvuge_tag>::value:
+    case logic::Index<bvtags::bvult_tag>::value:
+    case logic::Index<bvtags::bvugt_tag>::value:
+    case logic::Index<bvtags::bvshl_tag>::value:
+    case logic::Index<bvtags::bvshr_tag>::value:
+    case logic::Index<bvtags::bvashr_tag>::value:
+    case logic::Index<bvtags::concat_tag>::value:
+    case logic::Index<bvtags::zero_extend_tag>::value:
+    case logic::Index<bvtags::sign_extend_tag>::value:
       return 2;
-    case smtite:
-    case smtextract:
+    case logic::Index<predtags::ite_tag>::value:
+    case logic::Index<bvtags::extract_tag>::value:
       return 3;
-    case other:
     default:
       assert( false );
       break;
@@ -735,7 +716,6 @@ struct UTreeEvaluator
 protected:
   Context& ctx;
   SymbolMap symbolMap;
-  OperatorMap operatorMap;
 
   std::stack<std::string> operatorStack;
   std::stack<int> modBvLengthParamStack;
