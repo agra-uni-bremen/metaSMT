@@ -150,6 +150,28 @@ struct UTreeEvaluator
     operatorMap["sign_extend"] = smtsign_extend;
   }
 
+  result_type evaluateExpressions(utree ast) {
+    result_type r = evaluate( ctx, logic::True );
+    for ( utree::iterator it = ast.begin(), ie = ast.end();
+          it != ie; ++it ) {
+      utree command = *it;
+      utree::iterator utree_it = command.begin();
+      std::string const symbol_string = utreeToString(*utree_it);
+      switch (symbolMap[symbol_string]) {
+      case assertion:
+        ++utree_it;
+        r = evaluate(ctx, And(r, translateLogicalInstruction(*utree_it)));
+        break;
+      case declarefun:
+        translateDeclareFunction(command);
+        break;
+      default:
+        assert( false && "Unsupported" );
+      }
+    }
+    return r;
+  }
+
   void evaluateInstance(utree ast) {
     for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
       utree command = *I;
