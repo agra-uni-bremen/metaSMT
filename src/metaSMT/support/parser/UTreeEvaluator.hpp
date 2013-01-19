@@ -80,8 +80,10 @@ struct UTreeEvaluator
 
   UTreeEvaluator(Context &ctx)
     : ctx(ctx)
-    , pred_map( *boost::shared_ptr<PredicateMap>(new PredicateMap()) )
-    , bv_map( *boost::shared_ptr<BitVectorMap>(new BitVectorMap()) ) {
+    , pred_map_ptr(new PredicateMap())
+    , bv_map_ptr(new BitVectorMap())
+    , pred_map(*pred_map_ptr)
+    , bv_map(*bv_map_ptr) {
     initialize();
   }
 
@@ -736,6 +738,8 @@ protected:
   std::stack<int> modBvLengthParamStack;
   std::stack<std::pair<int, int> > neededOperandStack;
 
+  boost::shared_ptr<PredicateMap> pred_map_ptr;
+  boost::shared_ptr<BitVectorMap> bv_map_ptr;
   PredicateMap &pred_map;
   BitVectorMap &bv_map;
   std::stack<result_type> resultTypeStack;
