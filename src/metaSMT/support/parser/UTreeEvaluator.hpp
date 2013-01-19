@@ -76,7 +76,9 @@ struct UTreeEvaluator
   };
 
   typedef std::map<std::string, smt2Symbol> SymbolMap;
-  typedef std::map<std::string, type::TypedSymbol<Context>* > VarMap;
+  typedef type::TypedSymbol<Context> TypedSymbol;
+  typedef boost::shared_ptr< TypedSymbol > TypedSymbolPtr;
+  typedef std::map<std::string, TypedSymbolPtr > VarMap;
   typedef typename Context::result_type result_type;
   typedef boost::spirit::utree utree;
 
@@ -173,7 +175,7 @@ struct UTreeEvaluator
       case getvalue: {
         ++commandIterator;
         std::string value = utreeToString(*commandIterator);
-        boost::optional< type::TypedSymbol<Context>* > var = getVariable(value);
+        boost::optional<TypedSymbolPtr> var = getVariable(value);
         if ( var ) {
           if ( (*var)->isBool() ) {
             bool b = read_value(ctx, (*var)->eval(ctx));
@@ -525,7 +527,7 @@ struct UTreeEvaluator
    */
   void pushVarOrConstant(std::string value)
   {
-    boost::optional< type::TypedSymbol<Context>* > var = getVariable(value);
+    boost::optional<TypedSymbolPtr> var = getVariable(value);
     if ( var ) {
       pushResultType((*var)->eval(ctx));
       return;
@@ -595,11 +597,11 @@ struct UTreeEvaluator
       ++bitVecIterator;
       std::string bitSize = utreeToString(*bitVecIterator);
       unsigned const w = boost::lexical_cast<unsigned>(bitSize);
-      var_map[functionName] = new type::TypedSymbol<Context>(QF_BV::new_bitvector(w), w);
+      var_map[functionName] = TypedSymbolPtr(new TypedSymbol(QF_BV::new_bitvector(w), w));
       break;
     }
     case boost::spirit::utree_type::string_type: {
-      var_map[functionName] = new type::TypedSymbol<Context>(logic::new_variable());
+      var_map[functionName] = TypedSymbolPtr(new TypedSymbol(logic::new_variable()));
       break;
     }
     default:
@@ -607,14 +609,14 @@ struct UTreeEvaluator
     }
   }
 
-  boost::optional< type::TypedSymbol<Context>* >
+  boost::optional<TypedSymbolPtr>
   getVariable( std::string const name ) const {
     typename VarMap::const_iterator it = var_map.find(name);
     if (it != var_map.end()) {
-      return boost::optional< type::TypedSymbol<Context>* >(it->second);
+      return boost::optional<TypedSymbolPtr>(it->second);
     }
     else {
-      return boost::optional< type::TypedSymbol<Context>* >();
+      return boost::optional<TypedSymbolPtr>();
     }
   }
 
