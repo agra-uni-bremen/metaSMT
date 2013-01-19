@@ -6,6 +6,7 @@
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../support/SMT_Tag_Mapping.hpp"
 #include "../../support/index/Logics.hpp"
+#include "../../types/TypedSymbol.hpp"
 
 #include <boost/spirit/include/support_utree.hpp>
 #include <boost/lexical_cast.hpp>
@@ -75,26 +76,21 @@ struct UTreeEvaluator
   };
 
   typedef std::map<std::string, smt2Symbol> SymbolMap;
-  typedef std::map<std::string, logic::predicate> PredicateMap;
-  typedef std::map<std::string, QF_BV::bitvector> BitVectorMap;
+  typedef std::map<std::string, type::TypedSymbol<Context>* > VarMap;
   typedef typename Context::result_type result_type;
   typedef boost::spirit::utree utree;
 
   UTreeEvaluator(Context &ctx)
     : ctx(ctx)
-    , pred_map_ptr(new PredicateMap())
-    , bv_map_ptr(new BitVectorMap())
-    , pred_map(*pred_map_ptr)
-    , bv_map(*bv_map_ptr) {
+    , var_map_ptr(new VarMap())
+    , var_map(*var_map_ptr) {
     initialize();
   }
 
   UTreeEvaluator(Context &ctx,
-                 PredicateMap &pred_map,
-                 BitVectorMap &bv_map)
+                 VarMap &var_map)
     : ctx(ctx)
-    , pred_map(pred_map)
-    , bv_map(bv_map) {
+    , var_map(var_map) {
     initialize();
   }
 
@@ -177,20 +173,22 @@ struct UTreeEvaluator
       case getvalue: {
         ++commandIterator;
         std::string value = utreeToString(*commandIterator);
-        result_type *variable = new result_type;
-        int err = getVariable(value, *variable);
-        if (err == 1) {
-          std::string boolvalue;
-          if (read_value(ctx, *variable)) {
-            boolvalue = "true";
-          } else {
-            boolvalue = "false";
+        boost::optional< type::TypedSymbol<Context>* > var = getVariable(value);
+        if ( var ) {
+          if ( (*var)->isBool() ) {
+            bool b = read_value(ctx, (*var)->eval(ctx));
+            std::cout << "((" << value << " " << (b ? "true" : "false") << "))" << '\n';
           }
-          std::cout << "((" << value << " " << boolvalue << "))" << std::endl;
-        } else if (err == 2) {
-          std::cout << "((" << value << " #b" << read_value(ctx, *variable) << "))" << std::endl;
-        } else {
-          std::cerr << "Error could not determine Variable: " << value << std::endl;
+          else if ( (*var)->isBitVector() ) {
+            std::cout << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))" << '\n';
+          }
+          else {
+            assert( false && "Variable type is not supported" );
+          }
+        }
+        else {
+          // std::cerr << "[DBG] Variable: " << value << '\n';
+          assert( false && "Could not determine variable ");
         }
         break;
       }
@@ -527,8 +525,11 @@ struct UTreeEvaluator
    */
   void pushVarOrConstant(std::string value)
   {
-    result_type variable;
-    getVariable(value, variable);
+    boost::optional< type::TypedSymbol<Context>* > var = getVariable(value);
+    if ( var ) {
+      pushResultType((*var)->eval(ctx));
+      return;
+    }
 
     typedef std::string::const_iterator ConstIterator;
     io::smt2_response_grammar<ConstIterator> parser;
@@ -540,21 +541,23 @@ struct UTreeEvaluator
       = boost::spirit::qi::lit("#x") >> boost::spirit::qi::uint_parser<unsigned long, 16, 1, 16>()
       ;
 
+    result_type result;
     unsigned long number;
     it = value.begin(), ie = value.end();
     if ( boost::spirit::qi::parse(it, ie, binary_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      variable = evaluate(ctx, QF_BV::bvbin(value));
+      result = evaluate(ctx, QF_BV::bvbin(value));
     }
 
     it = value.begin(), ie = value.end();
     if ( boost::spirit::qi::parse(it, ie, hex_rule, number) ) {
       assert( it == ie && "Expression not completely consumed" );
       value.erase(0, 2);
-      variable = evaluate(ctx, QF_BV::bvhex(value));
+      result = evaluate(ctx, QF_BV::bvhex(value));
     }
-    pushResultType(variable);
+
+    pushResultType(result);
   }
 
   result_type createBvInt(std::string value, std::string bitSize)
@@ -591,12 +594,12 @@ struct UTreeEvaluator
       ++bitVecIterator;
       ++bitVecIterator;
       std::string bitSize = utreeToString(*bitVecIterator);
-      unsigned width = boost::lexical_cast<unsigned>(bitSize);
-      bv_map[functionName] = QF_BV::new_bitvector(width);
+      unsigned const w = boost::lexical_cast<unsigned>(bitSize);
+      var_map[functionName] = new type::TypedSymbol<Context>(QF_BV::new_bitvector(w), w);
       break;
     }
     case boost::spirit::utree_type::string_type: {
-      pred_map[functionName] = logic::new_variable();
+      var_map[functionName] = new type::TypedSymbol<Context>(logic::new_variable());
       break;
     }
     default:
@@ -604,21 +607,15 @@ struct UTreeEvaluator
     }
   }
 
-  int getVariable(std::string name, result_type &result) {
-    // name is a variable identifier, therfore unique and may only be in one map
-    PredicateMap::iterator pred_it = pred_map.find(name);
-    if (pred_it != pred_map.end()) {
-      result = evaluate(ctx, pred_it->second);
-      return 1;
+  boost::optional< type::TypedSymbol<Context>* >
+  getVariable( std::string const name ) const {
+    typename VarMap::const_iterator it = var_map.find(name);
+    if (it != var_map.end()) {
+      return boost::optional< type::TypedSymbol<Context>* >(it->second);
     }
-
-    BitVectorMap::iterator bv_it = bv_map.find(name);
-    if (bv_it != bv_map.end()) {
-      result = evaluate(ctx, bv_it->second);
-      return 2;
+    else {
+      return boost::optional< type::TypedSymbol<Context>* >();
     }
-
-    return -1;
   }
 
   int numOperands(std::string op) {
@@ -721,10 +718,8 @@ protected:
   std::stack<int> modBvLengthParamStack;
   std::stack<std::pair<int, int> > neededOperandStack;
 
-  boost::shared_ptr<PredicateMap> pred_map_ptr;
-  boost::shared_ptr<BitVectorMap> bv_map_ptr;
-  PredicateMap &pred_map;
-  BitVectorMap &bv_map;
+  boost::shared_ptr<VarMap> var_map_ptr;
+  VarMap &var_map;
   std::stack<result_type> resultTypeStack;
   std::list<bool> results;
 }; // UTreeEvaluator
