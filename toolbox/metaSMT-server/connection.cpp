@@ -54,10 +54,6 @@ typename Context::result_type create_assertion(Context& ctx, const Bitvectors& b
 
 void Connection::start()
 {
-    metaSMT::DirectSolver_Context<metaSMT::solver::Z3_Backend> solver;
-    std::map<std::string, metaSMT::logic::predicate> predicates;
-    std::map<std::string, metaSMT::logic::QF_BV::bitvector> bitvectors;
-
     try
     {
         for (;;)
