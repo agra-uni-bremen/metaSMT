@@ -69,6 +69,7 @@ void Connection::start()
             std::istream is(&b);
             std::string s;
             std::getline(is, s);
+            s.erase(s.find_last_not_of(" \n\r\t") + 1);
             if (boost::starts_with(s, "new_variable"))
             {
                 std::vector<std::string> split;
