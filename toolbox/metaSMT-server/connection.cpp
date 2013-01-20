@@ -56,12 +56,12 @@ void Connection::start()
 {
     try
     {
+        boost::asio::streambuf b;
         for (;;)
         {
             std::string ret;
 
             boost::system::error_code error;
-            boost::asio::streambuf b;
             size_t length = read_until(*sock, b, '\n', error);
             if (error == boost::asio::error::eof) break;
             else if (error) throw boost::system::system_error(error);
