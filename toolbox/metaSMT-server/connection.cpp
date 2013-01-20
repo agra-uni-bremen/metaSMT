@@ -129,7 +129,7 @@ void Connection::start()
             }
             else
             {
-                std::cerr << "I do not understand: " << s;
+                std::cerr << "I don't understand: " << s << std::endl;
                 ret = "FAIL\n";
             }
 
