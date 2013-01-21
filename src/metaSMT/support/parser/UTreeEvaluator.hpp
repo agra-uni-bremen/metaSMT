@@ -14,6 +14,7 @@
 #include <boost/optional.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/mpl/for_each.hpp>
+#include <boost/mpl/not.hpp>
 
 #include <iostream>
 #include <map>
@@ -67,20 +68,216 @@ namespace metaSMT {
       }
     }
 
+
+
+    template < typename Context, typename Tag, typename T, typename Arg >
+    typename boost::disable_if<
+      typename boost::mpl::not_<
+        typename boost::is_same<typename Tag::attribute, attr::ignore>::type
+      >::type
+    , typename Context::result_type
+    >::type
+    callCtx( Context *ctx, Tag const &, Arg arg, std::vector<T> const &args ) {
+      assert( false && "Unsupported attribute" );
+      return evaluate(*ctx, logic::False);
+    }
+
+    template < typename Context, typename Tag, typename T, typename Arg >
+    typename boost::disable_if<
+      typename boost::mpl::not_<
+        typename boost::is_same<typename Tag::attribute, attr::constant>::type
+      >::type
+    , typename Context::result_type
+    >::type
+    callCtx( Context *ctx, Tag const &, Arg arg, std::vector<T> const &args ) {
+      return (*ctx)(Tag());
+    }
+
+    template < typename Context, typename Tag, typename T, typename Arg >
+    typename boost::disable_if<
+      typename boost::mpl::not_<
+        typename boost::is_same<typename Tag::attribute, attr::unary>::type
+      >::type
+    , typename Context::result_type
+    >::type
+    callCtx( Context *ctx, Tag const &, Arg arg, std::vector<T> const &args ) {
+      return (*ctx)(Tag(), boost::proto::lit(args[0]));
+    }
+
+    template < typename Context, typename T >
+    typename Context::result_type
+    callCtx( Context *ctx,
+             bvtags::extract_tag const &,
+             boost::tuple<unsigned long, unsigned long> const &tuple,
+             std::vector<T> const &args ) {
+      unsigned long const op0 = tuple.get<0>();
+      unsigned long const op1 = tuple.get<1>();
+      return (*ctx)(bvtags::extract_tag(), boost::proto::lit(op0), boost::proto::lit(op1), boost::proto::lit(args[0]));
+    }
+
+    template < typename Context, typename T >
+    typename Context::result_type
+    callCtx( Context *ctx,
+             bvtags::zero_extend_tag const &,
+             boost::tuple<unsigned long> const &tuple,
+             std::vector<T> const &args ) {
+      unsigned long const w = tuple.get<0>();
+      return (*ctx)(bvtags::zero_extend_tag(), boost::proto::lit(w), boost::proto::lit(args[0]));
+    }
+
+    template < typename Context, typename T >
+    typename Context::result_type
+    callCtx( Context *ctx,
+             bvtags::sign_extend_tag const &,
+             boost::tuple<unsigned long> const &tuple,
+             std::vector<T> const &args ) {
+      unsigned long const w = tuple.get<0>();
+      return (*ctx)(bvtags::sign_extend_tag(), boost::proto::lit(w), boost::proto::lit(args[0]));
+    }
+
+    template < typename Context, typename Tag, typename T, typename Arg >
+    typename boost::disable_if<
+      typename boost::mpl::not_<
+        typename boost::is_same<typename Tag::attribute, attr::binary>::type
+      >::type
+    , typename Context::result_type
+    >::type
+    callCtx( Context *ctx, Tag const &, Arg tuple, std::vector<T> const &args ) {
+      return (*ctx)(Tag(), boost::proto::lit(args[0]), boost::proto::lit(args[1]));
+    }
+
+    template < typename Context, typename Tag, typename T, typename Arg >
+    typename boost::disable_if<
+      typename boost::mpl::not_<
+        typename boost::is_same<
+          typename Tag::attribute
+        , attr::ternary
+        >::type
+      >::type
+    , typename Context::result_type
+    >::type
+    callCtx( Context *ctx, Tag const &, Arg tuple, std::vector<T> const &args ) {
+      return (*ctx)(Tag(), boost::proto::lit(args[0]), boost::proto::lit(args[1]), boost::proto::lit(args[2]));
+    }
+
+    template < typename Context, typename T, typename Arg >
+    struct CallByIndexVisitor {
+      CallByIndexVisitor(Context *ctx,
+              bool &found,
+              typename Context::result_type &r,
+              logic::index idx,
+              std::vector<T> const &args,
+              Arg arg)
+        : ctx(ctx)
+        , found(found)
+        , r(r)
+        , idx(idx)
+        , args(args)
+        , arg(arg)
+      {}
+
+      template < typename Tag >
+      void operator()( Tag const & ) {
+        if ( !found &&
+             logic::Index<Tag>::value == idx ) {
+          found = true;
+          r = callCtx(ctx, Tag(), arg, args);
+        }
+      }
+
+      Context *ctx;
+      bool &found;
+      typename Context::result_type &r;
+      logic::index idx;
+      std::vector<T> const &args;
+      Arg arg;
+    }; // CallByIndexVisitor
+
+    template < typename Context >
+    struct CallByIndex {
+      CallByIndex(Context &ctx)
+        : ctx(ctx)
+      {}
+
+      template < typename T, typename Arg >
+      typename Context::result_type
+      callByIndex( logic::index idx,
+                   std::vector<T> const &args,
+                   Arg p) {
+        bool found = false;
+        typename Context::result_type r;
+        CallByIndexVisitor<Context, T, Arg> visitor(&ctx, found, r, idx, args, p);
+        boost::mpl::for_each< _all_logic_tags::all_Tags >(visitor);
+        assert( found );
+        return r;
+      }
+      
+      template < typename Arg >
+      typename Context::result_type operator()( logic::index idx,
+                                                Arg arg) {
+        std::vector< typename Context::result_type > args;
+        return callByIndex(idx, args, arg);
+      }
+
+      template < typename T, typename Arg >
+      typename Context::result_type operator()( logic::index idx,
+                                                Arg arg,
+                                                T const &op0 ) {
+        std::vector< typename Context::result_type > args;
+        args.push_back( op0 );
+        return callByIndex(idx, args, arg);
+      }
+
+      template < typename T, typename Arg >
+      typename Context::result_type operator()( logic::index idx,
+                                                Arg arg,
+                                                T const &op0,
+                                                T const &op1 ) {
+        std::vector< typename Context::result_type > args;
+        args.push_back( op0 );
+        args.push_back( op1 );
+        return callByIndex(idx, args, arg);
+      }
+
+      template < typename T, typename Arg >
+      typename Context::result_type operator()( logic::index idx,
+                                                Arg arg,
+                                                T const &op0,
+                                                T const &op1,
+                                                T const &op2 ) {
+        std::vector< typename Context::result_type > args;
+        args.push_back( op0 );
+        args.push_back( op1 );
+        args.push_back( op2 );
+        return callByIndex(idx, args, arg);
+      }
+
+      Context &ctx;
+    }; // CallByIndex
+
 template<typename Context>
 struct UTreeEvaluator
 {
-  enum smt2Symbol
-  {
-    undefined, setlogic, setoption, getoption, checksat, assertion, declarefun, getvalue, push, pop, exit
+  enum SMT_symbol {
+    undefined
+  , setlogic
+  , setoption
+  , getoption
+  , checksat
+  , assertion
+  , declarefun
+  , getvalue
+  , push
+  , pop
+  , exit
   };
 
-  typedef std::map<std::string, smt2Symbol> SymbolMap;
+  typedef typename Context::result_type result_type;
+  typedef boost::spirit::utree utree;
+  typedef std::map<std::string, SMT_symbol> SymbolMap;
   typedef type::TypedSymbol<Context> TypedSymbol;
   typedef boost::shared_ptr< TypedSymbol > TypedSymbolPtr;
   typedef std::map<std::string, TypedSymbolPtr > VarMap;
-  typedef typename Context::result_type result_type;
-  typedef boost::spirit::utree utree;
 
   UTreeEvaluator(Context &ctx)
     : ctx(ctx)
@@ -137,7 +334,7 @@ struct UTreeEvaluator
       utree command = *I;
       utree::iterator commandIterator = command.begin();
       utree symbol = *commandIterator;
-      std::string symbolString = utreeToString(symbol);
+      std::string const symbolString = utreeToString(symbol);
 
       switch (symbolMap[symbolString]) {
       case push: {
@@ -280,192 +477,60 @@ struct UTreeEvaluator
   }
 
   void consume() {
-    std::string op = operatorStack.top();
+    std::string const op = operatorStack.top();
     result_type result;
     switch (numOperands(op)) {
     // constants
     case 0: {
       boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
       assert( idx );
-      switch ( *idx ) {
-      case logic::Index<predtags::true_tag>::value :
-        result = evaluate(ctx, logic::True);
-        break;
-      case logic::Index<predtags::false_tag>::value :
-        result = evaluate(ctx, logic::False);
-        break;
-      default:
-        assert( false );
-        break;
-      }
+      result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple());
       break;
     }
     // unary operators
     case 1: {
-      result_type op1 = popResultType();
+      result_type op0 = popResultType();
       boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
       assert( idx );
-      switch ( *idx ) {
-      case logic::Index<predtags::not_tag>::value :
-        result = evaluate(ctx, logic::Not(op1));
-        break;
-      case logic::Index<bvtags::bvnot_tag>::value :
-        result = evaluate(ctx, QF_BV::bvnot(op1));
-        break;
-      case logic::Index<bvtags::bvneg_tag>::value :
-        result = evaluate(ctx, QF_BV::bvneg(op1));
-        break;
-      default:
-        assert( false );
-        break;
-      }
+      result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple(), op0);
       break;
     }
     // binary operators
     case 2: {
       boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
       assert( idx );
+      // unary?
       if ( *idx == logic::Index<bvtags::zero_extend_tag>::value ||
            *idx == logic::Index<bvtags::sign_extend_tag>::value ) {
-        int op1 = popModBvLengthParam();
-        result_type op2 = popResultType();
-        switch ( *idx ) {
-        case logic::Index<bvtags::zero_extend_tag>::value :
-          result = evaluate(ctx, QF_BV::zero_extend(op1, op2));
-          break;
-        case logic::Index<bvtags::sign_extend_tag>::value :
-          result = evaluate(ctx, QF_BV::sign_extend(op1, op2));
-          break;
-        default:
-          assert( false && "Unreachable" );
-          break;
-        }
+        unsigned long const op0 = popModBvLengthParam();
+        result_type op1 = popResultType();
+        result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple(op0), op1);
       }
       else {
-        result_type op2 = popResultType();
         result_type op1 = popResultType();
-        switch ( *idx ) {
-        case logic::Index<predtags::equal_tag>::value :
-          result = evaluate(ctx, logic::equal(op1, op2));
-          break;
-        case logic::Index<predtags::implies_tag>::value :
-          result = evaluate(ctx, logic::implies(op1, op2));
-          break;
-        case logic::Index<predtags::and_tag>::value:
-          result = evaluate(ctx, logic::And(op1, op2));
-          break;
-        case logic::Index<predtags::or_tag>::value:
-          result = evaluate(ctx, logic::Or(op1, op2));
-          break;
-        case logic::Index<predtags::xor_tag>::value:
-          result = evaluate(ctx, logic::Xor(op1, op2));
-          break;
-        case logic::Index<bvtags::bvand_tag>::value:
-          result = evaluate(ctx, QF_BV::bvand(op1, op2));
-          break;
-        case logic::Index<bvtags::bvnand_tag>::value:
-          result = evaluate(ctx, QF_BV::bvnand(op1, op2));
-          break;
-        case logic::Index<bvtags::bvor_tag>::value:
-          result = evaluate(ctx, QF_BV::bvor(op1, op2));
-          break;
-        case logic::Index<bvtags::bvnor_tag>::value:
-          result = evaluate(ctx, QF_BV::bvnor(op1, op2));
-          break;
-        case logic::Index<bvtags::bvxor_tag>::value:
-          result = evaluate(ctx, QF_BV::bvxor(op1, op2));
-          break;
-        case logic::Index<bvtags::bvxnor_tag>::value:
-          result = evaluate(ctx, QF_BV::bvxnor(op1, op2));
-          break;
-        case logic::Index<bvtags::bvcomp_tag>::value:
-          result = evaluate(ctx, QF_BV::bvcomp(op1, op2));
-          break;
-        case logic::Index<bvtags::bvadd_tag>::value:
-          result = evaluate(ctx, QF_BV::bvadd(op1, op2));
-          break;
-        case logic::Index<bvtags::bvmul_tag>::value:
-          result = evaluate(ctx, QF_BV::bvmul(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsub_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsub(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsdiv_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsdiv(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsrem_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsrem(op1, op2));
-          break;
-        case logic::Index<bvtags::bvudiv_tag>::value:
-          result = evaluate(ctx, QF_BV::bvudiv(op1, op2));
-          break;
-        case logic::Index<bvtags::bvurem_tag>::value:
-          result = evaluate(ctx, QF_BV::bvurem(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsle_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsle(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsge_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsge(op1, op2));
-          break;
-        case logic::Index<bvtags::bvslt_tag>::value:
-          result = evaluate(ctx, QF_BV::bvslt(op1, op2));
-          break;
-        case logic::Index<bvtags::bvsgt_tag>::value:
-          result = evaluate(ctx, QF_BV::bvsgt(op1, op2));
-          break;
-        case logic::Index<bvtags::bvule_tag>::value:
-          result = evaluate(ctx, QF_BV::bvule(op1, op2));
-          break;
-        case logic::Index<bvtags::bvuge_tag>::value:
-          result = evaluate(ctx, QF_BV::bvuge(op1, op2));
-          break;
-        case logic::Index<bvtags::bvult_tag>::value:
-          result = evaluate(ctx, QF_BV::bvult(op1, op2));
-          break;
-        case logic::Index<bvtags::bvugt_tag>::value:
-          result = evaluate(ctx, QF_BV::bvugt(op1, op2));
-          break;
-        case logic::Index<bvtags::bvshl_tag>::value:
-          result = evaluate(ctx, QF_BV::bvshl(op1, op2));
-          break;
-        case logic::Index<bvtags::bvshr_tag>::value:
-          result = evaluate(ctx, QF_BV::bvshr(op1, op2));
-          break;
-        case logic::Index<bvtags::bvashr_tag>::value:
-          result = evaluate(ctx, QF_BV::bvashr(op1, op2));
-          break;
-        case logic::Index<bvtags::concat_tag>::value:
-          result = evaluate(ctx, QF_BV::concat(op1, op2));
-          break;
-        default:
-          assert( false );
-          break;
-        }
+        result_type op0 = popResultType();
+        result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple(), op0, op1);
       }
       break;
     }
     // ternary operators
     case 3: {
-      result_type op3 = popResultType();
+      result_type op2 = popResultType();
       boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
       assert( idx );
-      switch ( *idx ) {
-      case logic::Index<predtags::ite_tag>::value: {
-        result_type op2 = popResultType();
+      if ( *idx == logic::Index<predtags::ite_tag>::value ) {
         result_type op1 = popResultType();
-        result = evaluate(ctx, logic::Ite(op1, op2, op3));
-        break;
+        result_type op0 = popResultType();
+        result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple(), op0, op1, op2);
       }
-      case logic::Index<bvtags::extract_tag>::value: {
-        int op2 = popModBvLengthParam();
-        int op1 = popModBvLengthParam();
-        result = evaluate(ctx, QF_BV::extract(op1, op2, op3));
-        break;
+      // unary?
+      else if ( *idx == logic::Index<bvtags::extract_tag>::value ) {
+        unsigned long const op1 = popModBvLengthParam();
+        unsigned long const op0 = popModBvLengthParam();
+        result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple(op0, op1), op2);
       }
-      default:
+      else {
         assert( false );
-        break;
       }
       break;
     }
@@ -494,12 +559,6 @@ struct UTreeEvaluator
     resultTypeStack.push(op);
   }
 
-  result_type popResultType() {
-    result_type op = resultTypeStack.top();
-    resultTypeStack.pop();
-    return op;
-  }
-
   void pushModBvLengthParam(int op) {
     if (neededOperandStack.size() > 0) {
       std::pair<int, int> newTop(neededOperandStack.top().first, neededOperandStack.top().second + 1);
@@ -507,6 +566,12 @@ struct UTreeEvaluator
       neededOperandStack.push(newTop);
     }
     modBvLengthParamStack.push(op);
+  }
+
+  result_type popResultType() {
+    result_type op = resultTypeStack.top();
+    resultTypeStack.pop();
+    return op;
   }
 
   int popModBvLengthParam() {
