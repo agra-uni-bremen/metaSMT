@@ -18,7 +18,8 @@ namespace metaSMT {
 #define PRINT(Tag, body) template<typename STREAM> \
   friend STREAM & operator<< (STREAM & out, Tag const & self) \
   { return (out << body); }
-#define TAG( NAME ) struct  NAME##_tag { \
+#define TAG( NAME, ATTR ) struct NAME##_tag { \
+  typedef attr::ATTR attribute; \
   bool operator<(NAME##_tag const &) const {return false;} \
   PRINT(NAME##_tag, #NAME) \
 };
@@ -27,6 +28,8 @@ namespace metaSMT {
 
         // variable tag
         struct var_tag { unsigned id; unsigned width; 
+          typedef attr::ignore attribute;
+
           PRINT(var_tag, "bv_var_tag[" << self.id << ',' << self.width << "]")
           bool operator< (var_tag const & other) const {
             return id < other.id;
@@ -34,61 +37,61 @@ namespace metaSMT {
         };
 
         // operation tags
-        TAG(bit0)
-        TAG(bit1)
+        TAG(bit0, constant)
+        TAG(bit1, constant)
 
         // unary
-        TAG(bvnot)
-        TAG(bvneg)
+        TAG(bvnot, unary)
+        TAG(bvneg, unary)
 
         // bitwise binary
-        TAG(bvand)
-        TAG(bvnand)
-        TAG(bvor)
-        TAG(bvnor)
-        TAG(bvxor)
-        TAG(bvxnor)
+        TAG(bvand, binary)
+        TAG(bvnand, binary)
+        TAG(bvor, binary)
+        TAG(bvnor, binary)
+        TAG(bvxor, binary)
+        TAG(bvxnor, binary)
 
 
-        TAG(bvcomp)
+        TAG(bvcomp, binary)
 
         // bitvec arithmetic
-        TAG(bvadd)
-        TAG(bvmul)
-        TAG(bvsub)
-        TAG(bvsdiv)
-        TAG(bvsrem)
-        TAG(bvudiv)
-        TAG(bvurem)
+        TAG(bvadd, binary)
+        TAG(bvmul, binary)
+        TAG(bvsub, binary)
+        TAG(bvsdiv, binary)
+        TAG(bvsrem, binary)
+        TAG(bvudiv, binary)
+        TAG(bvurem, binary)
 
         // bitvector constant creation
-        TAG(bvuint)
-        TAG(bvsint)
-        TAG(bvbin)
-        TAG(bvhex)
+        TAG(bvuint, constant)
+        TAG(bvsint, constant)
+        TAG(bvbin, constant)
+        TAG(bvhex, constant)
 
 
         // modifying bv length
-        TAG(concat)
-        TAG(extract)
-        TAG(repeat)
-        TAG(zero_extend)
-        TAG(sign_extend)
+        TAG(concat, binary)
+        TAG(extract, unary)
+        TAG(repeat, ignore)
+        TAG(zero_extend, unary)
+        TAG(sign_extend, unary)
 
         // bitvector shifting
-        TAG(bvshl)
-        TAG(bvshr)
-        TAG(bvashr)
+        TAG(bvshl, binary)
+        TAG(bvshr, binary)
+        TAG(bvashr, binary)
 
         // comparison operators
-        TAG(bvslt)
-        TAG(bvsgt)
-        TAG(bvsle)
-        TAG(bvsge)
-        TAG(bvult)
-        TAG(bvugt)
-        TAG(bvule)
-        TAG(bvuge)
+        TAG(bvslt, binary)
+        TAG(bvsgt, binary)
+        TAG(bvsle, binary)
+        TAG(bvsge, binary)
+        TAG(bvult, binary)
+        TAG(bvugt, binary)
+        TAG(bvule, binary)
+        TAG(bvuge, binary)
 
 #undef PRINT
 #undef TAG

@@ -1,10 +1,13 @@
 #pragma once
 
+#include "attribute.hpp"
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
 
 namespace metaSMT {
   struct nil { 
+    typedef attr::ignore attribute;
+
     bool operator< (nil const &) const { return false; };
     template<typename STREAM> friend STREAM & 
       operator<< (STREAM & out, nil const & ) {  out << "nil"; return out; }
@@ -16,13 +19,16 @@ namespace metaSMT {
 #define PRINT(Tag, body) template<typename STREAM> \
   friend STREAM & operator<< (STREAM & out, Tag const & self) \
   {  out << body; return out; }
-#define TAG( NAME ) struct  NAME##_tag { \
+#define TAG( NAME, ATTR ) struct NAME##_tag { \
+  typedef attr::ATTR attribute; \
   bool operator<(NAME##_tag const &) const {return false;} \
   PRINT(NAME##_tag, #NAME) \
 };
       
     // variable tag
     struct var_tag { unsigned id; 
+      typedef attr::ignore attribute;
+
       PRINT(var_tag, "var_tag[" << self.id  << "]")
       bool operator< (var_tag const & other) const {
         return id < other.id;
@@ -30,26 +36,27 @@ namespace metaSMT {
     };
 
     // constants
-    TAG(true)
-    TAG(false)
-    TAG(bool)
+    TAG(true, constant)
+    TAG(false, constant)
+    TAG(bool, constant)
 
     // unary
-    TAG(not)
+    TAG(not, unary)
 
     // binary
-    TAG(equal)
-    TAG(nequal)
-    TAG(implies)
+    TAG(equal, binary)
+    TAG(nequal, binary)
+    TAG(implies, binary)
 
-    TAG(and)
-    TAG(nand)
-    TAG(or)
-    TAG(nor)
-    TAG(xor)
-    TAG(xnor)
+    TAG(and, binary)
+    TAG(nand, binary)
+    TAG(or, binary)
+    TAG(nor, binary)
+    TAG(xor, binary)
+    TAG(xnor, binary)
 
-    TAG(ite)
+    // ternary
+    TAG(ite, ternary)
 
 #undef PRINT
 #undef TAG

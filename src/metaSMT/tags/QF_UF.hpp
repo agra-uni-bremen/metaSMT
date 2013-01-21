@@ -16,13 +16,11 @@ namespace metaSMT {
 #define PRINT(Tag, body) template<typename STREAM> \
   friend STREAM & operator<< (STREAM & out, Tag const & self) \
   { return (out << body); }
-#define TAG( NAME ) struct  NAME##_tag { \
-  bool operator<(NAME##_tag const &) const { return false; } \
-  PRINT(NAME##_tag, #NAME) \
-};
 
         // uninterpreted function variable tag
         struct function_var_tag {
+          typedef attr::ignore attribute;
+
           unsigned id;
           type::any_type result_type;
           std::vector<type::any_type> args;
@@ -34,7 +32,6 @@ namespace metaSMT {
         };
 
 #undef PRINT
-#undef TAG
 
         typedef boost::mpl::vector<
           nil

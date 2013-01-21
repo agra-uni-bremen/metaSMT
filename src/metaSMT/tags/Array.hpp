@@ -15,13 +15,16 @@ namespace metaSMT {
 #define PRINT(Tag, body) template<typename STREAM> \
   friend STREAM & operator<< (STREAM & out, Tag const & self) \
   { return (out << body); }
-#define TAG( NAME ) struct  NAME##_tag { \
-  bool operator<(NAME##_tag const &) const { return false; } \
+#define TAG( NAME, ATTR ) struct NAME##_tag { \
+  typedef attr::ATTR attribute; \
+  bool operator<(NAME##_tag const &) const {return false;} \
   PRINT(NAME##_tag, #NAME) \
 };
 
         // array variable tag
         struct array_var_tag {
+          typedef attr::ignore attribute;
+
           unsigned id;
           unsigned elem_width;
           unsigned index_width;
@@ -31,8 +34,8 @@ namespace metaSMT {
           }
         };
 
-        TAG(select)
-        TAG(store)
+        TAG(select, ignore)
+        TAG(store, ignore)
 
 #undef PRINT
 #undef TAG
