@@ -53,13 +53,12 @@ namespace metaSMT {
       }; // IndexVisitor
     } // detail
 
-    template < typename NameMap >
     inline boost::optional< logic::index >
     get_index( std::string const &name ) {
       bool found = false;
       logic::index idx = 0;
       detail::IndexVisitor visitor(found, idx, name);
-      mpl::for_each< NameMap >( visitor );
+      mpl::for_each< SMT_NameMap >( visitor );
       if ( found ) {
         return boost::optional< logic::index >(idx);
       }
@@ -445,7 +444,7 @@ struct UTreeEvaluator
     case boost::spirit::utree_type::list_type: {
       for (utree::iterator I = tree.begin(); I != tree.end(); ++I) {
         std::string value = utreeToString(*I);
-        boost::optional< logic::index > idx = get_index<SMT_NameMap>(value);
+        boost::optional< logic::index > idx = get_index(value);
         if ( idx ) {
           pushOperator(value);
         }
@@ -454,7 +453,7 @@ struct UTreeEvaluator
           if (value.compare("_") == 0) {
             ++I;
             std::string bvvalue = utreeToString(*I);
-            boost::optional< logic::index > idx = get_index<SMT_NameMap>(bvvalue);
+            boost::optional< logic::index > idx = get_index(bvvalue);
             if ( !idx ) {
               ++I;
               std::string bitSize = utreeToString(*I);
@@ -490,7 +489,7 @@ struct UTreeEvaluator
     }
     case boost::spirit::utree_type::string_type: {
       std::string value = utreeToString(tree);
-      boost::optional< logic::index > idx = get_index<SMT_NameMap>(value);
+      boost::optional< logic::index > idx = get_index(value);
       if ( idx ) {
         pushOperator(value);
         consume();
@@ -518,14 +517,14 @@ struct UTreeEvaluator
     switch ( getOpArity(op) ) {
     // constants
     case 0: {
-      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      boost::optional< logic::index > idx = get_index(op);
       assert( idx );
       result = CallByIndex<Context>(ctx)(*idx, boost::make_tuple());
       break;
     }
     // unary operators
     case 1: {
-      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      boost::optional< logic::index > idx = get_index(op);
       assert( idx );
       if ( *idx == logic::Index<bvtags::extract_tag>::value ) {
         result_type op0 = popResultType();
@@ -547,7 +546,7 @@ struct UTreeEvaluator
     }
     // binary operators
     case 2: {
-      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      boost::optional< logic::index > idx = get_index(op);
       assert( idx );
       result_type op1 = popResultType();
       result_type op0 = popResultType();
@@ -556,7 +555,7 @@ struct UTreeEvaluator
     }
     // ternary operators
     case 3: {
-      boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+      boost::optional< logic::index > idx = get_index(op);
       assert( idx );
       if ( *idx == logic::Index<predtags::ite_tag>::value ) {
         result_type op2 = popResultType();
@@ -583,7 +582,7 @@ struct UTreeEvaluator
     operatorStack.push(op);
 
     int num_operands;
-    boost::optional< logic::index > idx = get_index<SMT_NameMap>(op);
+    boost::optional< logic::index > idx = get_index(op);
     assert( idx );
     if ( *idx == logic::Index<bvtags::zero_extend_tag>::value ||
          *idx == logic::Index<bvtags::sign_extend_tag>::value ) {
