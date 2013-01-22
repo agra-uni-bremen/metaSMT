@@ -1,12 +1,8 @@
 #include <boost/test/unit_test.hpp>
-#include <metaSMT/support/cardinality.hpp>
 #include <metaSMT/support/optimization.hpp>
-
-#include <vector>
-#include <metaSMT/support/cardinality.hpp>
 #include <metaSMT/frontend/Logic.hpp>
-
 #include <boost/assign/std/vector.hpp>
+#include <vector>
 
 using namespace std;
 using namespace metaSMT;
