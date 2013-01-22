@@ -352,7 +352,7 @@ struct UTreeEvaluator
       switch (symbolMap[symbol_string]) {
       case assertion:
         ++utree_it;
-        r = evaluate(ctx, And(r, translateLogicalInstruction(*utree_it)));
+        r = evaluate(ctx, logic::And(r, translateLogicalInstruction(*utree_it)));
         break;
       case declarefun:
         translateDeclareFunction(command);
