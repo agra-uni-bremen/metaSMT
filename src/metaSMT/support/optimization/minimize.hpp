@@ -16,6 +16,7 @@ namespace metaSMT {
         sat = solve(ctx);
         if ( sat ) {
           unsigned const witness = detail::countOnes(ctx, ps);
+          if ( witness <= min ) return min;
           max = witness - 1;
           last_mid = witness;
         }
