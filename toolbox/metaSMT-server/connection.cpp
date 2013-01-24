@@ -13,8 +13,8 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 //using namespace metaSMT;
 //using namespace metaSMT::logic;
@@ -24,6 +24,11 @@
 Connection::Connection(socket_ptr socket) :
     sock(socket)
 {
+}
+
+bool isBinary(const boost::property_tree::ptree& pt)
+{
+    return pt.find("lhs") != pt.not_found() && pt.find("rhs") != pt.not_found();
 }
 
 template<typename Context, typename Bitvectors>
