@@ -21,6 +21,12 @@
 //using namespace metaSMT::logic::QF_BV;
 //using namespace metaSMT::solver;
 
+template<typename Context, typename Bitvectors>
+typename Context::result_type create_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
+
+template<typename Context, typename Bitvectors>
+typename Context::result_type create_binary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
+
 Connection::Connection(socket_ptr socket) :
     sock(socket)
 {
@@ -36,24 +42,106 @@ typename Context::result_type create_assertion(Context& ctx, const Bitvectors& b
 {
     std::string op = pt.get<std::string>("op");
 
-    if (op == "variable")
-    {
+    if (isBinary(pt)) {
+        return create_binary_assertion(ctx, bitvectors, pt);
+    } else if (op == "variable") {
         return evaluate(ctx, bitvectors.find(pt.get<std::string>("name"))->second);
+    } else if (op == "integer") {
+        std::cout << pt.get<signed>("value") << std::endl;
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvuint(pt.get<signed>("value"), pt.get<unsigned>("width")));
+    } else {
+        throw(UnsupportedOperandException(op));
     }
-    else if (op == "integer")
-    {
-        return evaluate(ctx, metaSMT::logic::QF_BV::bvuint(pt.get<unsigned>("value"), pt.get<unsigned>("width")));
-    }
-    else if (op == "=")
-    {
-        typename Context::result_type lhs = create_assertion(ctx, bitvectors, pt.get_child("lhs"));
-        typename Context::result_type rhs = create_assertion(ctx, bitvectors, pt.get_child("rhs"));
+}
 
+template<typename Context, typename Bitvectors>
+typename Context::result_type create_binary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
+{
+    std::string op = pt.get<std::string>("op");
+
+    typename Context::result_type lhs = create_assertion(ctx, bitvectors, pt.get_child("lhs"));
+    typename Context::result_type rhs = create_assertion(ctx, bitvectors, pt.get_child("rhs"));
+
+    if (op == "equal" || op == "=") {
         return evaluate(ctx, metaSMT::logic::equal(lhs, rhs));
+    } else if (op == "nequal" || op == "!=") {
+        return evaluate(ctx, metaSMT::logic::nequal(lhs, rhs));
+    } else if (op == "implies" || op == "=>") {
+        return evaluate(ctx, metaSMT::logic::implies(lhs, rhs));
+    } else if (op == "and" || op == "&&") {
+        return evaluate(ctx, metaSMT::logic::And(lhs, rhs));
+    } else if (op == "nand") {
+        return evaluate(ctx, metaSMT::logic::Nand(lhs, rhs));
+    } else if (op == "or" || op == "||") {
+        return evaluate(ctx, metaSMT::logic::Or(lhs, rhs));
+    } else if (op == "nor") {
+        return evaluate(ctx, metaSMT::logic::Nor(lhs, rhs));
+    } else if (op == "xor") {
+        return evaluate(ctx, metaSMT::logic::Xor(lhs, rhs));
+    } else if (op == "xnor") {
+        return evaluate(ctx, metaSMT::logic::Xnor(lhs, rhs));
     }
-    else
-    {
-        std::cout << "implement me: " << pt.get<std::string>("op") << std::endl;
+
+
+    else if (op == "bvand" || op == "&") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvand(lhs, rhs));
+    } else if (op == "bvnand") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvnand(lhs, rhs));
+    } else if (op == "bvor" || op == "|") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvor(lhs, rhs));
+    } else if (op == "bvnor") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvnor(lhs, rhs));
+    } else if (op == "bvxor" || op == "^") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvxor(lhs, rhs));
+    } else if (op == "bvxnor") {
+      return evaluate(ctx, metaSMT::logic::QF_BV::bvxnor(lhs, rhs));
+
+    } else if (op == "bvadd" || op == "+") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvadd(lhs, rhs));
+    } else if (op == "bvmul" || op == "*") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvmul(lhs, rhs));
+    } else if (op == "bvsub" || op == "-") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsub(lhs, rhs));
+    } else if (op == "bvudiv") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvudiv(lhs, rhs));
+    } else if (op == "bvurem") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvurem(lhs, rhs));
+    } else if (op == "bvsdiv") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsdiv(lhs, rhs));
+    } else if (op == "bvsrem") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsrem(lhs, rhs));
+
+    } else if (op == "bvcomp" || op == "==") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvcomp(lhs, rhs));
+
+    } else if (op == "bvslt") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvslt(lhs, rhs));
+    } else if (op == "bvsgt") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsgt(lhs, rhs));
+    } else if (op == "bvsle") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsle(lhs, rhs));
+    } else if (op == "bvsge") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvsge(lhs, rhs));
+
+    } else if (op == "bvult") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvult(lhs, rhs));
+    } else if (op == "bvugt") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvugt(lhs, rhs));
+    } else if (op == "bvule") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvule(lhs, rhs));
+    } else if (op == "bvuge") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvuge(lhs, rhs));
+    } else if (op == "bvshl") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvshl(lhs, rhs));
+    } else if (op == "bvshr") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvshr(lhs, rhs));
+    } else if (op == "bvashr") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvashr(lhs, rhs));
+
+    } else if (op == "concat" || op == "++") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::concat(lhs, rhs));
+    } else {
+        throw(UnsupportedOperandException(op));
     }
 }
 
@@ -141,7 +229,9 @@ void Connection::start()
             boost::asio::write(*sock, boost::asio::buffer(ret, ret.size()));
         }
     }
-    catch (std::exception& e)
+    catch (UnsupportedOperandException& e) {
+        std::cout << "Unsupported operand: " << e.what() << std::endl;
+    } catch (std::exception& e)
     {
         std::cerr << "Exception in thread: " << e.what() << std::endl;
     }

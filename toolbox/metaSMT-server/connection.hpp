@@ -9,6 +9,13 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 
+class UnsupportedOperandException : public std::runtime_error
+{
+public:
+    UnsupportedOperandException(std::string item) : std::runtime_error(item) {}
+};
+
+
 typedef boost::shared_ptr<boost::asio::ip::tcp::socket> socket_ptr;
 
 class Connection
