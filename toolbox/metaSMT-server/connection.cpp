@@ -25,11 +25,19 @@ template<typename Context, typename Bitvectors>
 typename Context::result_type create_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
 
 template<typename Context, typename Bitvectors>
+typename Context::result_type create_unary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
+
+template<typename Context, typename Bitvectors>
 typename Context::result_type create_binary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
 
 Connection::Connection(socket_ptr socket) :
     sock(socket)
 {
+}
+
+bool isUnary(const boost::property_tree::ptree& pt)
+{
+    return pt.find("operand") != pt.not_found();
 }
 
 bool isBinary(const boost::property_tree::ptree& pt)
@@ -44,13 +52,30 @@ typename Context::result_type create_assertion(Context& ctx, const Bitvectors& b
 
     if (isBinary(pt)) {
         return create_binary_assertion(ctx, bitvectors, pt);
+    } else if (isUnary(pt)) {
+        return create_unary_assertion(ctx, bitvectors, pt);
     } else if (op == "variable") {
         return evaluate(ctx, bitvectors.find(pt.get<std::string>("name"))->second);
     } else if (op == "integer") {
-        std::cout << pt.get<signed>("value") << std::endl;
+//        std::cout << pt.get<signed>("value") << std::endl;
         return evaluate(ctx, metaSMT::logic::QF_BV::bvuint(pt.get<signed>("value"), pt.get<unsigned>("width")));
     } else {
-        throw(UnsupportedOperandException(op));
+        throw(UnsupportedOperatorException(op));
+    }
+}
+
+template<typename Context, typename Bitvectors>
+typename Context::result_type create_unary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
+{
+    std::string op = pt.get<std::string>("op");
+
+    typename Context::result_type operand = create_assertion(ctx, bitvectors, pt.get_child("operand"));
+    if (op == "bvnot") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvnot(operand));
+    } else if (op == "bvneg") {
+        return evaluate(ctx, metaSMT::logic::QF_BV::bvneg(operand));
+    } else {
+        throw(UnsupportedOperatorException(op));
     }
 }
 
@@ -141,7 +166,7 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Bitvec
     } else if (op == "concat" || op == "++") {
         return evaluate(ctx, metaSMT::logic::QF_BV::concat(lhs, rhs));
     } else {
-        throw(UnsupportedOperandException(op));
+        throw(UnsupportedOperatorException(op));
     }
 }
 
@@ -223,9 +248,9 @@ void Connection::start()
             } else {
                 throw UnsupportedCommandException(s);
             }
-        } catch (UnsupportedOperandException& e) {
+        } catch (UnsupportedOperatorException& e) {
             ret = "FAIL\n";
-            std::cout << "Unsupported operand: " << e.what() << std::endl;
+            std::cout << "Unsupported operator: " << e.what() << std::endl;
         } catch (UnsupportedCommandException& e) {
             ret = "FAIL\n";
             std::cout << "Unsupported command: " << e.what() << std::endl;

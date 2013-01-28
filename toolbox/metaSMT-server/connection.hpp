@@ -9,10 +9,10 @@
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 
-class UnsupportedOperandException : public std::runtime_error
+class UnsupportedOperatorException : public std::runtime_error
 {
 public:
-    UnsupportedOperandException(std::string operand) : std::runtime_error(operand) {}
+    UnsupportedOperatorException(std::string op) : std::runtime_error(op) {}
 };
 
 class UnsupportedCommandException : public std::runtime_error
