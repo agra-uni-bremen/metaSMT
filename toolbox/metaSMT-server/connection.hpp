@@ -12,7 +12,13 @@
 class UnsupportedOperandException : public std::runtime_error
 {
 public:
-    UnsupportedOperandException(std::string item) : std::runtime_error(item) {}
+    UnsupportedOperandException(std::string operand) : std::runtime_error(operand) {}
+};
+
+class UnsupportedCommandException : public std::runtime_error
+{
+public:
+    UnsupportedCommandException(std::string command) : std::runtime_error(command) {}
 };
 
 

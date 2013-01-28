@@ -147,13 +147,14 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Bitvec
 
 void Connection::start()
 {
-    try
-    {
-        boost::asio::streambuf b;
-        for (;;)
-        {
-            std::string ret;
+    std::cout << "New connection" << std::endl;
 
+    boost::asio::streambuf b;
+    for (;;)
+    {
+        std::string ret;
+        try
+        {
             boost::system::error_code error;
             size_t length = read_until(*sock, b, '\n', error);
             if (error == boost::asio::error::eof) break;
@@ -219,20 +220,27 @@ void Connection::start()
                     unsigned value = read_value(solver, bitvectors[split[1]]);
                     ret = boost::lexical_cast<std::string>(value) + "\n";
                 }
+            } else {
+                throw UnsupportedCommandException(s);
             }
-            else
-            {
-                std::cerr << "I don't understand: " << s << std::endl;
-                ret = "FAIL\n";
-            }
+        } catch (UnsupportedOperandException& e) {
+            ret = "FAIL\n";
+            std::cout << "Unsupported operand: " << e.what() << std::endl;
+        } catch (UnsupportedCommandException& e) {
+            ret = "FAIL\n";
+            std::cout << "Unsupported command: " << e.what() << std::endl;
+        } catch (std::exception& e) {
+            ret = "FAIL\n";
+            std::cerr << "Exception in thread: " << e.what() << std::endl;
+        }
 
+        try {
             boost::asio::write(*sock, boost::asio::buffer(ret, ret.size()));
+        } catch (std::exception& e) {
+            std::cerr << "Exception: " << e.what() << std::endl;
+            break;
         }
     }
-    catch (UnsupportedOperandException& e) {
-        std::cout << "Unsupported operand: " << e.what() << std::endl;
-    } catch (std::exception& e)
-    {
-        std::cerr << "Exception in thread: " << e.what() << std::endl;
-    }
+    std::cout << "Closing connection" << std::endl;
+    sock->close();
 }
