@@ -257,6 +257,9 @@ void Connection::start()
         } catch (std::exception& e) {
             ret = "FAIL\n";
             std::cerr << "Exception in thread: " << e.what() << std::endl;
+        } catch (...) {
+            ret = "FAIL\n";
+            std::cerr << "Exception in solver" << std::endl;
         }
 
         try {
