@@ -347,19 +347,12 @@ namespace metaSMT {
         unsigned long const value = boost::get<0>(p);
         unsigned const width = boost::get<1>(p);
 
-        if( value <= std::numeric_limits<unsigned int>::max()
-            || width <= ubits ) {
+        if ( value > std::numeric_limits<unsigned>::max() || width <= ubits ) {
+          Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
+          return z3::to_expr(ctx_, Z3_mk_unsigned_int64(ctx_, value, ty));
+        } else {
           Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
           return z3::to_expr(ctx_, Z3_mk_unsigned_int(ctx_, value, ty));
-        } else {
-          const unsigned part1 = static_cast<unsigned>(value);
-          const unsigned part2 = static_cast<unsigned>(value>>ubits);
-          Z3_sort ty1 = Z3_mk_bv_sort(ctx_, ubits);
-          Z3_sort ty2 = Z3_mk_bv_sort(ctx_, width-ubits);
-          return z3::to_expr(ctx_, Z3_mk_concat(ctx_,
-            Z3_mk_unsigned_int(ctx_, part2, ty2),
-            Z3_mk_unsigned_int(ctx_, part1, ty1)
-          ));
         }
       }
 
