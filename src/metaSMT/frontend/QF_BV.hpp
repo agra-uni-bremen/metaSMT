@@ -4,6 +4,7 @@
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
 #include "Array.hpp"
+#include <boost/functional/hash.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/type_traits/is_signed.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -333,6 +334,13 @@ namespace metaSMT {
         tag.width= width;
         return proto::make_expr< proto::tag::terminal, QF_BV_Domain >( tag );
       } 
+
+      inline std::size_t hash_value( bitvector const &bv ) {
+        tag::var_tag const tag = boost::proto::value(bv);
+        std::size_t seed = 0;
+        boost::hash_combine(seed, tag.id);
+        return seed;
+      }
 
       inline bool operator==(QF_BV< proto::terminal< tag::bit0_tag >::type> const &,
 		      QF_BV< proto::terminal< tag::bit0_tag >::type> const &) {

@@ -1,6 +1,7 @@
 #pragma once
 #include "../tags/Logic.hpp"
 #include "../impl/_var_id.hpp"
+#include <boost/functional/hash.hpp>
 #include <boost/proto/core.hpp>
 
 namespace proto=boost::proto;
@@ -102,6 +103,8 @@ namespace metaSMT {
         , tag::var_tag
       > ::type predicate;
 
+    
+
       inline predicate 
       new_variable( )
       {
@@ -110,8 +113,15 @@ namespace metaSMT {
         return proto::make_expr< proto::tag::terminal, Predicate_Domain >( tag );
       } 
 
+      inline std::size_t hash_value( predicate const &p ) {
+        tag::var_tag const tag = boost::proto::value(p);
+        std::size_t seed = 0;
+        boost::hash_combine(seed, tag.id);
+        return seed;
+      }
+
       inline bool operator==( predicate const &lhs, predicate const &rhs ) {
-	return proto::value(lhs).id == proto::value(rhs).id;
+        return proto::value(lhs).id == proto::value(rhs).id;
       }
 
       template<typename E1>

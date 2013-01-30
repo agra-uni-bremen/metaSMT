@@ -3,6 +3,7 @@
 #include "../tags/Array.hpp"
 #include "../impl/_var_id.hpp"
 #include "Logic.hpp"
+#include <boost/functional/hash.hpp>
 #include <boost/proto/core.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -94,6 +95,13 @@ namespace metaSMT {
         tag.elem_width = elem_width;
         tag.index_width = index_width;
         return proto::make_expr< proto::tag::terminal, Array_Domain >( tag );
+      }
+
+      inline std::size_t hash_value( array const &a ) {
+        tag::array_var_tag const tag = boost::proto::value(a);
+        std::size_t seed = 0;
+        boost::hash_combine(seed, tag.id);
+        return seed;
       }
 
       inline bool operator==( array const &lhs, array const &rhs ) {
