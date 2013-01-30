@@ -340,45 +340,21 @@ namespace metaSMT {
       }
 
       result_type operator() (bvtags::bvuint_tag const &, boost::any const &arg) {
-        const size_t ubits = std::numeric_limits<unsigned>::digits;
-
         typedef boost::tuple<unsigned long, unsigned long> P;
-        P p = boost::any_cast<P>(arg);
+        P const p = boost::any_cast<P>(arg);
         unsigned long const value = boost::get<0>(p);
         unsigned const width = boost::get<1>(p);
-
-        if ( value > std::numeric_limits<unsigned>::max() || width <= ubits ) {
-          Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
-          return z3::to_expr(ctx_, Z3_mk_unsigned_int64(ctx_, value, ty));
-        } else {
-          Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
-          return z3::to_expr(ctx_, Z3_mk_unsigned_int(ctx_, value, ty));
-        }
+        Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
+        return z3::to_expr(ctx_, Z3_mk_unsigned_int64(ctx_, value, ty));
       }
 
       result_type operator() (bvtags::bvsint_tag const &, boost::any const &arg) {
-        const size_t ibits = std::numeric_limits<int>::digits;
-
         typedef boost::tuple<long, unsigned long> P;
-        P p = boost::any_cast<P>(arg);
+        P const p = boost::any_cast<P>(arg);
         long const value = boost::get<0>(p);
         unsigned const width = boost::get<1>(p);
-
-        if( (value <= std::numeric_limits<int>::max()
-             && value >= std::numeric_limits<int>::min())
-            || width <= ibits ) {
-          Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
-          return z3::to_expr(ctx_, Z3_mk_int(ctx_, value, ty));
-        } else {
-          const int part1 = static_cast<int>(value);
-          const int part2 = static_cast<int>(value<<ibits);
-          Z3_sort ty1 = Z3_mk_bv_sort(ctx_, ibits);
-          Z3_sort ty2 = Z3_mk_bv_sort(ctx_, width-ibits);
-          return z3::to_expr(ctx_, Z3_mk_concat(ctx_,
-            Z3_mk_int(ctx_, part2, ty2),
-            Z3_mk_int(ctx_, part1, ty1)
-          ));
-        }
+        Z3_sort ty = Z3_mk_bv_sort(ctx_, width);
+        return z3::to_expr(ctx_, Z3_mk_int64(ctx_, value, ty));
       }
 
       result_type operator() (bvtags::bvbin_tag , boost::any arg) {
