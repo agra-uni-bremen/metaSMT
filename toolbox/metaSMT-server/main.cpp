@@ -7,12 +7,6 @@
 
 using boost::asio::ip::tcp;
 
-void new_connection(socket_ptr socket)
-{
-    Connection connection(socket);
-    connection.start();
-}
-
 void server(boost::asio::io_service& io_service)
 {
   tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 1313));
