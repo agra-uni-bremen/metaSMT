@@ -190,15 +190,7 @@ public:
             std::string ret;
             try
             {
-                boost::system::error_code error;
-                size_t length = read_until(*sock, b, '\n', error);
-                if (error == boost::asio::error::eof) break;
-                else if (error) throw boost::system::system_error(error);
-
-                std::istream is(&b);
-                std::string s;
-                std::getline(is, s);
-                s.erase(s.find_last_not_of(" \n\r\t") + 1);
+                std::string s = next_line();
                 if (boost::starts_with(s, "new_variable"))
                 {
                     std::vector<std::string> split;
@@ -286,6 +278,20 @@ public:
 private:
     socket_ptr sock;
     boost::asio::streambuf b;
+
+    std::string next_line()
+    {
+        boost::system::error_code error;
+                    size_t length = read_until(*sock, b, '\n', error);
+                    //if (error == boost::asio::error::eof) break;
+                    /*else*/ if (error) throw boost::system::system_error(error);
+
+                    std::istream is(&b);
+                    std::string s;
+                    std::getline(is, s);
+                    s.erase(s.find_last_not_of(" \n\r\t") + 1);
+        return s;
+    }
 
     metaSMT::DirectSolver_Context<Context> solver;
     std::map<std::string, metaSMT::logic::predicate> predicates;
