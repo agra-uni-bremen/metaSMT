@@ -29,6 +29,20 @@ std::string next_line(socket_ptr socket, boost::asio::streambuf& buffer)
 
 void new_connection(socket_ptr socket)
 {
-    Connection<metaSMT::solver::Z3_Backend> connection(socket);
-    connection.start();
+    std::string ret = "OK\n";
+    
+    boost::asio::streambuf buffer;
+    std::string s = next_line(socket, buffer);
+
+    ConnectionBase* connection;
+    if (s == "z3") {
+        connection = new Connection<metaSMT::solver::Z3_Backend>(socket, &buffer);
+    } else {
+        ret = "FAIL unsupported solver\n";
+        boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
+        return;
+    }
+
+    boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
+    connection->start();
 }

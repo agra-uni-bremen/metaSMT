@@ -44,6 +44,12 @@ public:
     UnsupportedCommandException(std::string command) : std::runtime_error(command) {}
 };
 
+class UnsupportedSolverException : public std::runtime_error
+{
+public:
+    UnsupportedSolverException(std::string solver) : std::runtime_error(solver) {}
+};
+
 
 template<typename Context, typename Bitvectors>
 typename Context::result_type create_unary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
@@ -176,11 +182,18 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Bitvec
     }
 }
 
-template<typename Context> class Connection
+class ConnectionBase
 {
 public:
-    Connection(socket_ptr socket) :
-    sock(socket) {}
+    virtual void start() = 0;
+};
+
+template<typename Context> class Connection : public ConnectionBase
+{
+public:
+    Connection(socket_ptr socket, boost::asio::streambuf* buffer) :
+    sock(socket),
+    b(buffer) {}
 
     void start()
     {
@@ -191,7 +204,7 @@ public:
             std::string ret;
             try
             {
-                std::string s = next_line(sock, b);
+                std::string s = next_line(sock, *b);
                 if (boost::starts_with(s, "new_variable"))
                 {
                     std::vector<std::string> split;
@@ -278,7 +291,7 @@ public:
 
 private:
     socket_ptr sock;
-    boost::asio::streambuf b;
+    boost::asio::streambuf* b;
 
     metaSMT::DirectSolver_Context<Context> solver;
     std::map<std::string, metaSMT::logic::predicate> predicates;
