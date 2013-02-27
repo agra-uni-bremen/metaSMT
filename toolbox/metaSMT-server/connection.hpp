@@ -28,6 +28,7 @@ typedef boost::shared_ptr<boost::asio::ip::tcp::socket> socket_ptr;
 
 bool is_unary(const boost::property_tree::ptree& pt);
 bool is_binary(const boost::property_tree::ptree& pt);
+std::string next_line(socket_ptr socket, boost::asio::streambuf& buffer);
 void new_connection(socket_ptr socket);
 
 
@@ -190,7 +191,7 @@ public:
             std::string ret;
             try
             {
-                std::string s = next_line();
+                std::string s = next_line(sock, b);
                 if (boost::starts_with(s, "new_variable"))
                 {
                     std::vector<std::string> split;
@@ -278,20 +279,6 @@ public:
 private:
     socket_ptr sock;
     boost::asio::streambuf b;
-
-    std::string next_line()
-    {
-        boost::system::error_code error;
-                    size_t length = read_until(*sock, b, '\n', error);
-                    //if (error == boost::asio::error::eof) break;
-                    /*else*/ if (error) throw boost::system::system_error(error);
-
-                    std::istream is(&b);
-                    std::string s;
-                    std::getline(is, s);
-                    s.erase(s.find_last_not_of(" \n\r\t") + 1);
-        return s;
-    }
 
     metaSMT::DirectSolver_Context<Context> solver;
     std::map<std::string, metaSMT::logic::predicate> predicates;
