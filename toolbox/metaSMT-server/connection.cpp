@@ -1,5 +1,8 @@
 #include "connection.hpp"
 
+#include <metaSMT/BitBlast.hpp>
+#include <metaSMT/backend/SAT_Clause.hpp>
+#include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 
 bool is_unary(const boost::property_tree::ptree& pt)
@@ -37,6 +40,8 @@ void new_connection(socket_ptr socket)
     ConnectionBase* connection;
     if (s == "z3") {
         connection = new Connection<metaSMT::solver::Z3_Backend>(socket, &buffer);
+    } else if (s == "picosat") {
+        connection = new Connection<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >(socket, &buffer);
     } else {
         ret = "FAIL unsupported solver\n";
         boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
