@@ -33,7 +33,7 @@ std::string next_line(socket_ptr socket, boost::asio::streambuf& buffer)
 
 void new_connection(socket_ptr socket)
 {
-    std::string solvers = "0 z3\n1 picosat\n2 boolector\n";
+    std::string solvers = "0 z3; 1 picosat; 2 boolector\n";
     boost::asio::write(*socket, boost::asio::buffer(solvers, solvers.size()));
 
     std::string ret = "OK\n";

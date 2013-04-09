@@ -50,24 +50,42 @@ public:
     UnsupportedSolverException(std::string solver) : std::runtime_error(solver) {}
 };
 
+class UndefinedVariableException : public std::runtime_error
+{
+public:
+    UndefinedVariableException(std::string variable) : std::runtime_error("Cannot find variable: " + variable) {}
+};
 
-template<typename Context, typename Bitvectors>
-typename Context::result_type create_unary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
 
-template<typename Context, typename Bitvectors>
-typename Context::result_type create_binary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
+template<typename Context, typename Predicates, typename Bitvectors>
+typename Context::result_type create_unary_assertion(Context& ctx, const Predicates& predicates, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
 
-template<typename Context, typename Bitvectors>
-typename Context::result_type create_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
+template<typename Context, typename Predicates, typename Bitvectors>
+typename Context::result_type create_binary_assertion(Context& ctx, const Predicates& predicates, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt);
+
+template<typename Context, typename Predicates, typename Bitvectors>
+typename Context::result_type create_assertion(Context& ctx, const Predicates& predicates, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
 {
     std::string op = pt.get<std::string>("op");
 
     if (is_binary(pt)) {
-        return create_binary_assertion(ctx, bitvectors, pt);
+        return create_binary_assertion(ctx, predicates, bitvectors, pt);
     } else if (is_unary(pt)) {
-        return create_unary_assertion(ctx, bitvectors, pt);
+        return create_unary_assertion(ctx, predicates, bitvectors, pt);
     } else if (op == "variable") {
-        return evaluate(ctx, bitvectors.find(pt.get<std::string>("name"))->second);
+        std::string name = pt.get<std::string>("name");
+
+        typename Predicates::const_iterator itp = predicates.find(name);
+        if (itp != predicates.end()) {
+            return evaluate(ctx, itp->second);
+        } else {
+            typename Bitvectors::const_iterator itb = bitvectors.find(name);
+            if (itb != bitvectors.end()) {
+                return evaluate(ctx, itb->second);
+            } else {
+                throw(UndefinedVariableException(name));
+            }
+        }
     } else if (op == "integer") {
 //        std::cout << pt.get<signed>("value") << std::endl;
         return evaluate(ctx, metaSMT::logic::QF_BV::bvuint(pt.get<signed>("value"), pt.get<unsigned>("width")));
@@ -76,13 +94,17 @@ typename Context::result_type create_assertion(Context& ctx, const Bitvectors& b
     }
 }
 
-template<typename Context, typename Bitvectors>
-typename Context::result_type create_unary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
+template<typename Context, typename Predicates, typename Bitvectors>
+typename Context::result_type create_unary_assertion(Context& ctx, const Predicates& predicates, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
 {
     std::string op = pt.get<std::string>("op");
 
-    typename Context::result_type operand = create_assertion(ctx, bitvectors, pt.get_child("operand"));
-    if (op == "bvnot") {
+    typename Context::result_type operand = create_assertion(ctx, predicates, bitvectors, pt.get_child("operand"));
+    if (op == "not") {
+        return evaluate(ctx, metaSMT::logic::Not(operand));
+    }
+
+    else if (op == "bvnot") {
         return evaluate(ctx, metaSMT::logic::QF_BV::bvnot(operand));
     } else if (op == "bvneg") {
         return evaluate(ctx, metaSMT::logic::QF_BV::bvneg(operand));
@@ -91,13 +113,13 @@ typename Context::result_type create_unary_assertion(Context& ctx, const Bitvect
     }
 }
 
-template<typename Context, typename Bitvectors>
-typename Context::result_type create_binary_assertion(Context& ctx, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
+template<typename Context, typename Predicates, typename Bitvectors>
+typename Context::result_type create_binary_assertion(Context& ctx, const Predicates& predicates, const Bitvectors& bitvectors, const boost::property_tree::ptree& pt)
 {
     std::string op = pt.get<std::string>("op");
 
-    typename Context::result_type lhs = create_assertion(ctx, bitvectors, pt.get_child("lhs"));
-    typename Context::result_type rhs = create_assertion(ctx, bitvectors, pt.get_child("rhs"));
+    typename Context::result_type lhs = create_assertion(ctx, predicates, bitvectors, pt.get_child("lhs"));
+    typename Context::result_type rhs = create_assertion(ctx, predicates, bitvectors, pt.get_child("rhs"));
 
     if (op == "equal" || op == "=") {
         return evaluate(ctx, metaSMT::logic::equal(lhs, rhs));
@@ -241,7 +263,7 @@ public:
                     std::istringstream in(s.substr(10u));
                     boost::property_tree::json_parser::read_json(in, pt);
 
-                    assertion(solver, create_assertion(solver, bitvectors, pt));
+                    assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
 
                     ret = "OK\n";
                 }
@@ -258,8 +280,18 @@ public:
                     if (split.size() != 2u) {
                         ret = "Not enough arguments\n";
                     } else {
-                        unsigned value = read_value(solver, bitvectors[split[1]]);
-                        ret = boost::lexical_cast<std::string>(value) + "\n";
+                        const std::string& name = split.at(1u);
+                        std::map<std::string, metaSMT::logic::predicate>::const_iterator itp = predicates.find(name);
+                        if (itp != predicates.end()) {
+                            ret = boost::lexical_cast<std::string>(read_value(solver, itp->second)) + "\n";
+                        } else {
+                            std::map<std::string, metaSMT::logic::QF_BV::bitvector>::const_iterator itb = bitvectors.find(name);
+                            if (itb != bitvectors.end()) {
+                                ret = boost::lexical_cast<std::string>(read_value(solver, itb->second)) + "\n";
+                            } else {
+                                ret = "Unknown variable: " + name + "\n";
+                            }
+                        }
                     }
                 } else {
                     throw UnsupportedCommandException(s);
