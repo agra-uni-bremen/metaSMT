@@ -2,9 +2,15 @@
 #define CONNECTION_HPP
 
 #include <map>
+#include <queue>
 
 #include <boost/asio/ip/tcp.hpp>
+
 #include <boost/smart_ptr.hpp>
+
+#include <boost/thread/mutex.hpp>
+
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -28,7 +34,7 @@ typedef boost::shared_ptr<boost::asio::ip::tcp::socket> socket_ptr;
 
 bool is_unary(const boost::property_tree::ptree& pt);
 bool is_binary(const boost::property_tree::ptree& pt);
-std::string next_line(socket_ptr socket, boost::asio::streambuf& buffer);
+//std::string next_line(socket_ptr socket, boost::asio::streambuf& buffer);
 void new_connection(socket_ptr socket);
 
 
@@ -44,16 +50,10 @@ public:
     UnsupportedCommandException(std::string command) : std::runtime_error(command) {}
 };
 
-class UnsupportedSolverException : public std::runtime_error
-{
-public:
-    UnsupportedSolverException(std::string solver) : std::runtime_error(solver) {}
-};
-
 class UndefinedVariableException : public std::runtime_error
 {
 public:
-    UndefinedVariableException(std::string variable) : std::runtime_error("Cannot find variable: " + variable) {}
+    UndefinedVariableException(std::string variable) : std::runtime_error(variable) {}
 };
 
 
@@ -207,33 +207,46 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Predic
 class ConnectionBase
 {
 public:
+    ConnectionBase();
+
     virtual void start() = 0;
+
+    void add_command(std::string command);
+    std::string next_answer();
+
+    boost::mutex command_mutex;
+    boost::mutex answer_mutex;
+protected:
+    boost::interprocess::interprocess_semaphore command_semaphore;
+    boost::interprocess::interprocess_semaphore answer_semaphore;
+
+    std::queue<std::string> command_queue;
+    std::queue<std::string> answer_queue;
 };
 
 template<typename Context> class Connection : public ConnectionBase
 {
 public:
-    Connection(socket_ptr socket, boost::asio::streambuf* buffer) :
-    sock(socket),
-    b(buffer) {}
-
     void start()
     {
-        std::cout << "New connection" << std::endl;
-
         for (;;)
         {
             std::string ret;
             try
             {
-                std::string s = next_line(sock, *b);
+                command_semaphore.wait();
+                command_mutex.lock();
+                std::string s = command_queue.front();
+                command_queue.pop();
+                command_mutex.unlock();
+
                 if (boost::starts_with(s, "new_variable"))
                 {
                     std::vector<std::string> split;
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 2u) {
-                        ret = "Not enough arguments\n";
+                        ret = "FAIL Not enough arguments\n";
                     } else {
                         predicates.insert(std::make_pair(split[1], metaSMT::logic::new_variable()));
                         std::cout << "[INFO] Added predicate " << split[1] << std::endl;
@@ -246,7 +259,7 @@ public:
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 3u) {
-                        ret = "Not enough arguments\n";
+                        ret = "FAIL Not enough arguments\n";
                     } else {
                         bitvectors.insert(std::make_pair(split[1], metaSMT::logic::QF_BV::new_bitvector(boost::lexical_cast<unsigned>(split[2]))));
                         std::cout << "[INFO] Added bit-vector " << split[1] << " of size " << split[2] << std::endl;
@@ -255,7 +268,7 @@ public:
                 }
                 else if (boost::starts_with(s, "assertion"))
                 {
-                    std::cout << s.substr(10u) << std::endl;
+//                     std::cout << s.substr(10u) << std::endl;
 
                     // trim s such that it only contains the json string
                     boost::property_tree::ptree pt;
@@ -264,6 +277,7 @@ public:
                     boost::property_tree::json_parser::read_json(in, pt);
 
                     assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
+                    std::cout << "[INFO] Added assertion" << std::endl;
 
                     ret = "OK\n";
                 }
@@ -278,7 +292,7 @@ public:
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 2u) {
-                        ret = "Not enough arguments\n";
+                        ret = "FAIL Not enough arguments\n";
                     } else {
                         const std::string& name = split.at(1u);
                         std::map<std::string, metaSMT::logic::predicate>::const_iterator itp = predicates.find(name);
@@ -289,7 +303,7 @@ public:
                             if (itb != bitvectors.end()) {
                                 ret = boost::lexical_cast<std::string>(read_value(solver, itb->second)) + "\n";
                             } else {
-                                ret = "Unknown variable: " + name + "\n";
+                                ret = "FAIL Undefined variable: " + name + "\n";
                             }
                         }
                     }
@@ -297,34 +311,23 @@ public:
                     throw UnsupportedCommandException(s);
                 }
             } catch (UnsupportedOperatorException& e) {
-                ret = "FAIL\n";
-                std::cout << "Unsupported operator: " << e.what() << std::endl;
+                ret = "FAIL Unsupported operator: " + std::string(e.what()) + "\n";
+                std::cout << ret << std::flush;
             } catch (UnsupportedCommandException& e) {
-                ret = "FAIL\n";
-                std::cout << "Unsupported command: " << e.what() << std::endl;
-            } catch (std::exception& e) {
-                ret = "FAIL\n";
-                std::cerr << "Exception in thread: " << e.what() << std::endl;
-            } catch (...) {
-                ret = "FAIL\n";
-                std::cerr << "Exception in solver" << std::endl;
+                ret = "FAIL Unsupported command: " + std::string(e.what()) + "\n";
+                std::cout << ret << std::flush;
+            } catch (UndefinedVariableException& e) {
+                ret = "FAIL Undefined variable: " + std::string(e.what()) + "\n";
+                std::cout << ret << std::flush;
             }
 
-            try {
-                boost::asio::write(*sock, boost::asio::buffer(ret, ret.size()));
-            } catch (std::exception& e) {
-                std::cerr << "Exception: " << e.what() << std::endl;
-                break;
-            }
+            answer_mutex.lock();
+            answer_queue.push(ret);
+            answer_mutex.unlock();
+            answer_semaphore.post();
         }
-        std::cout << "Closing connection" << std::endl;
-        sock->close();
     }
-
 private:
-    socket_ptr sock;
-    boost::asio::streambuf* b;
-
     metaSMT::DirectSolver_Context<Context> solver;
     std::map<std::string, metaSMT::logic::predicate> predicates;
     std::map<std::string, metaSMT::logic::QF_BV::bitvector> bitvectors;
