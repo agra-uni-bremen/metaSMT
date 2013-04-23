@@ -2,15 +2,10 @@
 #define CONNECTION_HPP
 
 #include <map>
-#include <queue>
 
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/smart_ptr.hpp>
-
-#include <boost/thread/mutex.hpp>
-
-#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -207,21 +202,22 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Predic
 class ConnectionBase
 {
 public:
-    ConnectionBase();
+    int init();
 
     virtual void start() = 0;
 
-    void add_command(std::string command);
-    std::string next_answer();
+    std::string child_read_command();
+    void child_write_command(std::string s);
 
-    boost::mutex command_mutex;
-    boost::mutex answer_mutex;
-protected:
-    boost::interprocess::interprocess_semaphore command_semaphore;
-    boost::interprocess::interprocess_semaphore answer_semaphore;
+    std::string parent_read_command();
+    void parent_write_command(std::string s);
 
-    std::queue<std::string> command_queue;
-    std::queue<std::string> answer_queue;
+private:
+    int fd_p2c[2];
+    int fd_c2p[2];
+
+    std::string read_command(int fd);
+    void write_command(int fd, std::string s);
 };
 
 template<typename Context> class Connection : public ConnectionBase
@@ -234,11 +230,7 @@ public:
             std::string ret;
             try
             {
-                command_semaphore.wait();
-                command_mutex.lock();
-                std::string s = command_queue.front();
-                command_queue.pop();
-                command_mutex.unlock();
+                std::string s = child_read_command();
 
                 if (boost::starts_with(s, "new_variable"))
                 {
@@ -246,11 +238,11 @@ public:
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 2u) {
-                        ret = "FAIL Not enough arguments\n";
+                        ret = "FAIL Not enough arguments";
                     } else {
                         predicates.insert(std::make_pair(split[1], metaSMT::logic::new_variable()));
                         std::cout << "[INFO] Added predicate " << split[1] << std::endl;
-                        ret = "OK\n";
+                        ret = "OK";
                     }
                 }
                 else if (boost::starts_with(s, "new_bitvector"))
@@ -259,11 +251,11 @@ public:
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 3u) {
-                        ret = "FAIL Not enough arguments\n";
+                        ret = "FAIL Not enough arguments";
                     } else {
                         bitvectors.insert(std::make_pair(split[1], metaSMT::logic::QF_BV::new_bitvector(boost::lexical_cast<unsigned>(split[2]))));
                         std::cout << "[INFO] Added bit-vector " << split[1] << " of size " << split[2] << std::endl;
-                        ret = "OK\n";
+                        ret = "OK";
                     }
                 }
                 else if (boost::starts_with(s, "assertion"))
@@ -279,12 +271,13 @@ public:
                     assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
                     std::cout << "[INFO] Added assertion" << std::endl;
 
-                    ret = "OK\n";
+                    ret = "OK";
                 }
                 else if (boost::starts_with(s, "solve"))
                 {
                     bool result = solve(solver);
-                    ret = result ? "SAT\n" : "UNSAT\n";
+                    ret = result ? "SAT" : "UNSAT";
+                    std::cout << "[INFO] Tried to solve: " << ret << std::endl;
                 }
                 else if (boost::starts_with(s, "modelvalue"))
                 {
@@ -292,18 +285,20 @@ public:
                     boost::split(split, s, boost::algorithm::is_any_of(" "));
 
                     if (split.size() != 2u) {
-                        ret = "FAIL Not enough arguments\n";
+                        ret = "FAIL Not enough arguments";
                     } else {
                         const std::string& name = split.at(1u);
                         std::map<std::string, metaSMT::logic::predicate>::const_iterator itp = predicates.find(name);
                         if (itp != predicates.end()) {
-                            ret = boost::lexical_cast<std::string>(read_value(solver, itp->second)) + "\n";
+                            ret = boost::lexical_cast<std::string>(read_value(solver, itp->second));
+                            std::cout << "[INFO] Returned modelvalue for predicate " << name << ": " << ret << std::endl;
                         } else {
                             std::map<std::string, metaSMT::logic::QF_BV::bitvector>::const_iterator itb = bitvectors.find(name);
                             if (itb != bitvectors.end()) {
-                                ret = boost::lexical_cast<std::string>(read_value(solver, itb->second)) + "\n";
+                                ret = boost::lexical_cast<std::string>(read_value(solver, itb->second));
+                                std::cout << "[INFO] Returned modelvalue for bitvector " << name << ": " << ret << std::endl;
                             } else {
-                                ret = "FAIL Undefined variable: " + name + "\n";
+                                ret = "FAIL Undefined variable: " + name;
                             }
                         }
                     }
@@ -311,20 +306,17 @@ public:
                     throw UnsupportedCommandException(s);
                 }
             } catch (UnsupportedOperatorException& e) {
-                ret = "FAIL Unsupported operator: " + std::string(e.what()) + "\n";
-                std::cout << ret << std::flush;
+                ret = "FAIL Unsupported operator: " + std::string(e.what());
+                std::cout << ret << std::endl;
             } catch (UnsupportedCommandException& e) {
-                ret = "FAIL Unsupported command: " + std::string(e.what()) + "\n";
-                std::cout << ret << std::flush;
+                ret = "FAIL Unsupported command: " + std::string(e.what());
+                std::cout << ret << std::endl;
             } catch (UndefinedVariableException& e) {
-                ret = "FAIL Undefined variable: " + std::string(e.what()) + "\n";
-                std::cout << ret << std::flush;
+                ret = "FAIL Undefined variable: " + std::string(e.what());
+                std::cout << ret << std::endl;
             }
 
-            answer_mutex.lock();
-            answer_queue.push(ret);
-            answer_mutex.unlock();
-            answer_semaphore.post();
+            child_write_command(ret);
         }
     }
 private:

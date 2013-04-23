@@ -10,29 +10,48 @@
 #include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 
-ConnectionBase::ConnectionBase() :
-    command_semaphore(0),
-    answer_semaphore(0)
-{}
-
-void ConnectionBase::add_command(std::string command)
+int ConnectionBase::init()
 {
-    command_mutex.lock();
-    command_queue.push(command);
-    command_semaphore.post();
-    command_mutex.unlock();
+    return pipe(fd_c2p) != -1 && pipe(fd_p2c) != -1;
 }
 
-std::string ConnectionBase::next_answer()
+std::string ConnectionBase::child_read_command()
 {
-    answer_semaphore.wait();
+    return read_command(fd_p2c[0]);
+}
 
-    answer_mutex.lock();
-    std::string ret = answer_queue.front();
-    answer_queue.pop();
-    answer_mutex.unlock();
+void ConnectionBase::child_write_command(std::string s)
+{
+    write_command(fd_c2p[1], s);
+}
 
-    return ret;
+std::string ConnectionBase::parent_read_command()
+{
+    return read_command(fd_c2p[0]);
+}
+
+void ConnectionBase::parent_write_command(std::string s)
+{
+    write_command(fd_p2c[1], s);
+}
+
+std::string ConnectionBase::read_command(int fd)
+{
+    std::string s;
+    char buf[1];
+    do {
+        read(fd, buf, 1);
+        s += buf[0];
+    } while (buf[0] != '\n');
+
+    s.erase(s.find_last_not_of(" \n\r\t") + 1);
+    return s;
+}
+
+void ConnectionBase::write_command(int fd, std::string s)
+{
+    s += "\n";
+    write(fd, s.c_str(), s.length());
 }
 
 bool is_unary(const boost::property_tree::ptree& pt)
@@ -70,12 +89,13 @@ void new_connection(socket_ptr socket)
 
         boost::asio::streambuf buffer;
         std::string str;
+        std::string ret;
 
         std::list<ConnectionBase*> connections;
 
         //select solvers
         while (true) {
-            std::string ret = "OK\n";
+            ret = "OK\n";
             str = next_line(socket, buffer);
             int solver;
             try {
@@ -103,22 +123,40 @@ void new_connection(socket_ptr socket)
 
         //receive commands
         for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
-            boost::thread t(boost::bind(&ConnectionBase::start, (*i)));
+            if (!(*i)->init()) {
+                ret = "Could not create pipe for IPC.\n";
+                std::cout << ret << std::endl;
+                boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
+                return;
+            }
+            pid_t pid = fork();
+            if (pid == -1) {
+                ret = "Could not fork new process.\n";
+                std::cout << ret << std::endl;
+                boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
+                return;
+            } else if (pid) {
+                //PARENT PROCESS
+            } else {
+                //CHILD PROCESS
+                (*i)->start();
+                return;
+            }
         }
 
         while (true) {
             for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
-                (*i)->add_command(str);
+                (*i)->parent_write_command(str);
             }
 
             std::vector<std::string> answers(connections.size());
             int n = 0;
             for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
-                answers[n++] = (*i)->next_answer();
+                answers[n++] = (*i)->parent_read_command();
             }
 
             //return a FAIL if not all answers are the same, otherwise return the consistent answer
-            std::string ret = answers[0];
+            ret = answers[0] + "\n";
             for (int n = 0; n < answers.size() -1; n++) {
                 if (answers[n] != answers[n+1]) {
                     ret = "FAIL inconsistent solver behavior\n";
