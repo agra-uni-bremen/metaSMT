@@ -2,3 +2,4 @@ TODO
 
 - fix: can't send commands through socket after "cat test-commands | nc 127.0.0.1 1313"
 - add: only wait for answer of the fastest solver after receiving the command "solve"
+- sicherstellen, dass jeder solver pro connection nur einmal ausgeführt wird

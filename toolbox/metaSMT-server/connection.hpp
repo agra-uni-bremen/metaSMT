@@ -199,12 +199,13 @@ typename Context::result_type create_binary_assertion(Context& ctx, const Predic
     }
 }
 
-class ConnectionBase
+class ConnectionBase;
+
+class SolverProcess
 {
 public:
-    int init();
-
-    virtual void start() = 0;
+    SolverProcess(int solver_type);
+    int initPipes();
 
     std::string child_read_command();
     void child_write_command(std::string s);
@@ -212,12 +213,22 @@ public:
     std::string parent_read_command();
     void parent_write_command(std::string s);
 
+    ConnectionBase* cb;
+    int m_solver_type;
 private:
     int fd_p2c[2];
     int fd_c2p[2];
 
     std::string read_command(int fd);
     void write_command(int fd, std::string s);
+};
+
+class ConnectionBase
+{
+public:
+    virtual void start() = 0;
+// protected:
+    SolverProcess* sp;
 };
 
 template<typename Context> class Connection : public ConnectionBase
@@ -230,7 +241,7 @@ public:
             std::string ret;
             try
             {
-                std::string s = child_read_command();
+                std::string s = sp->child_read_command();
 
                 if (boost::starts_with(s, "new_variable"))
                 {
@@ -316,7 +327,7 @@ public:
                 std::cout << ret << std::endl;
             }
 
-            child_write_command(ret);
+            sp->child_write_command(ret);
         }
     }
 private:

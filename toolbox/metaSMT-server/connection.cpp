@@ -10,32 +10,37 @@
 #include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
 
-int ConnectionBase::init()
+SolverProcess::SolverProcess(int solver_type)
+{
+    m_solver_type = solver_type;
+}
+
+int SolverProcess::initPipes()
 {
     return pipe(fd_c2p) != -1 && pipe(fd_p2c) != -1;
 }
 
-std::string ConnectionBase::child_read_command()
+std::string SolverProcess::child_read_command()
 {
     return read_command(fd_p2c[0]);
 }
 
-void ConnectionBase::child_write_command(std::string s)
+void SolverProcess::child_write_command(std::string s)
 {
     write_command(fd_c2p[1], s);
 }
 
-std::string ConnectionBase::parent_read_command()
+std::string SolverProcess::parent_read_command()
 {
     return read_command(fd_c2p[0]);
 }
 
-void ConnectionBase::parent_write_command(std::string s)
+void SolverProcess::parent_write_command(std::string s)
 {
     write_command(fd_p2c[1], s);
 }
 
-std::string ConnectionBase::read_command(int fd)
+std::string SolverProcess::read_command(int fd)
 {
     std::string s;
     char buf[1];
@@ -48,7 +53,7 @@ std::string ConnectionBase::read_command(int fd)
     return s;
 }
 
-void ConnectionBase::write_command(int fd, std::string s)
+void SolverProcess::write_command(int fd, std::string s)
 {
     s += "\n";
     write(fd, s.c_str(), s.length());
@@ -84,14 +89,14 @@ void new_connection(socket_ptr socket)
     std::cout << "New connection" << std::endl;
 
     try {
-        std::string solvers = "0 z3; 1 picosat; 2 boolector\n";
-        boost::asio::write(*socket, boost::asio::buffer(solvers, solvers.size()));
+        std::string availableSolvers = "0 z3; 1 picosat; 2 boolector\n";
+        boost::asio::write(*socket, boost::asio::buffer(availableSolvers, availableSolvers.size()));
 
         boost::asio::streambuf buffer;
         std::string str;
         std::string ret;
 
-        std::list<ConnectionBase*> connections;
+        std::list<SolverProcess*> solvers;
 
         //select solvers
         while (true) {
@@ -104,26 +109,17 @@ void new_connection(socket_ptr socket)
                 break;
             }
 
-            switch(solver) {
-            case 0:
-                connections.push_back(new Connection<metaSMT::solver::Z3_Backend>());
-                break;
-            case 1:
-                connections.push_back(new Connection<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >());
-                break;
-            case 2:
-                connections.push_back(new Connection<metaSMT::solver::Boolector>());
-                break;
-            default:
+            if (0 <= solver && solver <= 2)
+                solvers.push_back(new SolverProcess(solver));
+            else
                 ret = "FAIL unsupported solver\n";
-            }
 
             boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
         }
 
         //receive commands
-        for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
-            if (!(*i)->init()) {
+        for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
+            if (!(*i)->initPipes()) {
                 ret = "Could not create pipe for IPC.\n";
                 std::cout << ret << std::endl;
                 boost::asio::write(*socket, boost::asio::buffer(ret, ret.size()));
@@ -139,19 +135,31 @@ void new_connection(socket_ptr socket)
                 //PARENT PROCESS
             } else {
                 //CHILD PROCESS
-                (*i)->start();
+                switch ((*i)->m_solver_type) {
+                case 0:
+                    (*i)->cb = new Connection<metaSMT::solver::Z3_Backend>();
+                    break;
+                case 1:
+                    (*i)->cb = new Connection<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >();
+                    break;
+                case 2:
+                    (*i)->cb = new Connection<metaSMT::solver::Boolector>();
+                }
+
+                (*i)->cb->sp = (*i);
+                (*i)->cb->start();
                 return;
             }
         }
 
         while (true) {
-            for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
+            for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
                 (*i)->parent_write_command(str);
             }
 
-            std::vector<std::string> answers(connections.size());
+            std::vector<std::string> answers(solvers.size());
             int n = 0;
-            for (std::list<ConnectionBase*>::iterator i = connections.begin(); i != connections.end(); i++) {
+            for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
                 answers[n++] = (*i)->parent_read_command();
             }
 
