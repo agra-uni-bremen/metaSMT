@@ -1,0 +1,7 @@
+0
+new_bitvector x 5
+#assertion {"op":"!=", "lhs":{"op":"variable", "name":"x"}, "rhs":{"op":"integer", "value":"0", "width":"5"}}
+assertion {"op":"bvslt", "lhs":{"op":"variable", "name":"x"}, "rhs":{"op":"integer", "value":"-5", "width":"5"}}
+assertion {"op":"bvsgt", "lhs":{"op":"variable", "name":"x"}, "rhs":{"op":"integer", "value":"-15", "width":"5"}}
+solve
+modelvalue x
