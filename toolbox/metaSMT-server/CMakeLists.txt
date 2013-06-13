@@ -4,6 +4,8 @@ add_tool_executable( metaSMT-server
     connection.cpp
   REQUIRES
     Boost_FOUND
+    Boolector_FOUND
+    PicoSAT_FOUND
     Z3_FOUND
   LIBRARIES
     pthread
