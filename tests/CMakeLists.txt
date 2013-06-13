@@ -102,9 +102,9 @@ add_test_executable( graph_MiniSAT graph_MiniSAT.cpp
   )
 
 add_test_executable( direct_PicoSAT direct_PicoSAT.cpp
-  REQUIRES picosat_FOUND )
+  REQUIRES PicoSAT_FOUND )
 #add_test_executable( graph_PicoSAT graph_PicoSAT.cpp
-#  REQUIRES picosat_FOUND )
+#  REQUIRES PicoSAT_FOUND )
 
 add_test_executable( direct_Aiger_MiniSAT direct_Aiger_MiniSAT.cpp
   REQUIRES MiniSat_FOUND Aiger_FOUND
