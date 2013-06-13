@@ -7,6 +7,6 @@ add_tool_executable( metaSMT-server
     Z3_FOUND
   LIBRARIES
     pthread
-    boost_system
-    boost_thread
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
 )
