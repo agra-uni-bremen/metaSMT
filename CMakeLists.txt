@@ -226,7 +226,7 @@ endif(CUDD_FOUND)
 
 if(MiniSat_FOUND)
   config_find(MiniSat ${MiniSat_DIR})
-  list(APPEND metaSMT_LIBS MiniSat_libMiniSat)
+  list(APPEND metaSMT_LIBS ${MiniSat_LIBRARIES})
   list(APPEND metaSMT_INCLUDES ${MiniSat_INCLUDE_DIR})
   list(APPEND metaSMT_CXXFLAGS "${MiniSat_CXXFLAGS}")
 endif(MiniSat_FOUND)
