@@ -37,9 +37,9 @@ namespace metaSMT {
 
           command %= '(' >> command_name >> *sexpr >> ')';
 
-          sexpr %= '(' >> *sexpr >> ')' | symbol | numeral;
+          sexpr %= qi::string("(") >> *sexpr >> qi::string(")") | symbol | numeral;
 
-          symbol %= qi::lexeme [ +(qi::char_ -end_of_word ) ];
+          symbol %= qi::lexeme [ +(qi::char_ - end_of_word ) ];
 
           numeral %= qi::uint_;
 
@@ -68,7 +68,7 @@ namespace metaSMT {
         qi::rule<Iterator, spirit::utree(), whitespace< Iterator > > numeral, sexpr;
         qi::rule<Iterator, spirit::utf8_symbol_type(), whitespace< Iterator > > command_name;
         qi::rule<Iterator, spirit::utf8_string_type(), whitespace< Iterator > > symbol;
-        qi::rule<Iterator, spirit::utree::list_type(), whitespace< Iterator> > command;
+        qi::rule<Iterator, spirit::utree::utree(), whitespace< Iterator> > command, declaration;
         qi::rule<Iterator > end_of_word;
 
         phoenix::function<Evaluator> const evaluate;

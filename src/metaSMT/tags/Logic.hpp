@@ -46,13 +46,13 @@ namespace metaSMT {
     // binary
     TAG(equal, binary)
     TAG(nequal, binary)
-    TAG(implies, binary)
+    TAG(implies, right_assoc)
 
-    TAG(and, binary)
+    TAG(and, right_assoc)
     TAG(nand, binary)
-    TAG(or, binary)
+    TAG(or, left_assoc)
     TAG(nor, binary)
-    TAG(xor, binary)
+    TAG(xor, left_assoc)
     TAG(xnor, binary)
 
     // ternary
