@@ -11,16 +11,23 @@ using namespace metaSMT::evaluator;
 using namespace metaSMT::smt2;
 
 int main(int argc, char **argv) {
+  int const STREAM_SIZE = 65535;
   typedef UTreeEvaluator<ContextType> Evaluator;
-  char inputline[1024];
+  char inputline[STREAM_SIZE];
   string line;
   stringstream *buf = new stringstream;
   ContextType ctx;
   Evaluator evaluator(ctx);
   SMT2Parser<Evaluator> parser(evaluator);
   while(!cin.eof()){
-    cin.getline(inputline,1024);
+    cin.getline(inputline,STREAM_SIZE);
+    assert( !std::cin.fail() );
+    if ( std::cin.fail() ) {
+      std::cerr << "Error during input operation, e.g., stream size is too low" << '\n';
+      return -1;
+    }
     line = inputline;
+    // std::cerr << line << '\n';
     *buf << line << endl;
     size_t found = line.find("(get-value");
     if(line.compare("(check-sat)") == 0 || found != line.npos){
