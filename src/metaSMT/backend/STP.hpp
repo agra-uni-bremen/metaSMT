@@ -149,6 +149,24 @@ namespace metaSMT {
         return ptr(vc_notExpr(vc, e));
       }
 
+      result_type operator()( predtags::and_tag,
+                              std::vector<result_type> const &vs) {
+        std::size_t const num_elm = vs.size();
+        Expr *exprs = new Expr[num_elm];
+        for (unsigned u = 0; u < num_elm; ++u)
+          exprs[u] = vs[u];
+        return ptr(vc_andExprN(vc, exprs, num_elm));
+      }
+
+      result_type operator()( predtags::or_tag,
+                              std::vector<result_type> const &vs) {
+        std::size_t const num_elm = vs.size();
+        Expr *exprs = new Expr[num_elm];
+        for (unsigned u = 0; u < num_elm; ++u)
+          exprs[u] = vs[u];
+        return ptr(vc_orExprN(vc, exprs, num_elm));
+      }
+
       result_type operator()( predtags::ite_tag tag
                               , result_type a, result_type b, result_type c ) {
         return ptr(vc_iteExpr(vc, a, b, c));
