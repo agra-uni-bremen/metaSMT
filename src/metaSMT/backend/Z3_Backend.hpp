@@ -476,6 +476,24 @@ namespace metaSMT {
                          z3::expr(value));
       }
 
+      result_type operator() (predtags::and_tag const &,
+                              std::vector<result_type> const &vs) {
+        std::size_t const num_elm = vs.size();
+        Z3_ast *args = new Z3_ast[num_elm];
+        for (unsigned u = 0; u < num_elm; ++u)
+          args[u] = z3::expr(vs[u]);
+        return z3::to_expr(ctx_, Z3_mk_and(ctx_, num_elm, args));
+      }
+
+      result_type operator() (predtags::or_tag const &,
+                              std::vector<result_type> const &vs) {
+        std::size_t const num_elm = vs.size();
+        Z3_ast *args = new Z3_ast[num_elm];
+        for (unsigned u = 0; u < num_elm; ++u)
+          args[u] = z3::expr(vs[u]);
+        return z3::to_expr(ctx_, Z3_mk_or(ctx_, num_elm, args));
+      }
+
       template< Z3_ast (*FN) (Z3_context, Z3_ast) >
       struct Z3_F1 {
         static Z3_ast exec(Z3_context c, Z3_ast x) {
