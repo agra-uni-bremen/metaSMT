@@ -8,11 +8,29 @@
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../types/TypedSymbol.hpp"
 
-#include <boost/lexical_cast.hpp>
 #include <stack>
 
 namespace metaSMT {
   namespace evaluator {
+    namespace detail {
+      template < typename ResultType >
+      bool to_numeral(ResultType &result, std::string const s) {
+        typedef std::string::const_iterator ConstIterator;
+        static boost::spirit::qi::rule< ConstIterator, ResultType() > parser
+          = boost::spirit::qi::int_
+          ;
+
+        ConstIterator it = s.begin(), ie = s.end();
+        if ( boost::spirit::qi::parse(it, ie, parser, result) ) {
+          assert( it == ie && "Expression not completely consumed" );
+          return true;
+        }
+
+        assert( false && "Parsing failed" );
+        return false;
+      }
+    } // detail
+
     std::string utreeToString(boost::spirit::utree const tree) {
       std::stringstream ss;
       ss << tree;
@@ -132,7 +150,8 @@ namespace metaSMT {
         typedef boost::tuple< logic::index, std::vector<result_type> > command;
 
       public:
-        Assert(Context &ctx, VarMap &var_map)
+        Assert(Context &ctx,
+               VarMap &var_map)
           : ctx(ctx)
           , var_map(var_map)
         {}
@@ -147,25 +166,35 @@ namespace metaSMT {
           }
         }
 
-        result_type SIntFromBVString(std::string value, std::string bitSize) const {
-          unsigned long number = 0;
-          if (value.size() > 2) {
-            if (value.find("bv", 0, 2) != value.npos) {
-              value.erase(0, 2);
-              number = boost::lexical_cast<unsigned long>(value);
-            }
+        result_type SIntFromBVString(std::string const value_string, std::string const width_string) const {
+          typedef std::string::const_iterator ConstIterator;
+          static boost::spirit::qi::rule< ConstIterator, unsigned long() > value_parser
+            = boost::spirit::qi::lit("bv") >> boost::spirit::qi::ulong_
+            ;
+
+          static boost::spirit::qi::rule< ConstIterator, unsigned() > width_parser
+            = boost::spirit::qi::uint_
+            ;
+
+          ConstIterator it, ie;
+          
+          // parse value
+          it = value_string.begin(), ie = value_string.end();
+          unsigned long value;
+          if ( boost::spirit::qi::parse(it, ie, value_parser, value) ) {
+            assert( it == ie && "Expression not completely consumed" );
           }
 
-          unsigned const width = boost::lexical_cast<unsigned>(bitSize);
-          if (width == 1) {
-            if (number == 1) {
-              return evaluate(ctx, logic::QF_BV::bit1);
-            } else if (number == 0) {
-              return evaluate(ctx, logic::QF_BV::bit0);
-            }
+          // parse width
+          it = width_string.begin(), ie = width_string.end();
+          unsigned width;
+          if ( boost::spirit::qi::parse(it, ie, width_parser, width) ) {
+            assert( it == ie && "Expression not completely consumed" );
           }
-          return evaluate(ctx, logic::QF_BV::bvsint(number, width));
+
+          return evaluate(ctx, logic::QF_BV::bvsint(value, width));
         }
+
 
         result_type evaluateBooleanVarOrConstant(std::string arg) const {
           // constant true / false
@@ -211,7 +240,6 @@ namespace metaSMT {
         }
 
         result_type evaluateSExpr(boost::spirit::utree::iterator &it, boost::spirit::utree::iterator const &ie) {
-          // while ( utreeToString(*it) == "(" || utreeToString(*it) == ")" ) ++it; // skip '(' and ')'
           bool starts_with_bracket = false;
           if ( utreeToString(*it) == "(" ) {
             starts_with_bracket = true;
@@ -271,7 +299,8 @@ namespace metaSMT {
             if ( *idx == logic::Index<bvtags::zero_extend_tag>::value ||
                  *idx == logic::Index<bvtags::sign_extend_tag>::value ) {
               std::vector<result_type> params;
-              unsigned long op0 = boost::lexical_cast<int>(utreeToString(*it++));
+              unsigned long op0;
+              detail::to_numeral(op0, utreeToString(*it++));
               ++it; // skip ')'
               while ( it != ie && utreeToString(*it) != ")" ) {
                 params.push_back( evaluateSExpr(it, ie) );
@@ -281,8 +310,10 @@ namespace metaSMT {
             }
             else if ( *idx == logic::Index<bvtags::extract_tag>::value ) {
               std::vector<result_type> params;
-              unsigned long op0 = boost::lexical_cast<int>(utreeToString(*it++));
-              unsigned long op1 = boost::lexical_cast<int>(utreeToString(*it++));
+              unsigned long op0;
+              detail::to_numeral(op0, utreeToString(*it++));
+              unsigned long op1;
+              detail::to_numeral(op1, utreeToString(*it++));
               ++it; // skip ')'
               while ( it != ie && utreeToString(*it) != ")" ) {
                 params.push_back( evaluateSExpr(it, ie) );
@@ -351,7 +382,6 @@ namespace metaSMT {
       protected:
         Context &ctx;
         VarMap &var_map;
-        std::stack<command> the_stack;
       }; // Assert
 
       template < typename Context >
@@ -464,7 +494,8 @@ namespace metaSMT {
           std::string const type_string = utreeToString(*it);
           if ( type_string == "Bool" ) {
             // Bool, e.g., (declare-fun var_1 () Bool)
-            var_map[name] = TypedSymbolPtr(new TypedSymbol(logic::new_variable()));            
+            logic::predicate p = logic::new_variable();
+            var_map[name] = TypedSymbolPtr(new TypedSymbol(p));
           }
           else if ( type_string == "(" ) {
             // Bit-Vec, e.g., (declare-fun var_1 () (_ BitVec 1))
@@ -475,8 +506,10 @@ namespace metaSMT {
             std::string const type_name = utreeToString(*it);
             if ( type_name == "BitVec" ) {
               ++it;
-              unsigned const w = boost::lexical_cast<unsigned>(utreeToString(*it));
-              var_map[name] = TypedSymbolPtr(new TypedSymbol(logic::QF_BV::new_bitvector(w), w));              
+              unsigned w;
+              detail::to_numeral( w, utreeToString(*it) );
+              logic::QF_BV::bitvector bv = logic::QF_BV::new_bitvector(w);
+              var_map[name] = TypedSymbolPtr(new TypedSymbol(bv, w));
             }
             else {
               assert( false );
@@ -503,7 +536,8 @@ namespace metaSMT {
             boost::spirit::utree::iterator it = tree->begin();
             assert( utreeToString(*it) == "push" );
             ++it;
-            unsigned how_many = boost::lexical_cast<unsigned>( utreeToString(*it) );
+            unsigned how_many;
+            detail::to_numeral(how_many, utreeToString(*it));
             metaSMT::push(ctx, how_many);
           }
         }
@@ -524,7 +558,8 @@ namespace metaSMT {
             boost::spirit::utree::iterator it = tree->begin();
             assert( utreeToString(*it) == "pop" );
             ++it;
-            unsigned how_many = boost::lexical_cast<unsigned>( utreeToString(*it) );
+            unsigned how_many;
+            detail::to_numeral(how_many, utreeToString(*it));
             metaSMT::pop(ctx, how_many);
           }
         }
