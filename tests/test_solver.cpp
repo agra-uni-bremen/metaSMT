@@ -70,6 +70,52 @@ BOOST_AUTO_TEST_CASE( equal_t )
   BOOST_REQUIRE( !solve(ctx) );
 }
 
+BOOST_AUTO_TEST_CASE( distinct_t )
+{
+  predicate x = new_variable();
+  predicate y = new_variable();
+  bool xb,yb;
+
+  assumption( ctx, metaSMT::logic::distinct(x, x));
+  BOOST_REQUIRE( !solve(ctx) );
+  assumption( ctx, metaSMT::logic::distinct(y, y));
+  BOOST_REQUIRE( !solve(ctx) );
+  assumption( ctx, metaSMT::logic::distinct(x, y));
+  BOOST_REQUIRE( solve(ctx) );
+
+  assumption( ctx, metaSMT::logic::distinct(x, y));
+  assumption( ctx, metaSMT::logic::equal(x, True));
+  BOOST_REQUIRE( solve(ctx) );
+  xb = read_value(ctx, x);
+  BOOST_REQUIRE( xb == true );
+  yb = read_value(ctx, y);
+  BOOST_REQUIRE( yb == false );
+
+  assumption( ctx, metaSMT::logic::distinct(x, y));
+  assumption( ctx, metaSMT::logic::equal(x, False));
+  BOOST_REQUIRE( solve(ctx) );
+  xb = read_value(ctx, x);
+  BOOST_REQUIRE( xb == false );
+  yb = read_value(ctx, y);
+  BOOST_REQUIRE( yb == true );
+
+  assumption( ctx, metaSMT::logic::distinct(x, y));
+  assumption( ctx, metaSMT::logic::equal(y, True));
+  BOOST_REQUIRE( solve(ctx) );
+  xb = read_value(ctx, x);
+  BOOST_REQUIRE( xb == false );
+  yb = read_value(ctx, y);
+  BOOST_REQUIRE( yb == true );
+
+  assumption( ctx, metaSMT::logic::distinct(x, y));
+  assumption( ctx, metaSMT::logic::equal(y, False));
+  BOOST_REQUIRE( solve(ctx) );
+  xb = read_value(ctx, x);
+  BOOST_REQUIRE( xb == true );
+  yb = read_value(ctx, y);
+  BOOST_REQUIRE( yb == false );
+}
+
 BOOST_AUTO_TEST_CASE( nequal_t)
 {
   predicate x = new_variable();

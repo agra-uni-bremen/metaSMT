@@ -364,6 +364,12 @@ namespace metaSMT {
         return ptr(vc_notExpr(vc, operator()(predtags::equal_tag(), a, b)));
       }
 
+      result_type operator()( predtags::distinct_tag const &
+                             , result_type a
+                             , result_type b) {
+        return ptr(vc_notExpr(vc, operator()(predtags::equal_tag(), a, b)));
+      }
+
       ////////////////////////
       // Fallback operators //
       ////////////////////////

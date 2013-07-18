@@ -179,6 +179,7 @@ namespace metaSMT {
         // binary_expressions
         | equal_rule
         | nequal_rule
+        | distinct_rule
         | implies_rule
         | nand_rule
         | nor_rule
@@ -262,6 +263,7 @@ namespace metaSMT {
         xnor_rule %= spirit::eps << spirit::lit("(not (xor ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit("))");
         equal_rule %= spirit::eps << spirit::lit("(= ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit(")");
         nequal_rule %= spirit::eps << spirit::lit("(not (= ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit("))");
+        distinct_rule %= spirit::eps << spirit::lit("(distinct ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit(")");
 
         bvand_rule %= spirit::eps << spirit::lit("(bvand ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit(")");
         bvor_rule %= spirit::eps << spirit::lit("(bvor ") << main_rule << spirit::lit(" ") << main_rule << spirit::lit(")");
@@ -344,6 +346,7 @@ namespace metaSMT {
 
       karma::rule<OutputIterator, binary_expression<logic_tag, predtags::equal_tag>()> equal_rule;
       karma::rule<OutputIterator, binary_expression<logic_tag, predtags::nequal_tag>()> nequal_rule;
+      karma::rule<OutputIterator, binary_expression<logic_tag, predtags::distinct_tag>()> distinct_rule;
       karma::rule<OutputIterator, binary_expression<bv_tag, bvtags::bvand_tag>()> bvand_rule;
       karma::rule<OutputIterator, binary_expression<bv_tag, bvtags::bvor_tag>()> bvor_rule;
       karma::rule<OutputIterator, binary_expression<bv_tag, bvtags::bvxor_tag>()> bvxor_rule;

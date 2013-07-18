@@ -6,7 +6,7 @@
 #include <libsword.h>
 
 #include <boost/mpl/integral_c.hpp>
-#include <boost/mpl/map/map40.hpp>
+#include <boost/mpl/map/map50.hpp>
 #include <boost/any.hpp>
 #include <iostream>
 #include <cstdio>
@@ -163,54 +163,55 @@ namespace metaSMT {
         result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
           namespace mpl = boost::mpl;
 
-          typedef mpl::map40<
-            mpl::pair<metaSMT::nil,          SWORD_Op<SWORD::UNKNOWN> >
+          typedef mpl::map41<
+            mpl::pair<metaSMT::nil,           SWORD_Op<SWORD::UNKNOWN> >
           // predicate tags
-          , mpl::pair<predtags::not_tag,     SWORD_Op<SWORD::NOT> >
-          , mpl::pair<predtags::equal_tag,   SWORD_Op<SWORD::EQUAL> >
-          , mpl::pair<predtags::nequal_tag,  SWORD_Op<SWORD::NEQUAL> >
-          , mpl::pair<predtags::and_tag,     SWORD_Op<SWORD::AND> >
-          , mpl::pair<predtags::nand_tag,    SWORD_Op<SWORD::NAND> >
-          , mpl::pair<predtags::or_tag,      SWORD_Op<SWORD::OR> >
-          , mpl::pair<predtags::nor_tag,     SWORD_Op<SWORD::NOR> >
-          , mpl::pair<predtags::xor_tag,     SWORD_Op<SWORD::XOR> >
-          , mpl::pair<predtags::xnor_tag,    SWORD_Op<SWORD::XNOR> >
-          , mpl::pair<predtags::implies_tag, SWORD_Op<SWORD::IMPLIES> >
+          , mpl::pair<predtags::not_tag,      SWORD_Op<SWORD::NOT> >
+          , mpl::pair<predtags::equal_tag,    SWORD_Op<SWORD::EQUAL> >
+          , mpl::pair<predtags::nequal_tag,   SWORD_Op<SWORD::NEQUAL> >
+          , mpl::pair<predtags::distinct_tag, SWORD_Op<SWORD::NEQUAL> >
+          , mpl::pair<predtags::and_tag,      SWORD_Op<SWORD::AND> >
+          , mpl::pair<predtags::nand_tag,     SWORD_Op<SWORD::NAND> >
+          , mpl::pair<predtags::or_tag,       SWORD_Op<SWORD::OR> >
+          , mpl::pair<predtags::nor_tag,      SWORD_Op<SWORD::NOR> >
+          , mpl::pair<predtags::xor_tag,      SWORD_Op<SWORD::XOR> >
+          , mpl::pair<predtags::xnor_tag,     SWORD_Op<SWORD::XNOR> >
+          , mpl::pair<predtags::implies_tag,  SWORD_Op<SWORD::IMPLIES> >
 
           // unary tags
-          , mpl::pair<bvtags::bvnot_tag,     SWORD_Op<SWORD::NOT> >
-          , mpl::pair<bvtags::bvneg_tag,     SWORD_Op<SWORD::NEG> >
+          , mpl::pair<bvtags::bvnot_tag,      SWORD_Op<SWORD::NOT> >
+          , mpl::pair<bvtags::bvneg_tag,      SWORD_Op<SWORD::NEG> >
 
           // binary tags
-          , mpl::pair<bvtags::bvand_tag,     SWORD_Op<SWORD::AND> >
-          , mpl::pair<bvtags::bvnand_tag,    SWORD_Op<SWORD::NAND> >
-          , mpl::pair<bvtags::bvor_tag,      SWORD_Op<SWORD::OR> >
-          , mpl::pair<bvtags::bvnor_tag,     SWORD_Op<SWORD::NOR> >
-          , mpl::pair<bvtags::bvxor_tag,     SWORD_Op<SWORD::XOR> >
-          , mpl::pair<bvtags::bvxnor_tag,    SWORD_Op<SWORD::XNOR> >
-          , mpl::pair<bvtags::bvadd_tag,     SWORD_Op<SWORD::ADD> >
-          , mpl::pair<bvtags::bvsub_tag,     SWORD_Op<SWORD::SUB> >
-          , mpl::pair<bvtags::bvmul_tag,     SWORD_Op<SWORD::MUL> >
-          , mpl::pair<bvtags::bvudiv_tag,    SWORD_Op<SWORD::UDIV> >
-          , mpl::pair<bvtags::bvurem_tag,    SWORD_Op<SWORD::UREM> >
-          , mpl::pair<bvtags::bvsdiv_tag,    SWORD_Op<SWORD::SDIV> >
-          , mpl::pair<bvtags::bvsrem_tag,    SWORD_Op<SWORD::SREM> >
-          , mpl::pair<bvtags::bvcomp_tag,    SWORD_Op<SWORD::EQUAL> >
-          , mpl::pair<bvtags::bvslt_tag,     SWORD_Op<SWORD::SLT> >
-          , mpl::pair<bvtags::bvsgt_tag,     SWORD_Op<SWORD::SGT> >
-          , mpl::pair<bvtags::bvsle_tag,     SWORD_Op<SWORD::SLE> >
-          , mpl::pair<bvtags::bvsge_tag,     SWORD_Op<SWORD::SGE> >
-          , mpl::pair<bvtags::bvult_tag,     SWORD_Op<SWORD::ULT> >
-          , mpl::pair<bvtags::bvugt_tag,     SWORD_Op<SWORD::UGT> >
-          , mpl::pair<bvtags::bvule_tag,     SWORD_Op<SWORD::ULE> >
-          , mpl::pair<bvtags::bvuge_tag,     SWORD_Op<SWORD::UGE> >
-          , mpl::pair<bvtags::concat_tag,    SWORD_Op<SWORD::CONCAT> >
-          , mpl::pair<bvtags::bvshl_tag,     SWORD_Op<SWORD::LSHL> >
-          , mpl::pair<bvtags::bvshr_tag,     SWORD_Op<SWORD::LSHR> >
-          , mpl::pair<bvtags::bvashr_tag,    SWORD_Op<SWORD::ASHR> >
+          , mpl::pair<bvtags::bvand_tag,      SWORD_Op<SWORD::AND> >
+          , mpl::pair<bvtags::bvnand_tag,     SWORD_Op<SWORD::NAND> >
+          , mpl::pair<bvtags::bvor_tag,       SWORD_Op<SWORD::OR> >
+          , mpl::pair<bvtags::bvnor_tag,      SWORD_Op<SWORD::NOR> >
+          , mpl::pair<bvtags::bvxor_tag,      SWORD_Op<SWORD::XOR> >
+          , mpl::pair<bvtags::bvxnor_tag,     SWORD_Op<SWORD::XNOR> >
+          , mpl::pair<bvtags::bvadd_tag,      SWORD_Op<SWORD::ADD> >
+          , mpl::pair<bvtags::bvsub_tag,      SWORD_Op<SWORD::SUB> >
+          , mpl::pair<bvtags::bvmul_tag,      SWORD_Op<SWORD::MUL> >
+          , mpl::pair<bvtags::bvudiv_tag,     SWORD_Op<SWORD::UDIV> >
+          , mpl::pair<bvtags::bvurem_tag,     SWORD_Op<SWORD::UREM> >
+          , mpl::pair<bvtags::bvsdiv_tag,     SWORD_Op<SWORD::SDIV> >
+          , mpl::pair<bvtags::bvsrem_tag,     SWORD_Op<SWORD::SREM> >
+          , mpl::pair<bvtags::bvcomp_tag,     SWORD_Op<SWORD::EQUAL> >
+          , mpl::pair<bvtags::bvslt_tag,      SWORD_Op<SWORD::SLT> >
+          , mpl::pair<bvtags::bvsgt_tag,      SWORD_Op<SWORD::SGT> >
+          , mpl::pair<bvtags::bvsle_tag,      SWORD_Op<SWORD::SLE> >
+          , mpl::pair<bvtags::bvsge_tag,      SWORD_Op<SWORD::SGE> >
+          , mpl::pair<bvtags::bvult_tag,      SWORD_Op<SWORD::ULT> >
+          , mpl::pair<bvtags::bvugt_tag,      SWORD_Op<SWORD::UGT> >
+          , mpl::pair<bvtags::bvule_tag,      SWORD_Op<SWORD::ULE> >
+          , mpl::pair<bvtags::bvuge_tag,      SWORD_Op<SWORD::UGE> >
+          , mpl::pair<bvtags::concat_tag,     SWORD_Op<SWORD::CONCAT> >
+          , mpl::pair<bvtags::bvshl_tag,      SWORD_Op<SWORD::LSHL> >
+          , mpl::pair<bvtags::bvshr_tag,      SWORD_Op<SWORD::LSHR> >
+          , mpl::pair<bvtags::bvashr_tag,     SWORD_Op<SWORD::ASHR> >
 
           //// ternary tags
-          , mpl::pair<predtags::ite_tag,       SWORD_Op<SWORD::ITE> >
+          , mpl::pair<predtags::ite_tag,      SWORD_Op<SWORD::ITE> >
           > Opcode_Map;
 
           typedef typename mpl::eval_if<

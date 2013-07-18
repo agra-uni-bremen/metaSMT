@@ -69,6 +69,11 @@ namespace metaSMT
         return aiger_not ( aiger_add_xnor ( aig, lhs, rhs ) ); 
       }
 
+      result_type operator() (logic::tag::distinct_tag const&, result_type lhs, result_type rhs )
+      {
+        return aiger_not ( aiger_add_xnor ( aig, lhs, rhs ) ); 
+      }
+
       result_type operator() (logic::tag::xnor_tag const&, result_type lhs, result_type rhs )
       {
         return aiger_add_xnor ( aig, lhs, rhs ); 

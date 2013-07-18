@@ -44,8 +44,9 @@ namespace metaSMT {
     TAG(not, unary)
 
     // binary
-    TAG(equal, binary)
+    TAG(equal, binary) // chainable
     TAG(nequal, binary)
+    TAG(distinct, binary) // pairwise
     TAG(implies, right_assoc)
 
     TAG(and, right_assoc)
@@ -68,6 +69,7 @@ namespace metaSMT {
         , not_tag
         , equal_tag
         , nequal_tag
+        , distinct_tag
         , and_tag
         , nand_tag
         , or_tag

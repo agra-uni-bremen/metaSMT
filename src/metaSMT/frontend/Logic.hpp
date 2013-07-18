@@ -78,15 +78,16 @@ namespace metaSMT {
       } 
 /** @endcond */
 
-      _BINARY_PREDICATE(equal,   tag::equal_tag)
-      _BINARY_PREDICATE(nequal,  tag::nequal_tag)
-      _BINARY_PREDICATE(implies, tag::implies_tag)
-      _BINARY_PREDICATE(And,     tag::and_tag)
-      _BINARY_PREDICATE(Nand,    tag::nand_tag)
-      _BINARY_PREDICATE(Or,      tag::or_tag)
-      _BINARY_PREDICATE(Nor,     tag::nor_tag)
-      _BINARY_PREDICATE(Xor,     tag::xor_tag)
-      _BINARY_PREDICATE(Xnor,    tag::xnor_tag)
+      _BINARY_PREDICATE(equal,    tag::equal_tag)
+      _BINARY_PREDICATE(nequal,   tag::nequal_tag)
+      _BINARY_PREDICATE(distinct, tag::distinct_tag)
+      _BINARY_PREDICATE(implies,  tag::implies_tag)
+      _BINARY_PREDICATE(And,      tag::and_tag)
+      _BINARY_PREDICATE(Nand,     tag::nand_tag)
+      _BINARY_PREDICATE(Or,       tag::or_tag)
+      _BINARY_PREDICATE(Nor,      tag::nor_tag)
+      _BINARY_PREDICATE(Xor,      tag::xor_tag)
+      _BINARY_PREDICATE(Xnor,     tag::xnor_tag)
 #undef _BINARY_PREDICATE
 
       template<typename E1, typename E2, typename E3>

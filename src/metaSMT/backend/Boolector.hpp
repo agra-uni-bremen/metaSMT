@@ -301,44 +301,45 @@ namespace metaSMT {
         result_type operator() (TagT tag, result_type a, result_type b) {
           namespace mpl = boost::mpl;
 
-          typedef mpl::map35<
+          typedef mpl::map36<
           // binary Logic tags
-            mpl::pair<predtags::equal_tag,   Btor_F2<&boolector_eq> >
-          , mpl::pair<predtags::nequal_tag,  Btor_F2<&boolector_ne> >
-          , mpl::pair<predtags::and_tag,     Btor_F2<&boolector_and> >
-          , mpl::pair<predtags::nand_tag,    Btor_F2<&boolector_nand> >
-          , mpl::pair<predtags::or_tag,      Btor_F2<&boolector_or> >
-          , mpl::pair<predtags::nor_tag,     Btor_F2<&boolector_nor> >
-          , mpl::pair<predtags::xor_tag,     Btor_F2<&boolector_xor> >
-          , mpl::pair<predtags::xnor_tag,    Btor_F2<&boolector_xnor> >
-          , mpl::pair<predtags::implies_tag, Btor_F2<&boolector_implies> >
+            mpl::pair<predtags::equal_tag,    Btor_F2<&boolector_eq> >
+          , mpl::pair<predtags::nequal_tag,   Btor_F2<&boolector_ne> >
+          , mpl::pair<predtags::distinct_tag, Btor_F2<&boolector_ne> >
+          , mpl::pair<predtags::and_tag,      Btor_F2<&boolector_and> >
+          , mpl::pair<predtags::nand_tag,     Btor_F2<&boolector_nand> >
+          , mpl::pair<predtags::or_tag,       Btor_F2<&boolector_or> >
+          , mpl::pair<predtags::nor_tag,      Btor_F2<&boolector_nor> >
+          , mpl::pair<predtags::xor_tag,      Btor_F2<&boolector_xor> >
+          , mpl::pair<predtags::xnor_tag,     Btor_F2<&boolector_xnor> >
+          , mpl::pair<predtags::implies_tag,  Btor_F2<&boolector_implies> >
           // binary QF_BV tags
-          , mpl::pair<bvtags::bvand_tag,     Btor_F2<&boolector_and> >
-          , mpl::pair<bvtags::bvnand_tag,    Btor_F2<&boolector_nand> >
-          , mpl::pair<bvtags::bvor_tag,      Btor_F2<&boolector_or> >
-          , mpl::pair<bvtags::bvnor_tag,     Btor_F2<&boolector_nor> >
-          , mpl::pair<bvtags::bvxor_tag,     Btor_F2<&boolector_xor> >
-          , mpl::pair<bvtags::bvxnor_tag,    Btor_F2<&boolector_xnor> >
-          , mpl::pair<bvtags::bvadd_tag,     Btor_F2<&boolector_add> >
-          , mpl::pair<bvtags::bvsub_tag,     Btor_F2<&boolector_sub> >
-          , mpl::pair<bvtags::bvmul_tag,     Btor_F2<&boolector_mul> >
-          , mpl::pair<bvtags::bvudiv_tag,    Btor_F2<&boolector_udiv> >
-          , mpl::pair<bvtags::bvurem_tag,    Btor_F2<&boolector_urem> >
-          , mpl::pair<bvtags::bvsdiv_tag,    Btor_F2<&boolector_sdiv> >
-          , mpl::pair<bvtags::bvsrem_tag,    Btor_F2<&boolector_srem> >
-          , mpl::pair<bvtags::bvcomp_tag,    Btor_F2<&boolector_eq > >
-          , mpl::pair<bvtags::bvslt_tag,     Btor_F2<&boolector_slt > >
-          , mpl::pair<bvtags::bvsle_tag,     Btor_F2<&boolector_slte > >
-          , mpl::pair<bvtags::bvsgt_tag,     Btor_F2<&boolector_sgt > >
-          , mpl::pair<bvtags::bvsge_tag,     Btor_F2<&boolector_sgte > >
-          , mpl::pair<bvtags::bvult_tag,     Btor_F2<&boolector_ult > >
-          , mpl::pair<bvtags::bvule_tag,     Btor_F2<&boolector_ulte > >
-          , mpl::pair<bvtags::bvugt_tag,     Btor_F2<&boolector_ugt > >
-          , mpl::pair<bvtags::bvuge_tag,     Btor_F2<&boolector_ugte > >
-          , mpl::pair<bvtags::concat_tag,    Btor_F2<&boolector_concat > >
-          , mpl::pair<bvtags::bvshl_tag,     Btor_F2<&boolector_sll > >
-          , mpl::pair<bvtags::bvshr_tag,     Btor_F2<&boolector_srl > >
-          , mpl::pair<bvtags::bvashr_tag,    Btor_F2<&boolector_sra > >
+          , mpl::pair<bvtags::bvand_tag,      Btor_F2<&boolector_and> >
+          , mpl::pair<bvtags::bvnand_tag,     Btor_F2<&boolector_nand> >
+          , mpl::pair<bvtags::bvor_tag,       Btor_F2<&boolector_or> >
+          , mpl::pair<bvtags::bvnor_tag,      Btor_F2<&boolector_nor> >
+          , mpl::pair<bvtags::bvxor_tag,      Btor_F2<&boolector_xor> >
+          , mpl::pair<bvtags::bvxnor_tag,     Btor_F2<&boolector_xnor> >
+          , mpl::pair<bvtags::bvadd_tag,      Btor_F2<&boolector_add> >
+          , mpl::pair<bvtags::bvsub_tag,      Btor_F2<&boolector_sub> >
+          , mpl::pair<bvtags::bvmul_tag,      Btor_F2<&boolector_mul> >
+          , mpl::pair<bvtags::bvudiv_tag,     Btor_F2<&boolector_udiv> >
+          , mpl::pair<bvtags::bvurem_tag,     Btor_F2<&boolector_urem> >
+          , mpl::pair<bvtags::bvsdiv_tag,     Btor_F2<&boolector_sdiv> >
+          , mpl::pair<bvtags::bvsrem_tag,     Btor_F2<&boolector_srem> >
+          , mpl::pair<bvtags::bvcomp_tag,     Btor_F2<&boolector_eq > >
+          , mpl::pair<bvtags::bvslt_tag,      Btor_F2<&boolector_slt > >
+          , mpl::pair<bvtags::bvsle_tag,      Btor_F2<&boolector_slte > >
+          , mpl::pair<bvtags::bvsgt_tag,      Btor_F2<&boolector_sgt > >
+          , mpl::pair<bvtags::bvsge_tag,      Btor_F2<&boolector_sgte > >
+          , mpl::pair<bvtags::bvult_tag,      Btor_F2<&boolector_ult > >
+          , mpl::pair<bvtags::bvule_tag,      Btor_F2<&boolector_ulte > >
+          , mpl::pair<bvtags::bvugt_tag,      Btor_F2<&boolector_ugt > >
+          , mpl::pair<bvtags::bvuge_tag,      Btor_F2<&boolector_ugte > >
+          , mpl::pair<bvtags::concat_tag,     Btor_F2<&boolector_concat > >
+          , mpl::pair<bvtags::bvshl_tag,      Btor_F2<&boolector_sll > >
+          , mpl::pair<bvtags::bvshr_tag,      Btor_F2<&boolector_srl > >
+          , mpl::pair<bvtags::bvashr_tag,     Btor_F2<&boolector_sra > >
           > Opcode_Map;
 
           typedef

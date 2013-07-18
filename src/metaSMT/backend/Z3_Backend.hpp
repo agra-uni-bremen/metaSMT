@@ -548,7 +548,7 @@ namespace metaSMT {
       template <typename TagT>
       result_type operator() (TagT tag, result_type a, result_type b) {
         namespace mpl = boost::mpl;
-        typedef mpl::map31<
+        typedef mpl::map32<
           mpl::pair<bvtags::bvand_tag,      Z3_F2<&Z3_mk_bvand> >
         , mpl::pair<bvtags::bvnand_tag,     Z3_F2<&Z3_mk_bvnand> >
         , mpl::pair<bvtags::bvor_tag,       Z3_F2<&Z3_mk_bvor> >
@@ -574,6 +574,7 @@ namespace metaSMT {
         , mpl::pair<predtags::or_tag,       Z3_F2_MULTI_ARG<&Z3_mk_or> >
         , mpl::pair<predtags::equal_tag,    Z3_F2<&Z3_mk_eq> >
         , mpl::pair<predtags::nequal_tag,   Z3_F2_MULTI_ARG<&Z3_mk_distinct> >
+        , mpl::pair<predtags::distinct_tag, Z3_F2_MULTI_ARG<&Z3_mk_distinct> >
         , mpl::pair<bvtags::concat_tag,     Z3_F2<&Z3_mk_concat> >
         , mpl::pair<bvtags::bvudiv_tag,     Z3_F2<&Z3_mk_bvudiv> >
         , mpl::pair<bvtags::bvurem_tag,     Z3_F2<&Z3_mk_bvurem> >

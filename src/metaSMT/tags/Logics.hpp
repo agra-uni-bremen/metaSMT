@@ -28,7 +28,7 @@ namespace metaSMT {
     //BOOST_MPL_ASSERT_RELATION( boost::mpl::size<allTags>::value, ==, 1 );
   }
 
-#if BOOST_VARIANT_VISITATION_UNROLLING_LIMIT < 57
+#if BOOST_VARIANT_VISITATION_UNROLLING_LIMIT < 58
 #warning "BOOST_VARIANT_VISITATION_UNROLLING_LIMIT is too small!"
 #warning "Visiting metaSMT::Tag (e.g., via boost::put(.)) may unexpectedly fail."
 #warning "Try to include <metaSMT/support/default_visitation_unrolling_limit.hpp>."

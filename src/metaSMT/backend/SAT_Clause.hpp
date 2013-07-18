@@ -129,6 +129,10 @@ namespace metaSMT
         return operator()(logic::tag::xor_tag(), lhs, rhs);
       }
 
+      result_type operator() (logic::tag::distinct_tag const& tag, result_type lhs, result_type rhs )
+      {
+        return operator()(logic::tag::xor_tag(), lhs, rhs);        
+      }
 
       template<typename T>
       result_type operator() (T const& tag, result_type lhs, result_type rhs )

@@ -14,7 +14,7 @@ namespace metaSMT {
   namespace mpl = boost::mpl;
 
   /** \cond **/
-  typedef mpl::map46<
+  typedef mpl::map47<
       mpl::pair<predtags::true_tag,    mpl::string<'t', 'r', 'u', 'e'> >
     , mpl::pair<predtags::false_tag,   mpl::string<'f', 'a', 'l', 's', 'e'> >
     , mpl::pair<bvtags::bvult_tag,     mpl::string<'b', 'v', 'u', 'l', 't'> >
@@ -74,6 +74,7 @@ namespace metaSMT {
                                             mpl::string<'s', 'i', 'g', 'n', '_'>,
                                             mpl::string<'e', 'x', 't', 'e', 'n', 'd'>
                                           >::type >
+    , mpl::pair<predtags::distinct_tag,   mpl::string<'d', 'i', 's', 't', 'i', 'c', 't'> >
   > SMT_NameMap;
   /** \endcond **/
 

@@ -400,14 +400,17 @@ namespace metaSMT {
         return expr::binary_expression<expr::logic_tag, predtags::nequal_tag>(a, b);
       }
 
-      result_type operator() ( predtags::and_tag, result_type a, result_type b ) {
-	using namespace boost::assign;
-	typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
-	Expr::ContainerType v;
-	v.push_back(a);
-  v.push_back(b);
-	return Expr(v);
+      result_type operator() ( predtags::distinct_tag, result_type a, result_type b ) {
+        return expr::binary_expression<expr::logic_tag, predtags::distinct_tag>(a, b);
+      }
 
+      result_type operator() ( predtags::and_tag, result_type a, result_type b ) {
+        using namespace boost::assign;
+        typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
+        Expr::ContainerType v;
+        v.push_back(a);
+        v.push_back(b);
+        return Expr(v);
       }
 
       result_type operator() ( predtags::nand_tag, result_type a, result_type b ) {

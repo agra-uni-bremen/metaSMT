@@ -139,7 +139,7 @@ namespace metaSMT {
 #warning "Try to include <metaSMT/support/default_visitation_unrolling_limit.hpp>."
 #endif // BOOST_VARIANT_VISITATION_UNROLLING_LIMIT
 
-    typedef boost::mpl::vector56<
+    typedef boost::mpl::vector57<
       // constants
         bool
       , bit0_const
@@ -163,6 +163,7 @@ namespace metaSMT {
       // binary expressions
       , boost::recursive_wrapper<binary_expression<logic_tag, predtags::equal_tag> >
       , boost::recursive_wrapper<binary_expression<logic_tag, predtags::nequal_tag> >
+      , boost::recursive_wrapper<binary_expression<logic_tag, predtags::distinct_tag> >
       , boost::recursive_wrapper<binary_expression<logic_tag, predtags::implies_tag> >
       , boost::recursive_wrapper<binary_expression<logic_tag, predtags::nand_tag> >
       , boost::recursive_wrapper<binary_expression<logic_tag, predtags::nor_tag> >

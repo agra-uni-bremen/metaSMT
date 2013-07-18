@@ -87,6 +87,14 @@ namespace metaSMT {
       outfile_ << "))";
     }
 
+    inline void operator()(predtags::distinct_tag const &tag) const {
+      outfile_ << "(distinct ";
+      BOOST_FOREACH (SMT_Edge e, out_edges(v_, g_)) {
+        print_SMT_Expression(outfile_, g_, target(e, g_));
+      }
+      outfile_ << ")";
+    }
+
     inline void operator()(predtags::nand_tag const &tag) const {
       outfile_ << "(not (and";
       BOOST_FOREACH (SMT_Edge e, out_edges(v_, g_)) {
