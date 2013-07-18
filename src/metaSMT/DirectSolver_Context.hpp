@@ -254,6 +254,15 @@ namespace metaSMT {
       );
     }
 
+    template < typename Tag, typename Expr >
+    result_type operator() (Tag t, std::vector<Expr> const &es) {
+      std::vector< result_type > rs;
+      for ( unsigned u = 0; u < es.size(); ++u) {
+        rs.push_back( evaluate(*this, es[u]) );
+      }
+      return SolverContext::operator()(t, rs);
+    }
+
     template< typename Tag, typename Expr1, typename Expr2>
     result_type operator() (Tag t, Expr1 e1, Expr2 e2) {
       return SolverContext::operator() ( t,
