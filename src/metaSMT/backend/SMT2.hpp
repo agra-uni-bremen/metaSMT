@@ -235,7 +235,7 @@ namespace metaSMT {
       }
 
       result_type command( simplify_cmd const &, result_type e ) {
-	return expr::simplify( e );
+        return expr::simplify( e );
       }
 
       void command( setup_option_map_cmd const &, Options const &opt ) {
@@ -310,7 +310,9 @@ namespace metaSMT {
         }
         assertions_.clear();
 
-        push();
+        if ( assumptions_.size() > 0 ) {
+          push();
+        }
 
         BOOST_FOREACH( result_type const &e, assumptions_ ) {
           dump_decls( e );
