@@ -1,7 +1,8 @@
 add_tool_executable( metaSMT-server
   SOURCES
     main.cpp
-    connection.cpp
+    SolverProcess.cpp
+    Connection.cpp
   REQUIRES
     Boost_FOUND
     Boolector_FOUND

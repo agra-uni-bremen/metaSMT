@@ -1,35 +1,34 @@
-#include <iostream>
-
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
+#include "Connection.hpp"
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/smart_ptr.hpp>
+#include <iostream>
 
-#include "connection.hpp"
+namespace asio = boost::asio;
+using asio::ip::tcp;
 
-using boost::asio::ip::tcp;
+void server(asio::io_service &io_service) {
+  int const port = 1313;
+  tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+  std::cout << "metaSMT-server started" << std::endl;
+  std::cout << "Listening on port " << port << std::endl;
 
-void server(boost::asio::io_service& io_service)
-{
-  tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 1313));
-
-  for (;;)
-  {
-    socket_ptr sock(new tcp::socket(io_service));
+  for (;;) {
+    typedef boost::shared_ptr<boost::asio::ip::tcp::socket> SocketPtr;
+    SocketPtr sock(new tcp::socket(io_service));
     acceptor.accept(*sock);
-    boost::thread t(boost::bind(new_connection, sock));
+    boost::thread t(boost::bind(Connection::new_connection, sock));
   }
 }
 
-int main(int argc, const char *argv[])
-{
-  try
-  {
-    boost::asio::io_service io_service;
+int main(int argc, const char *argv[]) {
+  try {
+    asio::io_service io_service;
     server(io_service);
   }
-  catch (std::exception& e)
-  {
+  catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
   }
-
   return 0;
 }
