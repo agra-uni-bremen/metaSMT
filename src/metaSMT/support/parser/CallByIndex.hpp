@@ -1,6 +1,7 @@
 #pragma once
-// lazy includes
 #include "../../support/index/Logics.hpp"
+#include "../../frontend/Logic.hpp"
+#include <boost/tuple/tuple.hpp>
 
 namespace metaSMT {
   namespace support {

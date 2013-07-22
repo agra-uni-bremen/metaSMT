@@ -4,6 +4,7 @@
 #include "CallByIndex.hpp"
 #include "UTreeToString.hpp"
 #include "../../API/Stack.hpp"
+#include "../../API/Assertion.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../types/TypedSymbol.hpp"
 
