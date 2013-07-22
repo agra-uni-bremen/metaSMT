@@ -68,7 +68,7 @@ namespace metaSMT {
         qi::rule<Iterator, spirit::utree(), whitespace< Iterator > > numeral, sexpr;
         qi::rule<Iterator, spirit::utf8_symbol_type(), whitespace< Iterator > > command_name;
         qi::rule<Iterator, spirit::utf8_string_type(), whitespace< Iterator > > symbol;
-        qi::rule<Iterator, spirit::utree::utree(), whitespace< Iterator> > command, declaration;
+        qi::rule<Iterator, spirit::utree(), whitespace< Iterator> > command, declaration;
         qi::rule<Iterator > end_of_word;
 
         phoenix::function<Evaluator> const evaluate;
