@@ -415,13 +415,7 @@ namespace metaSMT {
         {}
 
         result_type operator()(boost::optional<boost::spirit::utree> ut) {
-          bool const sat = solve(*ctx); 
-          if ( sat ) {
-            std::cout << "sat" << std::endl;
-          } else {
-            std::cout << "unsat" << std::endl;
-          }
-          return sat;
+          return solve(*ctx); 
         }
 
       protected:
