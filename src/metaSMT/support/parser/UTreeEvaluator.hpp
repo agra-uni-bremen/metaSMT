@@ -42,27 +42,39 @@ namespace metaSMT {
       void evaluateCommand(utree const &ast) {
         assert( ast.size() > 0 );
         utree::const_iterator ast_it = ast.begin();
-        std::string const symbol_string = utreeToString(*ast_it);
-        boost::optional<Command> cmd =
-          SMT_Command_Map<Context>::get_command(symbol_string, ctx, var_map);
-        if ( cmd ) {
-          boost::optional<boost::any> result = SMT_Command_Map<Context>::execute_command(*cmd, ast);
-          if ( result ) {
-            if ( symbol_string == "check-sat" ) {
-              metaSMT::result_wrapper rw = boost::any_cast<metaSMT::result_wrapper>(*result);
-              std::string s = rw;
-              std::cerr << s << '\n';
+        std::string const name = utreeToString(*ast_it);
+        boost::optional<Command> command =
+          SMT_Command_Map<Context>::get_command(name, ctx, var_map);
+        boost::optional<boost::any> result =
+          SMT_Command_Map<Context>::execute_command(*command, ast);
+        if ( !command ) {
+          std::cerr << "ERROR: Unsupported command ``" << name << "\'\'\n";
+          ::exit(-1);
+        }
+
+        if ( result ) {
+          if ( name == "check-sat" ) {
+            bool const sat = boost::any_cast<bool>(*result);
+            std::cout << (sat ? "sat" : "unsat") << '\n';
+          }
+          else if ( name == "get-value" ) {
+            typedef boost::tuple<std::string, TypedSymbolPtr> VarType; 
+            VarType var = boost::any_cast<VarType>(*result);
+            std::string const name = boost::get<0>(var);
+            TypedSymbolPtr symbol = boost::get<1>(var);
+            std::string ret = "<Unknown>";
+            if ( symbol->isBool() ) {
+              bool const b = read_value(ctx, symbol->eval(ctx));
+              std::cout << "((" + name + " " + (b ? "true" : "false") + "))" << '\n';
             }
-            else if ( symbol_string == "get-value" ) {
-              metaSMT::result_wrapper rw = boost::any_cast<metaSMT::result_wrapper>(*result);
-              std::string s = rw;
-              std::cerr << s << '\n';
+            else if (symbol->isBitVector() ) {
+              std::string const value = read_value(ctx, symbol->eval(ctx));
+              std::cout << "((" + name + " #b" + value + "))" << '\n';
+            }
+            else {
+              assert( false && "Variable type is not supported" );
             }
           }
-        }
-        else {
-          std::cerr << "ERROR: Unsupported command ``" << symbol_string << "\'\'\n";
-          ::exit(-1);
         }
       }
 
