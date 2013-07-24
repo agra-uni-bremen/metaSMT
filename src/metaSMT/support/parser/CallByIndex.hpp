@@ -128,15 +128,9 @@ namespace metaSMT {
       if ( args.size() == 2 ) {
         return (*ctx)(Tag(), boost::proto::lit(args[0]), boost::proto::lit(args[1]));
       }
-      else {
-        // resolve left associativity
-        assert( args.size() >= 2 );
-        typename Context::result_type r = (*ctx)(Tag(),  boost::proto::lit(args[0]), boost::proto::lit(args[1]));
-        for ( unsigned u = 2; u < args.size(); ++u ) {
-          r = (*ctx)(Tag(), boost::proto::lit(r), boost::proto::lit(args[u]));
-        }
-        return r;
-      }
+
+      assert( args.size() >= 2 );
+      return (*ctx)(Tag(), args);
     }
 
     template < typename Context, typename Tag, typename T, typename Arg >
