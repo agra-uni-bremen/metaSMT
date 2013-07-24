@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE SMT2Parser 
+#define BOOST_TEST_MODULE SMT2Parser_SMT2
 #include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include <metaSMT/DirectSolver_Context.hpp>
 #include <metaSMT/API/Stack.hpp>
@@ -12,7 +12,7 @@ struct Solver_Fixture {
 public:
   typedef DirectSolver_Context< SMT2 > ContextType;
   Solver_Fixture() {
-    set_option(ctx, "solver_executable", "smt2InputEvaluator_Z3_Backend");
+    set_option(ctx, "solver_executable", "smt2InputEvaluator_SMT2");
     set_option(ctx, "solver_arguments", "");
   }
   ContextType ctx;
