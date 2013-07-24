@@ -167,7 +167,7 @@ void Connection::processCommandsLoop() {
       for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
            it != ie; ++it) {
         std::string const s = (*it)->parent_read_command();
-        assert( s == "OK" );
+        write( s );
       }
     }
   }
