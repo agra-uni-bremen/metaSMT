@@ -18,7 +18,7 @@ public:
 
 private:
   std::string getLine();
-  void write(std::string const &string);
+  void write(std::string string);
   void terminateSolver(SolverProcess *solver);
 
   void setupSolverProcesses();

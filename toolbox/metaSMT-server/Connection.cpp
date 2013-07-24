@@ -184,8 +184,9 @@ std::string Connection::getLine() {
   return s;
 }
 
-void Connection::write(std::string const &s) {
-  boost::asio::write(*socket, boost::asio::buffer(s + '\n', s.size()));
+void Connection::write(std::string s) {
+  s += '\n';
+  boost::asio::write(*socket, boost::asio::buffer(s, s.size()));
 }
 
 void Connection::terminateSolver(SolverProcess *solver) {
