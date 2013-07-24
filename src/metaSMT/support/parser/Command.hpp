@@ -3,14 +3,16 @@
 #include "has_attribute.hpp"
 #include "CallByIndex.hpp"
 #include "UTreeToString.hpp"
-#include "../../API/Stack.hpp"
+#include "../SimpleSymbolTable.hpp"
 #include "../../API/Assertion.hpp"
 #include "../../API/Options.hpp"
+#include "../../API/Stack.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../types/TypedSymbol.hpp"
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
 
-namespace metaSMT {
+namespace metaSMT { 
   namespace evaluator {
     namespace detail {
       template < typename ResultType >
@@ -56,7 +58,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        NoCommand(Context *ctx, VarMap *var_map) {}
+        NoCommand(Context *ctx, VarMap *var_map,
+                  support::simple_symbol_table *table) {}
 
         result_type operator()(boost::optional<boost::spirit::utree> ut) {
           std::cerr << "ERROR: NoCommand called" << '\n';
@@ -74,7 +77,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        SetLogic(Context *ctx, VarMap *var_map)
+        SetLogic(Context *ctx, VarMap *var_map,
+                 support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -104,11 +108,12 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        SetInfo(Context *ctx, VarMap *var_map)
+        SetInfo(Context *ctx, VarMap *var_map,
+                support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
-        result_type operator()(boost::optional<boost::spirit::utree> ut) {
+        result_type operator()(boost::optional<boost::spirit::utree> const &ut) {
           std::cerr << "Warning: Ignore SMT-LIB2 set-info command" << '\n';
         }
 
@@ -126,7 +131,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        SetOption(Context *ctx, VarMap *var_map)
+        SetOption(Context *ctx, VarMap *var_map,
+                  support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -148,7 +154,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        GetOption(Context *ctx, VarMap *var_map)
+        GetOption(Context *ctx, VarMap *var_map,
+                  support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -174,8 +181,8 @@ namespace metaSMT {
         typedef boost::tuple< logic::index, std::vector<rtype> > command;
 
       public:
-        Assert(Context *ctx,
-               VarMap *var_map)
+        Assert(Context *ctx, VarMap *var_map,
+               support::simple_symbol_table *table)
           : ctx(ctx)
           , var_map(var_map)
         {}
@@ -420,7 +427,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        CheckSat(Context *ctx, VarMap *var_map)
+        CheckSat(Context *ctx, VarMap *var_map,
+                 support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -442,7 +450,8 @@ namespace metaSMT {
         typedef boost::tuple<std::string, TypedSymbolPtr> result_type;
 
       public:
-        GetValue(Context *ctx, VarMap *var_map)
+        GetValue(Context *ctx, VarMap *var_map,
+                 support::simple_symbol_table *table)
           : ctx(ctx)
           , var_map(var_map)
         {}
@@ -490,9 +499,11 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        DeclareFun(Context *ctx, VarMap *var_map)
+        DeclareFun(Context *ctx, VarMap *var_map,
+                   support::simple_symbol_table *table)
           : ctx(ctx)
           , var_map(var_map)
+          , table(table)
         {}
 
         result_type operator()( boost::optional<boost::spirit::utree> decl ) {
@@ -518,6 +529,7 @@ namespace metaSMT {
             // Bool, e.g., (declare-fun var_1 () Bool)
             logic::predicate p = logic::new_variable();
             (*var_map)[name] = TypedSymbolPtr(new TypedSymbol(p));
+            table->insert( p, name );
           }
           else if ( type_string == "(" ) {
             // Bit-Vec, e.g., (declare-fun var_1 () (_ BitVec 1))
@@ -532,6 +544,7 @@ namespace metaSMT {
               detail::to_numeral( w, utreeToString(*it) );
               logic::QF_BV::bitvector bv = logic::QF_BV::new_bitvector(w);
               (*var_map)[name] = TypedSymbolPtr(new TypedSymbol(bv, w));
+              table->insert( bv, name );
             }
             else {
               assert( false );
@@ -544,6 +557,7 @@ namespace metaSMT {
       protected:
         Context *ctx;
         VarMap *var_map;
+        support::simple_symbol_table *table;
       }; // DeclareFun
 
       template < typename Context >
@@ -556,7 +570,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        Push(Context *ctx, VarMap *var_map)
+        Push(Context *ctx, VarMap *var_map,
+             support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -585,7 +600,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        Pop(Context *ctx, VarMap *var_map)
+        Pop(Context *ctx, VarMap *var_map,
+            support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 
@@ -614,7 +630,8 @@ namespace metaSMT {
         typedef std::map<std::string, TypedSymbolPtr > VarMap;
 
       public:
-        Exit(Context *ctx, VarMap *var_map)
+        Exit(Context *ctx, VarMap *var_map,
+             support::simple_symbol_table *table)
           : ctx(ctx)
         {}
 

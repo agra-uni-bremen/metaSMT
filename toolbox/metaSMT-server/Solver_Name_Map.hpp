@@ -14,12 +14,18 @@
 
 namespace metaSMT {
   typedef boost::mpl::map<
-    mpl::pair< mpl::string<'Z','3'>, DirectSolver_Context< solver::Z3_Backend> >
+    mpl::pair<
+      mpl::string<'Z','3'>
+    , DirectSolver_Context< IgnoreSymbolTable< solver::Z3_Backend> >
+    >
   , mpl::pair<
       string_concat< mpl::string<'B','o','o','l'>, mpl::string<'e','c','t','o','r'> >::type
-    , DirectSolver_Context< Stack<solver::Boolector> >
+      , DirectSolver_Context< IgnoreSymbolTable< Stack<solver::Boolector> > >
     >
-  , mpl::pair< mpl::string<'S','M','T','2'>, DirectSolver_Context< solver::SMT2 > >
+  , mpl::pair<
+      mpl::string<'S','M','T','2'>
+    , DirectSolver_Context< solver::SMT2 >
+    >
   > Solver_Name_Map;
 
   namespace detail {

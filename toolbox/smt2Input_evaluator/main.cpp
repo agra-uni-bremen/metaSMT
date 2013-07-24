@@ -1,6 +1,5 @@
 #include <metaSMT/support/parser/SMT2Parser.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
-
 #include <string>
 #include <fstream>
 
@@ -11,12 +10,18 @@ using namespace metaSMT::evaluator;
 using namespace metaSMT::smt2;
 
 int main(int argc, char **argv) {
-  typedef UTreeEvaluator<ContextType> Evaluator;
-  string line;
-  stringstream *buf = new stringstream;
   ContextType ctx;
+  for ( OptionMap::const_iterator it = options.begin(), ie = options.end();
+        it != ie; ++it ) {
+    set_option(ctx, it->first, it->second);
+  }
+
+  typedef UTreeEvaluator<ContextType> Evaluator;
   Evaluator evaluator(ctx);
   SMT2Parser<Evaluator> parser(evaluator);
+
+  stringstream *buf = new stringstream;
+  string line;
   while( !cin.eof() ){
     std::getline(std::cin, line);
     if ( std::cin.fail() ) {

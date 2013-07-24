@@ -1,6 +1,7 @@
 #pragma once 
 #include "SMT_Command_Map.hpp"
 #include "../../result_wrapper.hpp"
+#include "../SimpleSymbolTable.hpp"
 #include <boost/spirit/include/support_utree.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
@@ -23,14 +24,16 @@ namespace metaSMT {
       UTreeEvaluator(Context &ctx)
         : ctx(ctx)
         , var_map_ptr(new VarMap())
-        , var_map(*var_map_ptr)
-      {}
+        , var_map(*var_map_ptr) {
+        set_symbol_table(ctx, table);
+      }
 
       UTreeEvaluator(Context &ctx,
                      VarMap &var_map)
         : ctx(ctx)
-        , var_map(var_map)
-      {}
+        , var_map(var_map) {
+        set_symbol_table(ctx, table);
+      }
 
       void evaluateInstance(utree const &ast) {
         for ( utree::const_iterator it = ast.begin(), ie = ast.end();
@@ -44,7 +47,7 @@ namespace metaSMT {
         utree::const_iterator ast_it = ast.begin();
         std::string const name = utreeToString(*ast_it);
         boost::optional<Command> command =
-          SMT_Command_Map<Context>::get_command(name, ctx, var_map);
+          SMT_Command_Map<Context>::get_command(name, ctx, var_map, table);
         boost::optional<boost::any> result =
           SMT_Command_Map<Context>::execute_command(*command, ast);
         if ( !command ) {
@@ -82,6 +85,7 @@ namespace metaSMT {
       Context &ctx;
       boost::shared_ptr<VarMap> var_map_ptr;
       VarMap &var_map;
+      support::simple_symbol_table table;
     }; // UTreeEvaluator
   }// namespace evaluator
 } // namespace metaSMT

@@ -3,6 +3,7 @@
 #include <metaSMT/support/parser/SMT2Parser.hpp>
 #include <metaSMT/support/parser/UTreeEvaluator.hpp>
 #include <metaSMT/support/parser/UTreeToString.hpp>
+#include <metaSMT/support/SimpleSymbolTable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 #include <sstream>
@@ -45,7 +46,7 @@ public:
         // std::cerr << "COMMAND: " << command << '\n';
 
         boost::optional<Command> cmd =
-          eval::SMT_Command_Map<Context>::get_command(command, solver, var_map);
+          eval::SMT_Command_Map<Context>::get_command(command, solver, var_map, table);
         assert( cmd );
         boost::optional<boost::any> result =
           eval::SMT_Command_Map<Context>::execute_command(*cmd, ast);
@@ -112,4 +113,5 @@ private:
   VarMap var_map;
   Evaluator evaluator;
   metaSMT::smt2::SMT2Parser<Evaluator> parser;
+  metaSMT::support::simple_symbol_table table;
 }; // Solver

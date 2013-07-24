@@ -108,12 +108,14 @@ namespace metaSMT {
                           Command &command,
                           std::string const &name,
                           Context &ctx,
-                          VarMap &var_map)
+                          VarMap &var_map,
+                          support::simple_symbol_table &table)
           : found(found)
           , command(command)
           , name(name)
           , ctx(ctx)
           , var_map(var_map)
+          , table(table)
         {}
 
         template < typename Pair >
@@ -124,7 +126,7 @@ namespace metaSMT {
           if ( !found &&
                mpl::c_str<String>::value == name ) {
             found = true;
-            command = Cmd(&ctx, &var_map);
+            command = Cmd(&ctx, &var_map, &table);
           }
         }
 
@@ -133,6 +135,7 @@ namespace metaSMT {
         std::string name;
         Context &ctx;
         VarMap &var_map;
+        support::simple_symbol_table &table;
       }; // GetCommandVisitor
 
       static boost::optional<boost::any>
@@ -142,10 +145,11 @@ namespace metaSMT {
       }
 
       static boost::optional<Command>
-      get_command(std::string const &name, Context &ctx, VarMap &var_map) {
+      get_command(std::string const &name, Context &ctx, VarMap &var_map,
+                  support::simple_symbol_table &table) {
         bool found = false;
         Command command;
-        GetCommandVisitor vis(found, command, name, ctx, var_map);
+        GetCommandVisitor vis(found, command, name, ctx, var_map, table);
         mpl::for_each<TheMapping>(vis);
         if (found) {
           return boost::optional<Command>(command);
