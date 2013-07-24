@@ -99,9 +99,7 @@ namespace metaSMT {
           return ptr(boolector_not(_btor, a) );
         }
 
-
-        result_type operator() (bvtags::var_tag const & var, boost::any args )
-        {
+        result_type operator() (bvtags::var_tag const & var, boost::any args ) {
           assert ( var.width != 0 );
           return ptr(boolector_var(_btor, var.width, NULL));
         }
@@ -282,12 +280,14 @@ namespace metaSMT {
 
         template <typename TagT>
         result_type operator() (TagT tag, boost::any args ) {
+          assert(false && "unknown operator");
           return ptr(boolector_false(_btor));
         }
 
 
         template <typename TagT>
         result_type operator() (TagT tag, result_type a ) {
+          assert(false && "unknown operator");
           return ptr(boolector_false(_btor));
         }
 
@@ -296,6 +296,24 @@ namespace metaSMT {
           static result_type exec(Btor* b , result_type x, result_type y)
           { return (*FN)(b,x,y);}
         };
+
+        result_type operator() ( predtags::and_tag const &, std::vector< result_type > const &rs ) {
+          // resolve left associativity
+          result_type r = this->operator()(predtags::and_tag(), rs[0], rs[1]);
+          for ( std::size_t u = 2; u < rs.size(); ++u ) {
+            r = this->operator()(predtags::and_tag(), r, rs[u]);
+          }
+          return r;
+        }
+
+        result_type operator() ( predtags::or_tag const &, std::vector< result_type > const &rs ) {
+          // resolve left associativity
+          result_type r = this->operator()(predtags::or_tag(), rs[0], rs[1]);
+          for ( std::size_t u = 2; u < rs.size(); ++u ) {
+            r = this->operator()(predtags::or_tag(), r, rs[u]);
+          }
+          return r;
+        }
 
         template <typename TagT>
         result_type operator() (TagT tag, result_type a, result_type b) {
@@ -364,6 +382,7 @@ namespace metaSMT {
 
         template <typename TagT>
         result_type operator() (TagT tag, result_type a, result_type b, result_type c) {
+          assert(false && "unknown operator");
           return ptr(boolector_false(_btor));
         }
 
