@@ -407,7 +407,6 @@ namespace metaSMT {
       }
 
       result_type operator() ( predtags::and_tag, result_type a, result_type b ) {
-        using namespace boost::assign;
         typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
         Expr::ContainerType v;
         v.push_back(a);
@@ -415,17 +414,26 @@ namespace metaSMT {
         return Expr(v);
       }
 
+      result_type operator() ( predtags::and_tag, std::vector<result_type> rs ) {
+        typedef expr::nary_expression<expr::logic_tag, predtags::and_tag> Expr;
+        return Expr(rs);
+      }
+
       result_type operator() ( predtags::nand_tag, result_type a, result_type b ) {
         return expr::binary_expression<expr::logic_tag, predtags::nand_tag>(a, b);
       }
 
       result_type operator() ( predtags::or_tag, result_type a, result_type b ) {
-	using namespace boost::assign;
-	typedef expr::nary_expression<expr::logic_tag, predtags::or_tag> Expr;
-	Expr::ContainerType v;
-	v.push_back(a);
-  v.push_back(b);
-	return Expr(v);
+        typedef expr::nary_expression<expr::logic_tag, predtags::or_tag> Expr;
+        Expr::ContainerType v;
+        v.push_back(a);
+        v.push_back(b);
+        return Expr(v);
+      }
+
+      result_type operator() ( predtags::or_tag, std::vector<result_type> rs ) {
+        typedef expr::nary_expression<expr::logic_tag, predtags::or_tag> Expr;
+        return Expr(rs);
       }
 
       result_type operator() ( predtags::nor_tag, result_type a, result_type b ) {
