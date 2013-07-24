@@ -48,7 +48,8 @@ public:
 
           boost::optional<Command> cmd =
           eval::SMT_Command_Map<Context>::get_command(command, solver, var_map, table);
-          assert ( !cmd );
+          if ( !cmd )
+            throw std::invalid_argument( "Unsupported command" );
           boost::optional<boost::any> result =
           eval::SMT_Command_Map<Context>::execute_command(*cmd, ast);
           if ( result ) {
