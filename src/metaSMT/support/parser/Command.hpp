@@ -5,8 +5,10 @@
 #include "UTreeToString.hpp"
 #include "../../API/Stack.hpp"
 #include "../../API/Assertion.hpp"
+#include "../../API/Options.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../types/TypedSymbol.hpp"
+#include <boost/utility/enable_if.hpp>
 
 namespace metaSMT {
   namespace evaluator {
@@ -76,8 +78,16 @@ namespace metaSMT {
           : ctx(ctx)
         {}
 
-        result_type operator()(boost::optional<boost::spirit::utree> ut) {
-          std::cerr << "Warning: Ignore SMT-LIB2 set-logic command" << '\n';
+        typename boost::enable_if<
+          typename features::supports<Context, set_option_cmd>::type
+        , result_type
+        >::type
+        operator()(boost::optional<boost::spirit::utree> const &ut) {
+          assert( ut );
+          boost::spirit::utree::const_iterator it = ut->begin();
+          it++;
+          std::string const logic = utreeToString( *it );
+          set_option(*ctx, "logic", logic);
         }
 
       protected:
