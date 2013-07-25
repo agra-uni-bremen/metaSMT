@@ -160,6 +160,8 @@ if(Z3_FOUND)
     set(Z3_LIBRARIES ${Z3_LIBRARIES} gomp)
   endif()
 
+  set(Z3_LIBRARIES ${Z3_LIBRARIES} rt)
+
   include(CheckCXXSourceRuns)
 
   set(CMAKE_REQUIRED_INCLUDES ${Z3_INCLUDE_DIR})
