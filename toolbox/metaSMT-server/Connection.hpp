@@ -21,8 +21,8 @@ private:
   void write(std::string string);
   void terminateSolver(SolverProcess *solver);
 
-  void setupSolverProcesses();
-  bool initializeSolverBackends();
+  void setupSolvers();
+  bool createSolverProcesses();
   SolverProcess *findFastestSolver();
   std::string getValue();
   std::string checkSat();

@@ -18,8 +18,8 @@ Connection::Connection(SocketPtr socket)
   std::string exit_reason = "requested by client";
   try {
     write( metaSMT::getAvailableSolversString() );
-    setupSolverProcesses();
-    if ( initializeSolverBackends() ) {
+    setupSolvers();
+    if ( !createSolverProcesses() ) {
       return;
     }
     processCommandsLoop();
@@ -37,7 +37,7 @@ Connection::Connection(SocketPtr socket)
   socket->close();
 }
 
-void Connection::setupSolverProcesses() {
+void Connection::setupSolvers() {
   // send solver information to client and wait for client response,
   // i.e., the selection of the solvers for solving the SMT instance.
   std::string str;
@@ -45,7 +45,8 @@ void Connection::setupSolverProcesses() {
     str = getLine();
 
     if ( str == "exit" ) {
-      break;
+      write( "OK" );
+      return;
     }
 
     if ( metaSMT::isSolverAvailable(str) ) {
@@ -53,40 +54,40 @@ void Connection::setupSolverProcesses() {
       write( "OK" );
     }
     else if (solvers.empty()) {
-      write( "FAIL choose at least one solver" );
+      write( "Choose at least one solver" );
       }
     else {
-      write( "FAIL unsupported solver" );
+      write( "Unsupported solver" );
     }
   }
 }
 
-bool Connection::initializeSolverBackends() {
+bool Connection::createSolverProcesses() {
   for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
        it != ie; ++it) {
     SolverProcess *solver = *it;
     if ( !solver->initPipes() ) {
       write("Could not create pipe for IPC");
-      return true;
+      return false;
     }
     pid_t pid = fork();
     if (pid == -1) {
       write("Could not fork new process");
-      return true;
+      return false;
     }
     else if (pid) {
       // parent process
       solver->pid = pid;
-      return false;
     }
     else {
       // child process
       solver->sb = create_solver( solver->solver_type );
       solver->sb->sp = solver;
       solver->sb->start();
-      return true;
+      return false;
     }
   }
+  return true;
 }
 
 SolverProcess *Connection::findFastestSolver() {

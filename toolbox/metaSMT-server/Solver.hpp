@@ -72,7 +72,7 @@ private:
     bool const success = parser.parse(ss, list);
     // std::cerr << "[SOLVER] SUCCESS = " << success << '\n';
     if ( !success )
-      throw std::invalid_argument( "Could not parse input format" );
+      throw std::invalid_argument( "Unsupported syntax" );
     return list;
   }
 
