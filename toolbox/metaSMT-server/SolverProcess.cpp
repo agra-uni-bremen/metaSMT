@@ -59,7 +59,9 @@ bool SolverProcess::parent_read_command_available() {
   fd_block(fd_c2p[0], false);
   char buf[1];
   int len = read(fd_c2p[0], buf, 1);
-  bool r = len != 0 || *p2c_read_command.rbegin() == '\n';
+  if (len > 0)
+      p2c_read_command += buf[0];
+  bool r = len > 0 || !p2c_read_command.empty();
   fd_block(fd_c2p[0], true);
   return r;
 }
