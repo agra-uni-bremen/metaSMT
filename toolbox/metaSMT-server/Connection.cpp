@@ -1,7 +1,10 @@
 #include <metaSMT/support/default_visitation_unrolling_limit.hpp>
 #include "Connection.hpp"
 #include "create_solver.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/write.hpp>
 #include <sys/wait.h>
@@ -14,7 +17,9 @@ void Connection::new_connection(SocketPtr socket) {
 }
 
 Connection::Connection(SocketPtr socket)
-  : socket(socket) {
+  : socket(socket),
+    timeoutEnabled(false),
+    timeoutThreshold(-1) {
   std::string exit_reason = "requested by client";
   try {
     write( metaSMT::getAvailableSolversString() );
@@ -22,6 +27,7 @@ Connection::Connection(SocketPtr socket)
     if ( !createSolverProcesses() ) {
       return;
     }
+    startTime = time(NULL);
     processCommandsLoop();
   }
   catch (std::exception &e) {
@@ -44,20 +50,36 @@ void Connection::setupSolvers() {
   while ( true ) {
     str = getLine();
 
-    if ( str == "exit" ) {
-      write( "OK" );
-      return;
-    }
+    if (boost::algorithm::starts_with(str, "start")) {
+      std::vector<std::string> split;
+      boost::split(split, str, boost::algorithm::is_any_of(" "));
 
-    if ( metaSMT::isSolverAvailable(str) ) {
+      if (split.size() <= 2u) {
+        if (split.size() == 2u) {
+          try {
+            timeoutThreshold = boost::lexical_cast<unsigned>(split[1]);
+            timeoutEnabled = true;
+          } catch (boost::bad_lexical_cast) {
+            write( "Unable to parse optional timeout parameter" );
+            continue;
+          }
+          std::cout << "Timeout after " << timeoutThreshold << " seconds" << std::endl;
+        }
+
+        if (solvers.empty()) {
+          write( "Choose at least one solver" );
+        } else {
+          write( "OK" );
+          return;
+        }
+      } else {
+        write( "To many parameters" );
+      }
+    } else if ( metaSMT::isSolverAvailable(str) ) {
       solvers.push_back(new SolverProcess(str));
       write( "OK" );
-    }
-    else if (solvers.empty()) {
-      write( "Choose at least one solver" );
-      }
-    else {
-      write( "Unsupported solver" );
+    } else {
+      write( "Unsupported solver or command" );
     }
   }
 }
@@ -92,6 +114,7 @@ bool Connection::createSolverProcesses() {
 
 SolverProcess *Connection::findFastestSolver() {
   while ( true ) {
+    checkTimeout();
     for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
          it != ie; ++it) {
       if ((*it)->parent_read_command_available()) {
@@ -100,7 +123,6 @@ SolverProcess *Connection::findFastestSolver() {
     }
     usleep(100);
   }
-  return 0;
 }
 
 std::string Connection::checkSat() {
@@ -141,7 +163,8 @@ std::string Connection::getValue() {
 
 void Connection::processCommandsLoop() {
   std::string line;
-  while (true) {
+  while ( true ) {
+    checkTimeout();
     line = getLine();
     // std::cerr << "[SERVER] RECEIVED " << line << '\n';
 
@@ -159,6 +182,7 @@ void Connection::processCommandsLoop() {
     // pass resultl of check-sat and get-value to the client
     if ( line == "(check-sat)" ) {
       write ( checkSat() );
+      timeoutEnabled = false;
     }
     else if ( boost::algorithm::starts_with(line, "(get-value") ) {
       write( getValue() );
@@ -195,4 +219,11 @@ void Connection::terminateSolver(SolverProcess *solver) {
   int status;
   waitpid(solver->pid, &status, 0);
   delete solver;
+}
+
+void Connection::checkTimeout() {
+  if (timeoutEnabled && difftime(time(NULL), startTime) > timeoutThreshold) {
+    write( "timeout" );
+    throw std::runtime_error("Solver timeout");
+  }
 }

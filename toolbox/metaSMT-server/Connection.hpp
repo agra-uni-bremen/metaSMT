@@ -4,6 +4,7 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
+#include <ctime>
 
 class Connection {
 public:
@@ -27,9 +28,13 @@ private:
   std::string getValue();
   std::string checkSat();
   void processCommandsLoop();
+  void checkTimeout();
 
 private:
   SocketPtr socket;
   boost::asio::streambuf buffer;
   Solvers solvers;
+  bool timeoutEnabled;
+  int timeoutThreshold;
+  time_t startTime;
 }; // Connection
