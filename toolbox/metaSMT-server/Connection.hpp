@@ -4,7 +4,7 @@
 #include <boost/asio/streambuf.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
-#include <ctime>
+#include <sys/time.h>
 
 class Connection {
 public:
@@ -36,5 +36,5 @@ private:
   Solvers solvers;
   bool timeoutEnabled;
   int timeoutThreshold;
-  time_t startTime;
+  timeval startTime;
 }; // Connection

@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/write.hpp>
+#include <iomanip>
 #include <sys/wait.h>
 
 namespace mpl = boost::mpl;
@@ -27,7 +28,7 @@ Connection::Connection(SocketPtr socket)
     if ( !createSolverProcesses() ) {
       return;
     }
-    startTime = time(NULL);
+    gettimeofday(&startTime, NULL);
     processCommandsLoop();
   }
   catch (std::exception &e) {
@@ -128,7 +129,15 @@ SolverProcess *Connection::findFastestSolver() {
 std::string Connection::checkSat() {
   SolverProcess *solver = findFastestSolver();
   assert( solver && "solver must not be NULL" );
-  std::string const result = solver->parent_read_command() + " ;; " + solver->solver_type;
+
+  timeval time;
+  gettimeofday(&time, NULL);
+  long int ms = (time.tv_sec - startTime.tv_sec) * 1000;
+  ms += (time.tv_usec - startTime.tv_usec) / 1000;
+
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(2) << ms / 1000.0;
+  std::string const result = solver->parent_read_command() + " ;; " + solver->solver_type + " ;; " + ss.str();
   // terminate all but the fastest solver
   for ( Solvers::iterator it = solvers.begin(), ie  = solvers.end();
         it != ie; ++it ) {
@@ -222,8 +231,14 @@ void Connection::terminateSolver(SolverProcess *solver) {
 }
 
 void Connection::checkTimeout() {
-  if (timeoutEnabled && difftime(time(NULL), startTime) > timeoutThreshold) {
-    write( "timeout" );
-    throw std::runtime_error("Solver timeout");
+  if (timeoutEnabled) {
+    timeval time;
+    gettimeofday(&time, NULL);
+    long int secs = time.tv_sec - startTime.tv_sec;
+
+    if (secs > timeoutThreshold) {
+        write( "timeout" );
+        throw std::runtime_error("Solver timeout");
+    }
   }
 }
