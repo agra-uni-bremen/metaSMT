@@ -8,6 +8,13 @@ public:
   virtual void start() = 0;
   virtual ~SolverBase() {};
 
+  static const std::string success;
+  static const std::string unsupported;
+  static const std::string error;
+
+  static const std::string sat;
+  static const std::string unsat;
+  static const std::string unknown;
 // protected:
   SolverProcess *sp;
 }; // SolverBase

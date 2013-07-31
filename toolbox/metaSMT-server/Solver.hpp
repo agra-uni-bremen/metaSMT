@@ -31,7 +31,7 @@ public:
   void start() {
     std::cerr << "START" << '\n';
     for (;;) {
-      std::string ret = "OK";
+      std::string ret = SolverBase::success;
       std::string s = sp->child_read_command();
       // std::cerr << "[SOLVER] " << s << '\n';
 

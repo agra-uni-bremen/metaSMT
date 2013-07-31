@@ -3,6 +3,14 @@
 #include <fcntl.h>
 #include <cassert>
 
+const std::string SolverBase::success = "success";
+const std::string SolverBase::unsupported = "unsupported";
+const std::string SolverBase::error = "error";
+
+const std::string SolverBase::sat = "sat";
+const std::string SolverBase::unsat = "unsat";
+const std::string SolverBase::unknown = "unknown";
+
 bool fd_block(int fd, bool block) {
   int flags = fcntl(fd, F_GETFL, 0);
   if (flags == -1)

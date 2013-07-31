@@ -61,26 +61,26 @@ void Connection::setupSolvers() {
             timeoutThreshold = boost::lexical_cast<unsigned>(split[1]);
             timeoutEnabled = true;
           } catch (boost::bad_lexical_cast) {
-            write( "Unable to parse optional timeout parameter" );
+            write( SolverBase::error + " unable to parse optional timeout parameter" );
             continue;
           }
           std::cout << "Timeout after " << timeoutThreshold << " seconds" << std::endl;
         }
 
         if (solvers.empty()) {
-          write( "Choose at least one solver" );
+          write( SolverBase::error + " choose at least one solver" );
         } else {
-          write( "OK" );
+          write( SolverBase::success );
           return;
         }
       } else {
-        write( "To many parameters" );
+        write( SolverBase::error + " to many parameters" );
       }
     } else if ( metaSMT::isSolverAvailable(str) ) {
       solvers.push_back(new SolverProcess(str));
-      write( "OK" );
+      write( SolverBase::success );
     } else {
-      write( "Unsupported solver or command" );
+      write( SolverBase::unsupported + " solver or command" );
     }
   }
 }
@@ -90,12 +90,12 @@ bool Connection::createSolverProcesses() {
        it != ie; ++it) {
     SolverProcess *solver = *it;
     if ( !solver->initPipes() ) {
-      write("Could not create pipe for IPC");
+      write(SolverBase::error + " could not create pipes for IPC");
       return false;
     }
     pid_t pid = fork();
     if (pid == -1) {
-      write("Could not fork new process");
+      write(SolverBase::error + " could not fork new process");
       return false;
     }
     else if (pid) {
@@ -164,7 +164,7 @@ std::string Connection::getValue() {
   // the consistent answer
   for (std::size_t n = 0; n < answers.size() -1; n++) {
     if (answers[n] != answers[n+1]) {
-      return "FAIL inconsistent solver behavior";
+      return SolverBase::error + " inconsistent solver behavior";
     }
   }
   return answers[0];
@@ -178,7 +178,7 @@ void Connection::processCommandsLoop() {
     // std::cerr << "[SERVER] RECEIVED " << line << '\n';
 
     if ( line == "(exit)" ) {
-      write("OK");
+      write( SolverBase::success );
       return;
     }
 
@@ -237,7 +237,7 @@ void Connection::checkTimeout() {
     long int secs = time.tv_sec - startTime.tv_sec;
 
     if (secs > timeoutThreshold) {
-        write( "timeout" );
+        write( SolverBase::unknown );
         throw std::runtime_error("Solver timeout");
     }
   }
