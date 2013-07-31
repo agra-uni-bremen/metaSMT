@@ -28,7 +28,6 @@ Connection::Connection(SocketPtr socket)
     if ( !createSolverProcesses() ) {
       return;
     }
-    gettimeofday(&startTime, NULL);
     processCommandsLoop();
   }
   catch (std::exception &e) {
@@ -127,6 +126,7 @@ SolverProcess *Connection::findFastestSolver() {
 }
 
 std::string Connection::checkSat() {
+  gettimeofday(&startTime, NULL);
   SolverProcess *solver = findFastestSolver();
   assert( solver && "solver must not be NULL" );
 
@@ -173,7 +173,6 @@ std::string Connection::getValue() {
 void Connection::processCommandsLoop() {
   std::string line;
   while ( true ) {
-    checkTimeout();
     line = getLine();
     // std::cerr << "[SERVER] RECEIVED " << line << '\n';
 
@@ -191,7 +190,6 @@ void Connection::processCommandsLoop() {
     // pass resultl of check-sat and get-value to the client
     if ( line == "(check-sat)" ) {
       write ( checkSat() );
-      timeoutEnabled = false;
     }
     else if ( boost::algorithm::starts_with(line, "(get-value") ) {
       write( getValue() );
