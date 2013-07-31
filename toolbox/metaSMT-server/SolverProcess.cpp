@@ -29,6 +29,11 @@ SolverProcess::SolverProcess(std::string const &solver_type)
 {}
 
 SolverProcess::~SolverProcess() {
+  for (int n = 0; n < 2; ++n) {
+    close(fd_c2p[n]);
+    close(fd_p2c[n]);
+  }
+
   if ( sb ) {
     delete sb;
   }
