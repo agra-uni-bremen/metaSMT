@@ -37,4 +37,5 @@ private:
   bool timeoutEnabled;
   int timeoutThreshold;
   timeval startTime;
+  timeval checkSatStartTime;
 }; // Connection

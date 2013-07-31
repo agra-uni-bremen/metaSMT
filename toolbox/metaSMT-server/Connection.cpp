@@ -126,14 +126,14 @@ SolverProcess *Connection::findFastestSolver() {
 }
 
 std::string Connection::checkSat() {
-  gettimeofday(&startTime, NULL);
+  gettimeofday(&checkSatStartTime, NULL);
   SolverProcess *solver = findFastestSolver();
   assert( solver && "solver must not be NULL" );
 
-  timeval time;
-  gettimeofday(&time, NULL);
-  long int ms = (time.tv_sec - startTime.tv_sec) * 1000;
-  ms += (time.tv_usec - startTime.tv_usec) / 1000;
+  timeval currentTime;
+  gettimeofday(&currentTime, NULL);
+  long int ms = (currentTime.tv_sec - checkSatStartTime.tv_sec) * 1000;
+  ms += (currentTime.tv_usec - checkSatStartTime.tv_usec) / 1000;
 
   std::stringstream ss;
   ss << std::fixed << std::setprecision(2) << ms / 1000.0;
@@ -171,13 +171,23 @@ std::string Connection::getValue() {
 }
 
 void Connection::processCommandsLoop() {
+  gettimeofday(&startTime, NULL);
+
   std::string line;
   while ( true ) {
     line = getLine();
     // std::cerr << "[SERVER] RECEIVED " << line << '\n';
 
     if ( line == "(exit)" ) {
-      write( SolverBase::success );
+      timeval currentTime;
+      gettimeofday(&currentTime, NULL);
+      long int ms = (currentTime.tv_sec - startTime.tv_sec) * 1000;
+      ms += (currentTime.tv_usec - startTime.tv_usec) / 1000;
+
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(2) << ms / 1000.0;
+
+      write( SolverBase::success + " ;; " + ss.str() );
       return;
     }
 
@@ -230,13 +240,12 @@ void Connection::terminateSolver(SolverProcess *solver) {
 
 void Connection::checkTimeout() {
   if (timeoutEnabled) {
-    timeval time;
-    gettimeofday(&time, NULL);
-    long int secs = time.tv_sec - startTime.tv_sec;
+    timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    long int secs = currentTime.tv_sec - checkSatStartTime.tv_sec;
 
     if (secs > timeoutThreshold) {
-        write( SolverBase::unknown );
-        throw std::runtime_error("Solver timeout");
+        throw std::runtime_error( SolverBase::unknown );
     }
   }
 }
