@@ -14,6 +14,9 @@ namespace metaSMT {
     struct left_assoc {};
     struct chainable {};
     struct pairwise {};
+
+    // special attribute for cardinality
+    struct nary {};
   } // attr
 } // metaSMT
 
