@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-
+#include <metaSMT/support/cardinality/Evaluator.hpp>
 #include <vector>
 #include <metaSMT/support/cardinality.hpp>
 #include <metaSMT/frontend/Logic.hpp>
@@ -134,8 +134,9 @@ void assumeFromUnsigned(Context &ctx, std::vector<Boolean> const &vec, unsigned 
   }
 }
 
-BOOST_AUTO_TEST_CASE( test_bdd_cardinality_with_bv ) {
-  set_option( ctx, "cardinality", "bdd" );
+
+template <typename Context>
+void checkAllCombinations(Context &ctx) {
 
   unsigned const width = 8;
   std::vector<predicate> vec;
@@ -148,7 +149,6 @@ BOOST_AUTO_TEST_CASE( test_bdd_cardinality_with_bv ) {
     for (unsigned v = u; v != 0; v >>= 1) {
       count_u += v & 1;
     }
-
     for (unsigned r = 0; r <= width; ++r) {
       assumeFromUnsigned(ctx, vec, u);
       assumption(ctx, cardinality_geq(ctx, vec, r));
@@ -173,43 +173,14 @@ BOOST_AUTO_TEST_CASE( test_bdd_cardinality_with_bv ) {
   }
 }
 
+BOOST_AUTO_TEST_CASE( test_bdd_cardinality_with_bv ) {
+  set_option( ctx, "cardinality", "bdd" );
+  checkAllCombinations(ctx);
+}
+
 BOOST_AUTO_TEST_CASE( test_adder_cardinality_with_bv ) {
   set_option( ctx, "cardinality", "adder" );
-
-  unsigned const width = 8;
-  std::vector<predicate> vec;
-  for (unsigned u = 0; u < width; ++u) {
-    vec.push_back(new_variable());
-  }
-
-  for (unsigned u = 0; u < (1 << width); ++u) {
-    unsigned count_u = 0;
-    for (unsigned v = u; v != 0; v >>= 1) {
-      count_u += v & 1;
-    }
-
-    for (unsigned r = 0; r <= width; ++r) {
-      assumeFromUnsigned(ctx, vec, u);
-      assumption(ctx, cardinality_geq(ctx, vec, r));
-      BOOST_REQUIRE_EQUAL( solve(ctx), count_u >= r );
-
-      assumeFromUnsigned(ctx, vec, u);
-      assumption(ctx, cardinality_leq(ctx, vec, r));
-      BOOST_REQUIRE_EQUAL( solve(ctx), count_u <= r );
-
-      assumeFromUnsigned(ctx, vec, u);
-      assumption(ctx, cardinality_gt(ctx, vec, r));
-      BOOST_REQUIRE_EQUAL( solve(ctx), count_u > r );
-
-      assumeFromUnsigned(ctx, vec, u);
-      assumption(ctx, cardinality_lt(ctx, vec, r));
-      BOOST_REQUIRE_EQUAL( solve(ctx), count_u < r );
-
-      assumeFromUnsigned(ctx, vec, u);
-      assumption(ctx, cardinality_eq(ctx, vec, r));
-      BOOST_REQUIRE_EQUAL( solve(ctx), count_u == r );
-    }
-  }
+  checkAllCombinations(ctx);
 }
 
 BOOST_AUTO_TEST_SUITE_END() //Solver
