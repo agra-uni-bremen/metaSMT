@@ -22,7 +22,6 @@ public:
 
   typedef typename eval::SMT_Command_Map<Context>::Command Command;
 
-public:
   Solver()
     : evaluator(solver, var_map)
     , parser(evaluator)
@@ -115,7 +114,6 @@ private:
     return "<Unknown>";
   }
 
-private:
   Context solver;
   VarMap var_map;
   Evaluator evaluator;

@@ -10,8 +10,6 @@
 #include <iomanip>
 #include <sys/wait.h>
 
-namespace mpl = boost::mpl;
-
 void Connection::new_connection(SocketPtr socket) {
   std::cout << "New connection" << std::endl;
   Connection c(socket);
@@ -197,7 +195,7 @@ void Connection::processCommandsLoop() {
       (*it)->parent_write_command(line);
     }
 
-    // pass resultl of check-sat and get-value to the client
+    // pass result of check-sat and get-value to the client
     if ( line == "(check-sat)" ) {
       write ( checkSat() );
     }
