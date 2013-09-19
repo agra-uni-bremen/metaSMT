@@ -56,9 +56,9 @@ public:
             ret = makeResultString(command, *result);
           }
         }
-      } catch (std::invalid_argument e) {
+      } catch (std::exception e) {
         std::cerr << "[SOLVER] " << e.what() << std::endl;
-        ret = e.what();
+        ret = "error";
       }
       // std::cerr << "[SOLVER] CHILD WRITE COMMAND: " << ret << '\n';
       sp->child_write_command(ret);
