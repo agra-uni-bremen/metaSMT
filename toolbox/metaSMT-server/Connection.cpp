@@ -21,7 +21,6 @@ Connection::Connection(SocketPtr socket)
     timeoutThreshold(-1) {
   std::string exit_reason = "requested by client";
   try {
-    write( metaSMT::getAvailableSolversString() );
     setupSolvers();
     if ( !createSolverProcesses() ) {
       return;
@@ -44,40 +43,31 @@ Connection::Connection(SocketPtr socket)
 void Connection::setupSolvers() {
   // send solver information to client and wait for client response,
   // i.e., the selection of the solvers for solving the SMT instance.
-  std::string str;
-  while ( true ) {
-    str = getLine();
+  write( metaSMT::getAvailableSolversString() );
 
-    if (boost::algorithm::starts_with(str, "start")) {
-      std::vector<std::string> split;
-      boost::split(split, str, boost::algorithm::is_any_of(" "));
+  while ( solvers.empty() ) {
+    std::string str = getLine();
+    str.erase(str.find_last_not_of(")") + 1);
+    std::vector<std::string> tokens;
+    boost::split(tokens, str, boost::algorithm::is_any_of(" "));
 
-      if (split.size() <= 2u) {
-        if (split.size() == 2u) {
-          try {
-            timeoutThreshold = boost::lexical_cast<unsigned>(split[1]);
-            timeoutEnabled = true;
-          } catch (boost::bad_lexical_cast) {
-            write( SolverBase::error + " unable to parse optional timeout parameter" );
-            continue;
-          }
-          std::cout << "Timeout after " << timeoutThreshold << " seconds" << std::endl;
+    if (tokens.size() >= 3 && tokens[0] == "(:set-option" && tokens[1] == "solver" ) {
+      bool solversAvailable = true;
+      for ( int n = 2; n < tokens.size(); ++n ) {
+        if ( !metaSMT::isSolverAvailable(tokens[n]) ) {
+            solversAvailable = false;
         }
-
-        if (solvers.empty()) {
-          write( SolverBase::error + " choose at least one solver" );
-        } else {
-          write( SolverBase::success );
-          return;
-        }
-      } else {
-        write( SolverBase::error + " to many parameters" );
       }
-    } else if ( metaSMT::isSolverAvailable(str) ) {
-      solvers.push_back(new SolverProcess(str));
-      write( SolverBase::success );
+      if (solversAvailable) {
+        for ( int n = 2; n < tokens.size(); ++n ) {
+            solvers.push_back(new SolverProcess(tokens[n]));
+        }
+        write( SolverBase::success );
+      } else {
+        write( SolverBase::unsupported + " not all solvers supported" );
+      }
     } else {
-      write( SolverBase::unsupported + " solver or command" );
+      write( SolverBase::error + " set at least one solver" );
     }
   }
 }
@@ -187,6 +177,19 @@ void Connection::processCommandsLoop() {
 
       write( SolverBase::success + " ;; " + ss.str() );
       return;
+    } else if ( boost::algorithm::starts_with(line, "(:set-option timeout") ) {
+        std::string str = line;
+        str.erase(str.find_last_not_of(")") + 1);
+        std::vector<std::string> tokens;
+        boost::split(tokens, str, boost::algorithm::is_any_of(" "));
+        try {
+            timeoutThreshold = boost::lexical_cast<unsigned>(tokens[2]);
+            timeoutEnabled = true;
+            write( SolverBase::success );
+        } catch (boost::bad_lexical_cast) {
+            write( SolverBase::error + " unable to parse timeout parameter" );
+        }
+        continue;
     }
 
     // forward command to solver backend
@@ -197,7 +200,15 @@ void Connection::processCommandsLoop() {
 
     // pass result of check-sat and get-value to the client
     if ( line == "(check-sat)" ) {
-      write ( checkSat() );
+      std::cout << "(check-sat) called" << std::endl;
+      std::string ret;
+      try {
+        ret = checkSat();
+      } catch (std::runtime_error e) {
+        ret = e.what();
+      }
+      timeoutEnabled = false;
+      write( ret );
     }
     else if ( boost::algorithm::starts_with(line, "(get-value") ) {
       write( getValue() );
@@ -230,9 +241,11 @@ void Connection::write(std::string s) {
 }
 
 void Connection::terminateSolver(SolverProcess *solver) {
+  std::cout << '[' << getpid() << "] killing " << solver->solver_type << " (" << solver->pid << ')' << std::endl;
   kill(solver->pid, SIGTERM);
   int status;
   waitpid(solver->pid, &status, 0);
+  std::cout << "killed " << solver->pid << std::endl;
   delete solver;
 }
 
@@ -242,7 +255,7 @@ void Connection::checkTimeout() {
     gettimeofday(&currentTime, NULL);
     long int secs = currentTime.tv_sec - checkSatStartTime.tv_sec;
 
-    if (secs > timeoutThreshold) {
+    if (secs >= timeoutThreshold) {
         throw std::runtime_error( SolverBase::unknown );
     }
   }
