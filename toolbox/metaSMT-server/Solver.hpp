@@ -31,28 +31,33 @@ public:
   void start() {
     std::cerr << "START" << '\n';
     for (;;) {
+      std::string ret = "OK";
       std::string s = sp->child_read_command();
       // std::cerr << "[SOLVER] " << s << '\n';
 
-      spirit::utree::list_type const list = parse(s);
+      try {
+        spirit::utree::list_type const list = parse(s);
 
-      std::string ret = "OK";
-      for ( spirit::utree::const_iterator it = list.begin(), ie = list.end();
-            it != ie; ++it ) {
-        spirit::utree const ast = *it;
-        assert( ast.size() > 0 );
+        for ( spirit::utree::const_iterator it = list.begin(), ie = list.end();
+                it != ie; ++it ) {
+          spirit::utree const ast = *it;
+          assert( ast.size() > 0 );
 
-        std::string const command = eval::utreeToString(*ast.begin());
-        // std::cerr << "COMMAND: " << command << '\n';
+          std::string const command = eval::utreeToString(*ast.begin());
+          // std::cerr << "COMMAND: " << command << '\n';
 
-        boost::optional<Command> cmd =
+          boost::optional<Command> cmd =
           eval::SMT_Command_Map<Context>::get_command(command, solver, var_map, table);
-        assert( cmd );
-        boost::optional<boost::any> result =
+          assert ( !cmd );
+          boost::optional<boost::any> result =
           eval::SMT_Command_Map<Context>::execute_command(*cmd, ast);
-        if ( result ) {
-          ret = makeResultString(command, *result);
+          if ( result ) {
+            ret = makeResultString(command, *result);
+          }
         }
+      } catch (std::invalid_argument e) {
+        std::cerr << "[SOLVER] " << e.what() << std::endl;
+        ret = e.what();
       }
       // std::cerr << "[SOLVER] CHILD WRITE COMMAND: " << ret << '\n';
       sp->child_write_command(ret);
@@ -65,7 +70,8 @@ private:
     spirit::utree::list_type list;
     bool const success = parser.parse(ss, list);
     // std::cerr << "[SOLVER] SUCCESS = " << success << '\n';
-    assert( success );
+    if ( !success )
+      throw std::invalid_argument( "Could not parse input format" );
     return list;
   }
 
