@@ -3,6 +3,9 @@
 #include "Evaluator.hpp"
 
 namespace metaSMT {
+
+namespace cardtags = metaSMT::logic::cardinality::tag;
+
   template<typename Context, typename Boolean>
   typename Context::result_type
   one_hot(Context &ctx, std::vector<Boolean> const &ps) {
@@ -27,7 +30,7 @@ namespace metaSMT {
   typename Context::result_type
   cardinality_eq(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
     return evaluate(ctx,
-      cardinality::cardinality(cardinality::tag::eq_tag(), ps, cardinality)
+      cardinality::cardinality(cardtags::eq_tag(), ps, cardinality)
     );
   }
 
@@ -35,7 +38,7 @@ namespace metaSMT {
   typename Context::result_type
   cardinality_geq(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
     return evaluate(ctx,
-      cardinality::cardinality(cardinality::tag::geq_tag(), ps, cardinality)
+      cardinality::cardinality(cardtags::ge_tag(), ps, cardinality)
     );
   }
 
@@ -43,7 +46,7 @@ namespace metaSMT {
   typename Context::result_type
   cardinality_leq(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
     return evaluate(ctx,
-      cardinality::cardinality(cardinality::tag::leq_tag(), ps, cardinality)
+      cardinality::cardinality(cardtags::le_tag(), ps, cardinality)
     );
   }
 
@@ -51,7 +54,7 @@ namespace metaSMT {
   typename Context::result_type
   cardinality_gt(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
     return evaluate(ctx,
-      cardinality::cardinality(cardinality::tag::gt_tag(), ps, cardinality)
+      cardinality::cardinality(cardtags::gt_tag(), ps, cardinality)
     );
   }
 
@@ -59,7 +62,7 @@ namespace metaSMT {
   typename Context::result_type
   cardinality_lt(Context &ctx, std::vector<Boolean> const &ps, unsigned cardinality) {
     return evaluate(ctx,
-      cardinality::cardinality(cardinality::tag::lt_tag(), ps, cardinality)
+      cardinality::cardinality(cardtags::lt_tag(), ps, cardinality)
     );
   }
 } // metaSMT

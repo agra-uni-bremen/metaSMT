@@ -8,6 +8,7 @@
 namespace metaSMT {
   namespace cardinality {
     namespace adder {
+    namespace cardtags= logic::cardinality::tag;
       template <typename Context, typename Boolean>
       typename Context::result_type
       cardinality_any( Context &ctx, std::vector<Boolean> const &ps ) {
@@ -85,13 +86,12 @@ namespace metaSMT {
       typename Context::result_type
       cardinality(Context &ctx, cardinality::Cardinality<Tag, Boolean> const &c) {
         /** error: unknown tag **/
-        typedef boost::mpl::vector< tag::eq_tag, tag::lt_tag, tag::leq_tag, tag::geq_tag, tag::gt_tag > AllTags;
-        BOOST_MPL_ASSERT_NOT( (boost::mpl::contains<AllTags, Tag>) );
+        BOOST_MPL_ASSERT_NOT( (boost::mpl::contains<cardtags::Cardinality_Tags, Tag>) );
       }
 
       template <typename Context, typename Boolean>
       typename Context::result_type
-      cardinality(Context &ctx, cardinality::Cardinality<tag::eq_tag, Boolean> const &c) {
+      cardinality(Context &ctx, cardinality::Cardinality<cardtags::eq_tag, Boolean> const &c) {
         std::vector<Boolean> const &ps = c.ps;
         unsigned const cardinality = c.cardinality;
 
@@ -102,7 +102,7 @@ namespace metaSMT {
 
       template <typename Context, typename Boolean>
       typename Context::result_type
-      cardinality(Context &ctx, cardinality::Cardinality<tag::leq_tag, Boolean> const &c) {
+      cardinality(Context &ctx, cardinality::Cardinality<cardtags::le_tag, Boolean> const &c) {
         std::vector<Boolean> const &ps = c.ps;
         unsigned const cardinality = c.cardinality;
 
@@ -113,7 +113,7 @@ namespace metaSMT {
 
       template <typename Context, typename Boolean>
       typename Context::result_type
-      cardinality(Context &ctx, cardinality::Cardinality<tag::lt_tag, Boolean> const &c) {
+      cardinality(Context &ctx, cardinality::Cardinality<cardtags::lt_tag, Boolean> const &c) {
         std::vector<Boolean> const &ps = c.ps;
         unsigned const cardinality = c.cardinality;
 
@@ -124,7 +124,7 @@ namespace metaSMT {
 
       template <typename Context, typename Boolean>
       typename Context::result_type
-      cardinality(Context &ctx, cardinality::Cardinality<tag::gt_tag, Boolean> const &c) {
+      cardinality(Context &ctx, cardinality::Cardinality<cardtags::gt_tag, Boolean> const &c) {
         std::vector<Boolean> const &ps = c.ps;
         unsigned const cardinality = c.cardinality;
 
@@ -135,7 +135,7 @@ namespace metaSMT {
 
       template <typename Context, typename Boolean>
       typename Context::result_type
-      cardinality(Context &ctx, cardinality::Cardinality<tag::geq_tag, Boolean> const &c) {
+      cardinality(Context &ctx, cardinality::Cardinality<cardtags::ge_tag, Boolean> const &c) {
         std::vector<Boolean> const &ps = c.ps;
         unsigned const cardinality = c.cardinality;
 
