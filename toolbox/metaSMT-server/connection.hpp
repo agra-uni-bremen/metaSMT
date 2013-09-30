@@ -279,7 +279,7 @@ public:
                     std::istringstream in(s.substr(10u));
                     boost::property_tree::json_parser::read_json(in, pt);
 
-                    assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
+                    metaSMT::assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
                     std::cout << "[INFO] Added assertion" << std::endl;
 
                     ret = "OK";
