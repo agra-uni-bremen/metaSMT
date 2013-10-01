@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( one_true )
   BOOST_REQUIRE( solve(ctx) );
 
   vector< vector<unsigned> > result =
-     contradiction_analysis(ctx, boost::make_tuple( True ) );
+    contradiction_analysis(ctx, boost::make_tuple( True ) );
 
   BOOST_REQUIRE_EQUAL(result.size(), 0);
 }

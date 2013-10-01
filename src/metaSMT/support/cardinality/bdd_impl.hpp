@@ -61,7 +61,7 @@ namespace metaSMT {
         unsigned const magic_number = 0;
         if ( n > magic_number ) {
           predicate p = new_variable();
-          assertion( ctx, logic::equal(p, r) );
+          metaSMT::assertion( ctx, logic::equal(p, r) );
           return evaluate(ctx, p);
         }
         else {
