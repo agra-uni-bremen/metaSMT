@@ -26,6 +26,7 @@ bool fd_block(int fd, bool block) {
 SolverProcess::SolverProcess(std::string const &solver_type)
   : solver_type(solver_type)
   , sb(0)
+  , num_answers(0)
 {}
 
 SolverProcess::~SolverProcess() {
@@ -65,6 +66,7 @@ std::string SolverProcess::parent_read_command() {
     r = p2c_read_command + read_command(fd_c2p[0]);
   }
   p2c_read_command.clear();
+  ++num_answers;
   return r;
 }
 

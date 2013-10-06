@@ -18,7 +18,8 @@ void Connection::new_connection(SocketPtr socket) {
 Connection::Connection(SocketPtr socket)
   : socket(socket),
     timeoutEnabled(false),
-    timeoutThreshold(-1) {
+    timeoutThreshold(-1),
+    preferredSolver(0) {
   std::string exit_reason = "requested by client";
   try {
     setupSolvers();
@@ -60,8 +61,10 @@ void Connection::setupSolvers() {
       }
       if (solversAvailable) {
         for ( int n = 2; n < tokens.size(); ++n ) {
+            solvers.reserve( tokens.size() - 2 );
             solvers.push_back(new SolverProcess(tokens[n]));
         }
+        preferredSolver = solvers.front();
         write( SolverBase::success );
       } else {
         write( SolverBase::unsupported + " not all solvers supported" );
@@ -101,12 +104,18 @@ bool Connection::createSolverProcesses() {
 }
 
 SolverProcess *Connection::findFastestSolver() {
+  int level = preferredSolver->num_answers;
   while ( true ) {
     checkTimeout();
     for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
          it != ie; ++it) {
       if ((*it)->parent_read_command_available()) {
-        return *it;
+        if ((*it)->num_answers == level) {
+          return *it;
+        } else {
+          //ignore answer
+          (*it)->parent_read_command();
+        }
       }
     }
     usleep(100);
@@ -115,8 +124,8 @@ SolverProcess *Connection::findFastestSolver() {
 
 std::string Connection::checkSat() {
   gettimeofday(&checkSatStartTime, NULL);
-  SolverProcess *solver = findFastestSolver();
-  assert( solver && "solver must not be NULL" );
+  preferredSolver = findFastestSolver();
+  assert( preferredSolver && "preferredSolver must not be NULL" );
 
   timeval currentTime;
   gettimeofday(&currentTime, NULL);
@@ -125,37 +134,11 @@ std::string Connection::checkSat() {
 
   std::stringstream ss;
   ss << std::fixed << std::setprecision(2) << ms / 1000.0;
-  std::string const result = solver->parent_read_command() + " ;; " + solver->solver_type + " ;; " + ss.str();
-  // terminate all but the fastest solver
-  for ( Solvers::iterator it = solvers.begin(), ie  = solvers.end();
-        it != ie; ++it ) {
-    if ( *it != solver ) {
-      terminateSolver(*it);
-    }
-  }
-  solvers.clear();
-  solvers.push_back(solver);
+  std::string const result = preferredSolver->parent_read_command() + " ;; " + preferredSolver->solver_type + " ;; " + ss.str();
+
+  skipAnswers( preferredSolver->num_answers );
+
   return result;
-}
-
-
-std::string Connection::getValue() {
-  typedef std::vector<std::string> Answers;
-  Answers answers(solvers.size());
-  std::size_t n = 0;
-  for ( Solvers::iterator it = solvers.begin(), ie = solvers.end();
-        it != ie; ++it, ++n ) {
-    answers[n] = (*it)->parent_read_command();
-  }
-
-  // return a FAIL if not all answers are the same, otherwise return
-  // the consistent answer
-  for (std::size_t n = 0; n < answers.size() -1; n++) {
-    if (answers[n] != answers[n+1]) {
-      return SolverBase::error + " inconsistent solver behavior";
-    }
-  }
-  return answers[0];
 }
 
 void Connection::processCommandsLoop() {
@@ -209,17 +192,18 @@ void Connection::processCommandsLoop() {
       }
       timeoutEnabled = false;
       write( ret );
+    } else {
+      // print result and ignore potential results of other solvers
+      write( preferredSolver->parent_read_command() );
+      skipAnswers( preferredSolver->num_answers );
     }
-    else if ( boost::algorithm::starts_with(line, "(get-value") ) {
-      write( getValue() );
-    }
-    else {
-      // otherwise, ignore result from solver backend
-      for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
-           it != ie; ++it) {
-        std::string const s = (*it)->parent_read_command();
-        write( s );
-      }
+  }
+}
+
+void Connection::skipAnswers(int level) {
+  for ( int n = 0; n < solvers.size(); ++n ) {
+    while ( solvers[n]->num_answers < level && solvers[n]->parent_read_command_available() ) {
+      solvers[n]->parent_read_command();
     }
   }
 }

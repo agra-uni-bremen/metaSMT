@@ -35,6 +35,7 @@ public:
 
   SolverBase *sb;
   std::string solver_type;
+  int num_answers;
   pid_t pid;
 
 public: // private:

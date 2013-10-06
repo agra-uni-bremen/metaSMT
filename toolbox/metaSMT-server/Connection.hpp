@@ -3,13 +3,13 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/shared_ptr.hpp>
-#include <list>
+#include <vector>
 #include <sys/time.h>
 
 class Connection {
 public:
   typedef boost::shared_ptr<boost::asio::ip::tcp::socket> SocketPtr;
-  typedef std::list<SolverProcess*> Solvers;
+  typedef std::vector<SolverProcess*> Solvers;
 
 public:
   static void new_connection(SocketPtr socket);
@@ -29,11 +29,13 @@ private:
   std::string checkSat();
   void processCommandsLoop();
   void checkTimeout();
+  void skipAnswers(int level);
 
 private:
   SocketPtr socket;
   boost::asio::streambuf buffer;
   Solvers solvers;
+  SolverProcess* preferredSolver;
   bool timeoutEnabled;
   int timeoutThreshold;
   timeval startTime;
