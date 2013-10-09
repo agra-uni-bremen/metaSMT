@@ -52,9 +52,10 @@ void Connection::setupSolvers() {
     std::vector<std::string> tokens;
     boost::split(tokens, str, boost::algorithm::is_any_of(" "));
 
-    if (tokens.size() >= 3 && tokens[0] == "(:set-option" && tokens[1] == "solver" ) {
+    if (tokens.size() >= 3 && tokens[0] == "(set-option" && tokens[1] == ":solver" ) {
       bool solversAvailable = true;
       for ( int n = 2; n < tokens.size(); ++n ) {
+        std::cerr << tokens[n] << '\n';
         if ( !metaSMT::isSolverAvailable(tokens[n]) ) {
             solversAvailable = false;
         }
@@ -160,7 +161,7 @@ void Connection::processCommandsLoop() {
 
       write( SolverBase::success + " ;; " + ss.str() );
       return;
-    } else if ( boost::algorithm::starts_with(line, "(:set-option timeout") ) {
+    } else if ( boost::algorithm::starts_with(line, "(set-option :timeout") ) {
         std::string str = line;
         str.erase(str.find_last_not_of(")") + 1);
         std::vector<std::string> tokens;
