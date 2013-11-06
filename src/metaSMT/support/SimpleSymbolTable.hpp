@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <cstdio>
 #include <boost/proto/proto.hpp>
 
 namespace metaSMT {
@@ -10,9 +11,13 @@ namespace metaSMT {
 
       std::string operator()(unsigned id) const {
         std::map<unsigned, std::string>::const_iterator it = map_.find(id);
-        assert( it != map_.end() && "invalid read in symbol table");
+        if ( it == map_.end() ) {
+          // assert( false && "Invalid read in symbol table" );
+          char buf[64];
+          sprintf(buf, "var_%u", id);
+          return buf;
+        }
         return it->second;
-        // return map_[id];
       }
 
       template < typename T >
