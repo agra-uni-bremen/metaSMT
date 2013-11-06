@@ -222,7 +222,7 @@ namespace metaSMT {
                boost::tuple<unsigned long> const &tuple,
                std::vector<T> const &args ) {
         unsigned long const op0 = tuple.get<0>();
-        std::string const impl = get_option(*ctx, "cardinality-implementation");
+        std::string const impl = get_option(*ctx, "cardinality-implementation", "bdd");
 
         std::vector< typename Context::result_type > a;
         for ( unsigned u = 0; u < args.size(); ++u ) {
