@@ -136,8 +136,15 @@ namespace metaSMT {
           : ctx(ctx)
         {}
 
-        result_type operator()(boost::optional<boost::spirit::utree> ut) {
-          std::cerr << "Warning: Ignore SMT-LIB2 set-option command" << '\n';
+        result_type operator()(boost::optional<boost::spirit::utree> const &ut) {
+          assert( ut );
+          boost::spirit::utree::const_iterator it = ut->begin();
+          it++;
+          std::string const name = utreeToString( *it );
+
+          it++;
+          std::string const value = utreeToString( *it );
+          set_option(*ctx, name.substr(1, name.size()), value);
         }
 
       protected:
