@@ -148,7 +148,7 @@ void Connection::processCommandsLoop() {
   std::string line;
   while ( true ) {
     line = getLine();
-    // std::cerr << "[SERVER] RECEIVED " << line << '\n';
+    //std::cerr << "[SERVER] RECEIVED " << line << '\n';
 
     if ( line == "(exit)" ) {
       timeval currentTime;

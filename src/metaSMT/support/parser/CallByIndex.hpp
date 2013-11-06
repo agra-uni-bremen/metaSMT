@@ -84,7 +84,9 @@ namespace metaSMT {
         if ( args.size() == 2 ) {
           return (*ctx)(Tag(), boost::proto::lit(args[0]), boost::proto::lit(args[1]));
         }
-
+        if (args.size() == 1) {
+          return evaluate(*ctx,args[0]);
+        }
         assert( args.size() >= 2 );
         return (*ctx)(Tag(), args);
       }
