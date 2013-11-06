@@ -3,6 +3,7 @@
 #include "Logic.hpp"
 #include "QF_BV.hpp"
 #include "Array.hpp"
+#include "Cardinality.hpp"
 
 #include <boost/mpl/joint_view.hpp>
 #include <boost/mpl/copy.hpp>
@@ -21,8 +22,13 @@ namespace metaSMT {
       , logic::Array::tag::Array_Tags 
       >::type all_Tags2;
 
+    typedef boost::mpl::joint_view< 
+        all_Tags2
+      , logic::cardinality::tag::Cardinality_Tags 
+      >::type all_Tags3;
+
     typedef boost::mpl::copy<
-       all_Tags2
+       all_Tags3
        , boost::mpl::back_inserter< boost::mpl::vector<> >
       >::type all_Tags;
     //BOOST_MPL_ASSERT_RELATION( boost::mpl::size<allTags>::value, ==, 1 );
