@@ -1,18 +1,19 @@
 #pragma once
 #include "get_index.hpp"
 #include "has_attribute.hpp"
-#include "CallByIndex.hpp"
 #include "UTreeToString.hpp"
 #include "../SimpleSymbolTable.hpp"
+#include "../../tags/Cardinality.hpp"
 #include "../../API/Assertion.hpp"
 #include "../../API/Options.hpp"
 #include "../../API/Stack.hpp"
 #include "../../io/SMT2_ResultParser.hpp"
 #include "../../types/TypedSymbol.hpp"
+#include "CallByIndex.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 
-namespace metaSMT { 
+namespace metaSMT {
   namespace evaluator {
     namespace detail {
       template < typename ResultType >
@@ -34,6 +35,7 @@ namespace metaSMT {
     } // detail
 
     namespace idx = support::idx;
+    namespace cardtags = metaSMT::logic::cardinality::tag;
 
     namespace cmd {
       /*
@@ -216,7 +218,7 @@ namespace metaSMT {
             ;
 
           ConstIterator it, ie;
-          
+
           // parse value
           it = value_string.begin(), ie = value_string.end();
           unsigned long value;
@@ -268,7 +270,7 @@ namespace metaSMT {
             arg.erase(0, 2);
             result = evaluate(*ctx, logic::QF_BV::bvbin(arg));
           }
-                
+
           it = arg.begin(), ie = arg.end();
           if ( boost::spirit::qi::parse(it, ie, hex_rule, number) ) {
             assert( it == ie && "Expression not completely consumed" );
@@ -360,6 +362,21 @@ namespace metaSMT {
               ++it; // skip ')'
               return evaluateIndex(value,*idx,boost::make_tuple(op0,op1),params);
             }
+            else if ( *idx == logic::Index<cardtags::lt_tag>::value ||
+                      *idx == logic::Index<cardtags::le_tag>::value ||
+                      *idx == logic::Index<cardtags::eq_tag>::value ||
+                      *idx == logic::Index<cardtags::ge_tag>::value ||
+                      *idx == logic::Index<cardtags::gt_tag>::value ) {
+              std::vector<rtype> params;
+              unsigned long op0;
+              detail::to_numeral(op0, utreeToString(*it++));
+              ++it; // skip ')'
+              while ( it != ie && utreeToString(*it) != ")" ) {
+                params.push_back( evaluateSExpr(it, ie) );
+              }
+              ++it; // skip ')'
+              return evaluateIndex(value,*idx,boost::make_tuple(op0),params);
+            }
             else {
               assert( false && "Yet not supported");
             }
@@ -400,7 +417,8 @@ namespace metaSMT {
           else if ( support::has_attribute<attr::right_assoc>(op) ||
                     support::has_attribute<attr::left_assoc>(op) ||
                     support::has_attribute<attr::chainable>(op) ||
-                    support::has_attribute<attr::pairwise>(op) ) {
+                    support::has_attribute<attr::pairwise>(op) ||
+                    support::has_attribute<attr::nary>(op) ) {
             return support::idx::CallByIndex<Context>(*ctx)(idx, arg, params);
           }
           assert( false && "Yet not implemented operator" );
@@ -440,7 +458,7 @@ namespace metaSMT {
         {}
 
         result_type operator()(boost::optional<boost::spirit::utree> ut) {
-          return solve(*ctx); 
+          return solve(*ctx);
         }
 
       protected:
