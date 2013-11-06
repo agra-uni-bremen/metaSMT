@@ -2,19 +2,20 @@
 
 #include "string_concat.hpp"
 #include "../tags/Logics.hpp"
-#include <boost/mpl/map/map50.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/utility/enable_if.hpp>
+#include "boost_mpl_map60.hpp"
 
 namespace metaSMT {
 
   namespace predtags = ::metaSMT::logic::tag;
   namespace bvtags = ::metaSMT::logic::QF_BV::tag;
   namespace arraytags = ::metaSMT::logic::Array::tag;
+  namespace cardtags = ::metaSMT::logic::cardinality::tag;
   namespace mpl = boost::mpl;
 
   /** \cond **/
-  typedef mpl::map47<
+  typedef mpl::map52<
       mpl::pair<predtags::true_tag,    mpl::string<'t', 'r', 'u', 'e'> >
     , mpl::pair<predtags::false_tag,   mpl::string<'f', 'a', 'l', 's', 'e'> >
     , mpl::pair<bvtags::bvult_tag,     mpl::string<'b', 'v', 'u', 'l', 't'> >
@@ -75,6 +76,11 @@ namespace metaSMT {
                                             mpl::string<'e', 'x', 't', 'e', 'n', 'd'>
                                           >::type >
     , mpl::pair<predtags::distinct_tag,   mpl::string<'d', 'i', 's', 't', 'i', 'c', 't'> >
+    , mpl::pair<cardtags::lt_tag,         mpl::string<'c', 'a', 'r', 'd', '_', 'l', 't'> >
+    , mpl::pair<cardtags::le_tag,         mpl::string<'c', 'a', 'r', 'd', '_', 'l', 'e'> >
+    , mpl::pair<cardtags::eq_tag,         mpl::string<'c', 'a', 'r', 'd', '_', 'e', 'q'> >
+    , mpl::pair<cardtags::ge_tag,         mpl::string<'c', 'a', 'r', 'd', '_', 'g', 'e'> >
+    , mpl::pair<cardtags::gt_tag,         mpl::string<'c', 'a', 'r', 'd', '_', 'g', 't'> >
   > SMT_NameMap;
   /** \endcond **/
 
