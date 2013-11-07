@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/spirit/include/support_utree.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <istream>
 
 namespace metaSMT {
@@ -100,9 +101,13 @@ namespace metaSMT {
           return true;
         }
         else {
-          std::cerr << "ERROR: Parsing failed!" << std::endl;
-          std::cerr << "Stop at:" << std::string(begin, end) << std::endl;
-          return false;
+          const std::string unparsable = std::string(begin,end);
+          if (!boost::algorithm::starts_with(unparsable,";")) {
+            std::cerr << "ERROR: Parsing failed!" << std::endl;
+            std::cerr << "Stop at \"" << unparsable << "\"" << std::endl;
+            return false;
+          }
+          return true;
         }
       }
 
