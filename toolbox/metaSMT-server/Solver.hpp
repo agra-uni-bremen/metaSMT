@@ -55,7 +55,12 @@ public:
             ret = makeResultString(command, *result);
           }
         }
-      } catch (std::exception e) {
+      } 
+      catch (std::invalid_argument e) {
+        std::cerr << "[SOLVER] " << e.what() << std::endl;
+        ret = "error";
+      }
+      catch (std::exception e) {
         std::cerr << "[SOLVER] " << e.what() << std::endl;
         ret = "error";
       }
@@ -70,14 +75,15 @@ private:
     spirit::utree::list_type list;
     bool const success = parser.parse(ss, list);
     // std::cerr << "[SOLVER] SUCCESS = " << success << '\n';
-    if ( !success )
+    if ( !success ) {
       throw std::invalid_argument( "Unsupported syntax" );
+    }
     return list;
   }
 
   std::string makeCheckSatResult(boost::any const &result) {
     bool const sat = boost::any_cast<bool>(result);
-    std::cerr << "[SOLVER] check-sat = " << sat << '\n';
+    //std::cerr << "[SOLVER] check-sat = " << sat << '\n';
     return (sat ? "sat" : "unsat");
   }
 
@@ -98,7 +104,7 @@ private:
     else {
       assert( false && "Variable type is not supported" );
     }
-    std::cerr << "[SOLVER] get-value = " << ret << '\n';
+    //std::cerr << "[SOLVER] get-value = " << ret << '\n';
     return ret;
   }
 
