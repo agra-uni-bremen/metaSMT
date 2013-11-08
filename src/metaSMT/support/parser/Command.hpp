@@ -493,6 +493,7 @@ namespace metaSMT {
           std::string const name = utreeToString(*it);
           boost::optional<TypedSymbolPtr> var = getVariable(name);
           if (!var) {
+            std::cerr << "Could not determine variable: " << name << "\n";
             assert( false && "Could not determine variable" );
           }
           // result_wrapper result = read_value(*ctx, (*var)->eval(*ctx));
