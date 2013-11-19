@@ -30,6 +30,7 @@ private:
   void processCommandsLoop();
   void checkTimeout();
   void skipAnswers(int level);
+  bool wasSAT;
 
 private:
   SocketPtr socket;

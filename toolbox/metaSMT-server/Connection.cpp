@@ -19,7 +19,8 @@ Connection::Connection(SocketPtr socket)
   : socket(socket),
     timeoutEnabled(false),
     timeoutThreshold(-1),
-    preferredSolver(0) {
+    preferredSolver(0),
+    wasSAT(false) {
   std::string exit_reason = "requested by client";
   try {
     setupSolvers();
@@ -124,6 +125,11 @@ SolverProcess *Connection::findFastestSolver() {
 }
 
 std::string Connection::checkSat() {
+
+  // before the end of a (check-sat) command, we assume that we don't have a model
+  // for an instance, even if this is not the first call to check-sat in this session
+  wasSAT=false;
+
   gettimeofday(&checkSatStartTime, NULL);
   preferredSolver = findFastestSolver();
   assert( preferredSolver && "preferredSolver must not be NULL" );
@@ -136,6 +142,10 @@ std::string Connection::checkSat() {
   std::stringstream ss;
   ss << std::fixed << std::setprecision(2) << ms / 1000.0;
   std::string const result = preferredSolver->parent_read_command() + " ;; " + preferredSolver->solver_type + " ;; " + ss.str();
+  
+  if (result.find("unsat") == std::string::npos) {
+    wasSAT=true;
+  }
 
   skipAnswers( preferredSolver->num_answers );
 
@@ -176,12 +186,19 @@ void Connection::processCommandsLoop() {
         continue;
     }
 
-    // forward command to solver backend
-    for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
-         it != ie; ++it) {
-      (*it)->parent_write_command(line);
-    }
+    // This variable determines whether one can safely send the command to the solver. In case of
+    // a get-value command after check-sat resulted in UNSAT the Z3 solver backend throws an exception,
+    // killing the server; SMT2 returns the value "false" for the variable, which is also an uncorrect
+    // behaviour.
+    bool const canSafelyPassToSolver = wasSAT || !boost::algorithm::starts_with(line, "(get-value");
 
+    // forward command to solver backend
+    if (canSafelyPassToSolver) {
+      for (Solvers::iterator it = solvers.begin(), ie = solvers.end();
+           it != ie; ++it) {
+        (*it)->parent_write_command(line);
+      }
+    }
     // pass result of check-sat and get-value to the client
     if ( line == "(check-sat)" ) {
       std::cout << "(check-sat) called" << std::endl;
@@ -194,9 +211,11 @@ void Connection::processCommandsLoop() {
       timeoutEnabled = false;
       write( ret );
     } else {
-      // print result and ignore potential results of other solvers
-      write( preferredSolver->parent_read_command() );
-      skipAnswers( preferredSolver->num_answers );
+      if (canSafelyPassToSolver) {
+        // print result and ignore potential results of other solvers
+        write( preferredSolver->parent_read_command() );
+        skipAnswers( preferredSolver->num_answers );
+      }
     }
   }
 }
