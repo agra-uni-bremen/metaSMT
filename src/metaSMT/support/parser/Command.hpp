@@ -12,6 +12,7 @@
 #include "CallByIndex.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <exception>
 
 namespace metaSMT {
   namespace evaluator {
@@ -495,6 +496,7 @@ namespace metaSMT {
           if (!var) {
             std::cerr << "Could not determine variable: " << name << "\n";
             assert( false && "Could not determine variable" );
+            throw std::exception();
           }
           // result_wrapper result = read_value(*ctx, (*var)->eval(*ctx));
           return boost::make_tuple(name,*var);
@@ -575,7 +577,7 @@ namespace metaSMT {
             else {
               assert( false );
               std::cerr << "ERROR: declare-fun with unsupported function type\n";
-              exit(-1);
+              throw std::exception();
             }
           }
         }
