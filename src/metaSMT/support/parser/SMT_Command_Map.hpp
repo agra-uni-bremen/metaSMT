@@ -140,7 +140,6 @@ namespace metaSMT {
 
       static boost::optional<boost::any>
       execute_command(Command const &command, utree const &ast) {
-        boost::optional<boost::any> result;
         return boost::apply_visitor(RunCommandVisitor(ast), command);
       }
 
