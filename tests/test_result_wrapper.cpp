@@ -197,7 +197,7 @@ void check_conversion_ULONG_MAX_in_64bit( result_wrapper const &rw ) {
   BOOST_REQUIRE_EQUAL_COLLECTIONS(tb.begin(), tb.end(), b.begin(), b.end());
 
   unsigned u = rw;
-  BOOST_REQUIRE_EQUAL( u, value );
+  BOOST_REQUIRE_EQUAL( u, unsigned(value) );
 
   unsigned long ul = rw;
   BOOST_REQUIRE_EQUAL( ul, value );
