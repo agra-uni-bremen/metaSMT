@@ -10,6 +10,7 @@ REQUIRES="
 "
 
 FREE="
+  cvc4-1.4
   picosat-936
   boolector-1.5.118
   aiger-20071012
