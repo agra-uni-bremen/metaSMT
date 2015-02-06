@@ -60,22 +60,11 @@ namespace metaSMT {
 
         if (type.isBoolean()) {
           return value.getConst<bool>();
-        }
 
-        //case BITVECTOR_TYPE:
-        //  {
-        //    unsigned long long const value = getBVUnsignedLongLong(cex);
-        //    unsigned const width = getBVLength(cex);
-        //    boost::dynamic_bitset<> bv(width, value);
-        //    std::string str; to_string(bv, str);
-        //    return result_wrapper(str);
-        //  }
-        //  break;
-        //case ARRAY_TYPE:
-        //case UNKNOWN_TYPE:
-        //  assert( false );
-        //  break;
-        //}
+        } else if (type.isBitVector()) {
+          ::CVC4::BitVector bvValue = value.getConst< ::CVC4::BitVector >();
+          return bvValue.toString();
+        }
         return result_wrapper( false );
       }
 
@@ -102,21 +91,18 @@ namespace metaSMT {
       }
 
       // bvtags
-      /*
       result_type operator()( bvtags::var_tag const & var, boost::any args ) {
         assert ( var.width != 0 );
-        Type bv_ty = vc_bvType(vc, var.width);
-        char buf[64];
-        sprintf(buf, "var_%u", var.id);
-        return vc_varExpr(vc, buf, bv_ty);
+        ::CVC4::Type bv_ty = exprManager_.mkBitVectorType(var.width);
+        return exprManager_.mkVar(bv_ty);
       }
 
       result_type operator()( bvtags::bit0_tag , boost::any arg ) {
-        return (vc_bvConstExprFromInt(vc, 1, 0)); // No ptr()
+        return exprManager_.mkConst(::CVC4::BitVector(1u, 0u));
       }
 
       result_type operator()( bvtags::bit1_tag , boost::any arg ) {
-        return (vc_bvConstExprFromInt(vc, 1, 1)); // No ptr()
+        return exprManager_.mkConst(::CVC4::BitVector(1u, 1u));
       }
 
       result_type operator()( bvtags::bvuint_tag , boost::any arg ) {
@@ -125,19 +111,7 @@ namespace metaSMT {
         unsigned long value = boost::get<0>(tuple);
         unsigned long width = boost::get<1>(tuple);
 
-        if ( width > 8*sizeof(unsigned long) ) {
-          std::string val (width, '0');
-
-          std::string::reverse_iterator sit = val.rbegin();
-          for (unsigned long i = 0; i < width; i++, ++sit) {
-            *sit = (value & 1ul) ? '1':'0';
-            value >>= 1;
-          }
-          return vc_bvConstExprFromStr(vc, val.c_str());
-        }
-        else {
-          return vc_bvConstExprFromLL(vc, width, value);
-        }
+        return exprManager_.mkConst(::CVC4::BitVector(width, value));
       }
 
       result_type operator()( bvtags::bvsint_tag , boost::any arg ) {
@@ -146,131 +120,54 @@ namespace metaSMT {
         long value = boost::get<0>(tuple);
         unsigned long width = boost::get<1>(tuple);
 
-        if ( width > 8*sizeof(unsigned long)
-             || value > std::numeric_limits<long int>::max()
-             || value < std::numeric_limits<long int>::min()
-        ) {
-          std::string val (width, '0');
-
-          std::string::reverse_iterator sit = val.rbegin();
-          for (unsigned long i = 0; i < width; i++, ++sit) {
-            *sit = (value & 1l) ? '1':'0';
-            value >>= 1;
-          }
-          return vc_bvConstExprFromStr(vc, val.c_str());
-        }
-        else {
-          return vc_bvConstExprFromLL(vc, width, static_cast<unsigned long>(value));
-        }
+        ::CVC4::BitVector bvValue (width, ::CVC4::Integer(value));
+        return exprManager_.mkConst(bvValue);
       }
 
       result_type operator()( bvtags::bvbin_tag , boost::any arg ) {
         std::string val = boost::any_cast<std::string>(arg);
-        return (vc_bvConstExprFromStr(vc, val.c_str()));
+        return exprManager_.mkConst(::CVC4::BitVector(val));
       }
 
       result_type operator()( bvtags::bvhex_tag , boost::any arg ) {
         std::string hex = boost::any_cast<std::string>(arg);
-        std::string bin (hex.size()*4,'\0');
-
-        for (unsigned i = 0; i < hex.size(); ++i) {
-          switch ( tolower(hex[i]) ) {
-          case '0':
-            bin.replace(4*i,4, "0000");
-            break;
-          case '1':
-            bin.replace(4*i,4, "0001");
-            break;
-          case '2':
-            bin.replace(4*i,4, "0010");
-            break;
-          case '3':
-            bin.replace(4*i,4, "0011");
-            break;
-          case '4':
-            bin.replace(4*i,4, "0100");
-            break;
-          case '5':
-            bin.replace(4*i,4, "0101");
-            break;
-          case '6':
-            bin.replace(4*i,4, "0110");
-            break;
-          case '7':
-            bin.replace(4*i,4, "0111");
-            break;
-          case '8':
-            bin.replace(4*i,4, "1000");
-            break;
-          case '9':
-            bin.replace(4*i,4, "1001");
-            break;
-          case 'a':
-            bin.replace(4*i,4, "1010");
-            break;
-          case 'b':
-            bin.replace(4*i,4, "1011");
-            break;
-          case 'c':
-            bin.replace(4*i,4, "1100");
-            break;
-          case 'd':
-            bin.replace(4*i,4, "1101");
-            break;
-          case 'e':
-            bin.replace(4*i,4, "1110");
-            break;
-          case 'f':
-            bin.replace(4*i,4, "1111");
-            break;
-          }
-        }
-        //std::cout << bin << std::endl;
-        return vc_bvConstExprFromStr(vc, bin.c_str());
+        return exprManager_.mkConst(::CVC4::BitVector(hex, 16));
       }
 
       result_type operator()( bvtags::bvnot_tag , result_type e ) {
-        return vc_bvNotExpr(vc, e);
+        return exprManager_.mkExpr(::CVC4::kind::BITVECTOR_NOT, e);
       }
 
       result_type operator()( bvtags::bvneg_tag , result_type e ) {
-        return vc_bvUMinusExpr(vc, e);
-      }
-
-      result_type operator()( bvtags::bvcomp_tag , result_type a, result_type b ) {
-        ::CVC4::Expr comp = vc_eqExpr(vc, a, b);
-        return vc_boolToBVExpr(vc, comp);
-      }
-
-      result_type operator()( bvtags::bvshl_tag, result_type a, result_type b ) {
-        return vc_bvVar32LeftShiftExpr(vc, b, a);
-      }
-
-      result_type operator()( bvtags::bvshr_tag, result_type a, result_type b ) {
-        return vc_bvVar32RightShiftExpr(vc, b, a);
+        return exprManager_.mkExpr(::CVC4::kind::BITVECTOR_NEG, e);
       }
 
       result_type operator()( bvtags::extract_tag const &
         , unsigned long upper, unsigned long lower
-        , result_type e) {
-        return vc_bvExtract(vc, e, upper, lower);
+        , result_type e)
+      {
+        ::CVC4::BitVectorExtract bvOp (upper, lower);
+        ::CVC4::Expr op = exprManager_.mkConst(bvOp);
+        return exprManager_.mkExpr(op, e);
       }
 
       result_type operator()( bvtags::zero_extend_tag const &
         , unsigned long width
-        , result_type e) {
-        std::string s(width, '0');
-        ::CVC4::Expr zeros = vc_bvConstExprFromStr(vc, s.c_str());
-        return vc_bvConcatExpr(vc, zeros, e);
+        , result_type e)
+      {
+        ::CVC4::BitVectorZeroExtend bvOp (width);
+        ::CVC4::Expr op = exprManager_.mkConst(bvOp);
+        return exprManager_.mkExpr(op, e);
       }
 
       result_type operator()( bvtags::sign_extend_tag const &
         , unsigned long width
-        , result_type e) {
-        unsigned long const current_width = getBVLength(e);
-        return vc_bvSignExtend(vc, e, current_width + width);
+        , result_type e)
+      {
+        ::CVC4::BitVectorSignExtend bvOp (width);
+        ::CVC4::Expr op = exprManager_.mkConst(bvOp);
+        return exprManager_.mkExpr(op, e);
       }
-      */
 
       result_type operator()( predtags::equal_tag const &
                              , result_type a
@@ -327,7 +224,7 @@ namespace metaSMT {
         namespace mpl = boost::mpl;
         using namespace ::CVC4::kind;
 
-        typedef mpl::map29<
+        typedef mpl::map33<
           // binary Logic tags
           mpl::pair<predtags::and_tag,     Op2<AND> >
         , mpl::pair<predtags::nand_tag,    NotOp2<AND> >
@@ -359,7 +256,10 @@ namespace metaSMT {
         , mpl::pair<bvtags::bvugt_tag,     Op2<BITVECTOR_UGT> >
         , mpl::pair<bvtags::bvuge_tag,     Op2<BITVECTOR_UGE> >
         , mpl::pair<bvtags::concat_tag,    Op2<BITVECTOR_CONCAT> >
-        // , mpl::pair<bvtags::bvashr_tag,    Op2<BITVECTOR_ASHR> >
+        , mpl::pair<bvtags::bvcomp_tag,    Op2<BITVECTOR_COMP> >
+        , mpl::pair<bvtags::bvshl_tag,     Op2<BITVECTOR_SHL> >
+        , mpl::pair<bvtags::bvshr_tag,     Op2<BITVECTOR_LSHR> >
+        , mpl::pair<bvtags::bvashr_tag,    Op2<BITVECTOR_ASHR> >
         > Opcode_Map;
 
         typedef

@@ -9,5 +9,5 @@ struct Solver_Fixture {
 };
 
 #include "test_solver.cpp"
-//#include "test_QF_BV.cpp"
-//#include "test_cardinality.cpp"
+#include "test_QF_BV.cpp"
+#include "test_cardinality.cpp"
