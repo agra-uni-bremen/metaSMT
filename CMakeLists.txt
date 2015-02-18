@@ -193,6 +193,22 @@ int main(int argc, const char *argv[]) {
   endif()
 endif()
 
+if(CVC4_FOUND)
+  if( GMPXX_LIBRARIES )
+    set(CVC4_LIBRARIES ${CVC4_LIBRARIES} ${GMPXX_LIBRARIES})
+  else ()
+    set(CVC4_LIBRARIES ${CVC4_LIBRARIES} gmpxx)
+  endif()
+
+  if( GMP_LIBRARIES )
+    set(CVC4_LIBRARIES ${CVC4_LIBRARIES} ${GMP_LIBRARIES})
+  else ()
+    set(CVC4_LIBRARIES ${CVC4_LIBRARIES} gmp)
+  endif()
+
+endif()
+
+
 if (metaSMT_DOC_Doxygen)
   find_package(Doxygen)
 else (metaSMT_DOC_Doxygen)
