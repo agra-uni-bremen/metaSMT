@@ -1,8 +1,10 @@
 #pragma once
 
 #include "object.hpp"
+#include <metaSMT/frontend/QF_BV.hpp>
 #include <metaSMT/support/lazy.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/function.hpp>
 #include <queue>
 
 namespace metaSMT {
