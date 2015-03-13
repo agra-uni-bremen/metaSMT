@@ -458,28 +458,31 @@ BOOST_AUTO_TEST_CASE( variable_equality )
   BOOST_CHECK( !cmp );
 }
 
-BOOST_AUTO_TEST_CASE( interleaved_read_assert )
+BOOST_AUTO_TEST_CASE( read_value_after_assertion_still_valid )
 {
-   predicate p = new_variable();
-   predicate q = new_variable();
-   BOOST_REQUIRE( solve(ctx) );
+  // If this test fails, you need to buffer assertions before calling 
+  // the solve function. Just add the assertion within the solve function
+  // _before_ calling the backend solver.
+  predicate p = new_variable();
+  predicate q = new_variable();
+  BOOST_REQUIRE( solve(ctx) );
 
-   bool vd;
-   vd = read_value(ctx, p);
-   assertion(ctx, nequal(p, vd));
+  bool vd;
+  vd = read_value(ctx, p);
+  assertion(ctx, nequal(p, vd));
 
-   vd = read_value(ctx, q);
-   assertion(ctx, nequal(q, vd));
+  vd = read_value(ctx, q);
+  assertion(ctx, nequal(q, vd));
 
-   BOOST_REQUIRE( solve(ctx) );
+  BOOST_REQUIRE( solve(ctx) );
 
-   vd = read_value(ctx, p);
-   assertion(ctx, nequal(p, vd));
+  vd = read_value(ctx, p);
+  assertion(ctx, nequal(p, vd));
 
-   vd = read_value(ctx, q);
-   assertion(ctx, nequal(q, vd));
+  vd = read_value(ctx, q);
+  assertion(ctx, nequal(q, vd));
 
-   BOOST_REQUIRE( !solve(ctx) );
+  BOOST_REQUIRE( !solve(ctx) );
 }
 
 BOOST_AUTO_TEST_SUITE_END() //Solver

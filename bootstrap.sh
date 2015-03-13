@@ -12,6 +12,7 @@ REQUIRES="
 FREE="
   cvc4-1.4
   picosat-936
+  lingeling-ayv-86bf266-140429
   boolector-1.5.118
   aiger-20071012
   cudd-2.4.2
