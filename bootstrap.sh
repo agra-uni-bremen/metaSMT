@@ -8,12 +8,14 @@ BOOST=boost-1_52_0
 REQUIRES="
   $BOOST
 "
+ACADEMIA="
+  lingeling-ayv-86bf266-140429
+  boolector-2.0
+"
 
 FREE="
   cvc4-1.4
   picosat-936
-  lingeling-ayv-86bf266-140429
-  boolector-1.5.118
   aiger-20071012
   cudd-2.4.2
   minisat-git
@@ -38,6 +40,7 @@ usage() {
 $0 sets up a metaSMT build directory.
 usage: $0 [--free] [--non-free] build
   --help          show this help
+  --academia      include academia license based (Boolector, Lingeling)
   --free          include free backends (Aiger, Boolector, CUDD, PicoSat)
   --non-free      include non-free backends (SWORD, Z3)
   --clean         delete build directory before creating a new one
@@ -64,6 +67,7 @@ fi
 while [[ "$@" ]]; do
   case $1 in
     --help|-h)    usage;;
+    --academia)   REQUIRES="$REQUIRES $ACADEMIA" ;;
     --free)       REQUIRES="$REQUIRES $FREE" ;;
     --non-free)   REQUIRES="$REQUIRES $NONFREE" ;;
     --deps|-d)    DEPS="$2"; shift;;
