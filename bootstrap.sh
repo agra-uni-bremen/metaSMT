@@ -96,7 +96,7 @@ DEPS=$(mk_and_abs_dir ${DEPS:-$BUILD_DIR}) &&
 
 
 if ! cd dependencies; then 
-    echo "missing dependencies folder. Please manually create a checkout or symlink in the metaSMT base folder."
+    echo 'Missing "dependencies" directory. Please refer to the README.md for more details.'
     exit 2
 fi
 
