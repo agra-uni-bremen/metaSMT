@@ -30,6 +30,7 @@ BUILD_CMAKE="no"
 CMAKE_PACKAGE=cmake-2.8.7
 
 CMAKE_ARGS=""
+CMAKE_GENERATOR=""
 
 
 
@@ -48,6 +49,7 @@ usage: $0 [--free] [--non-free] build
   --mode <type>   the CMake build type to configure, types are
    -m <type>      RELEASE, MINSIZEREL, RELWITHDEBINFO, DEBUG
    -Dvar=val      pass options to CMake
+   -G <generator> pass generator to CMake
   --cmake=/p/t/c  use this version of CMake
   --cmake         build a custom CMake version
   <build>         the directory to setup the build environment in
@@ -70,7 +72,7 @@ while [[ "$@" ]]; do
     --install|-i) INSTALL="$2"; shift;;
     --mode|-m)    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_BUILD_TYPE=$2"; shift;;
      -D*)         CMAKE_ARGS="$CMAKE_ARGS '$1'";;
-     -G*)         CMAKE_ARGS="$CMAKE_ARGS '$1'";;
+     -G)          CMAKE_GENERATOR="$2" && shift;;
     --clean|-c)   CLEAN="rm -rf";;
     --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
@@ -115,17 +117,24 @@ cd $BUILD_DIR &&
 PREFIX_PATH=$(echo $REQUIRES| sed "s@[ ^] *@;$DEPS/@g")
 
 eval_echo() {
- $@
- echo "$@"
+  local RESULT=true
+  $@ || RESULT=false
+  echo "$@"
+
+  $RESULT || exit 1
 }
 
-
+EXIT=true;
 
 cd $BUILD_DIR
-eval_echo $CMAKE $SRC_DIR \
+eval_echo $CMAKE \
+  ${CMAKE_GENERATOR:+-G} "$CMAKE_GENERATOR" \
   -DCMAKE_INSTALL_PREFIX="$INSTALL" \
   -DCMAKE_PREFIX_PATH="$PREFIX_PATH" \
   $CMAKE_ARGS \
-  -DBOOST_ROOT="$DEPS/$BOOST"
+  -DBOOST_ROOT="$DEPS/$BOOST" \
+  $SRC_DIR
+
 
 echo "finished bootstrap, you can now call make in $BUILD_DIR"
+
