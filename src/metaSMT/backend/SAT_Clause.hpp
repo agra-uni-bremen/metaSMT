@@ -27,7 +27,7 @@ namespace metaSMT
     public:
       SAT_Clause ()
       {
-        true_lit.id = impl::new_var_id();
+        true_lit.id = int(impl::new_var_id());
         //std::cout << "<true>\n";
         solver.assertion ( true_lit );
         //std::cout << "</true>\n";
@@ -41,7 +41,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::var_tag const& tag, boost::any arg )
       {
-        result_type lit = { impl::new_var_id() };
+        result_type lit = { int(impl::new_var_id()) };
         return lit; 
       }
 
@@ -59,7 +59,7 @@ namespace metaSMT
            
       result_type operator() (logic::tag::and_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3(-lhs,-rhs, out);
         clause2( rhs,-out);
         clause2( lhs,-out);
@@ -68,7 +68,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::or_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3( lhs, rhs,-out);
         clause2(-rhs, out);
         clause2(-lhs, out);
@@ -77,7 +77,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::nor_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3( lhs, rhs, out);
         clause2(-rhs,-out);
         clause2(-lhs,-out);
@@ -91,7 +91,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::nand_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3(-lhs,-rhs,-out);
         clause2( rhs, out);
         clause2( lhs, out);
@@ -100,7 +100,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::xnor_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3( lhs, rhs, out);
         clause3( lhs,-rhs,-out);
         clause3(-lhs, rhs,-out);
@@ -110,7 +110,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::xor_tag const& tag, result_type lhs, result_type rhs )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3( lhs, rhs,-out);
         clause3( lhs,-rhs, out);
         clause3(-lhs, rhs, out);
@@ -153,7 +153,7 @@ namespace metaSMT
 
       result_type operator() (logic::tag::ite_tag const& tag, result_type op1, result_type op2, result_type op3  )
       {
-        result_type out = { impl:: new_var_id() };
+        result_type out = { int(impl::new_var_id()) };
         clause3( op1, op3, -out);
         clause3( op1,-op3,  out);
         clause3(-op1, op2, -out);
