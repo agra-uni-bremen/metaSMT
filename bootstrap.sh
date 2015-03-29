@@ -18,10 +18,10 @@ FREE="
   cudd-2.4.2
   minisat-git
   stp-svn
+  Z3-git
 "
 
 NONFREE="
-  Z3-4.1
   SWORD-1.1
 "
 
