@@ -1,57 +1,50 @@
 #pragma once
-#include <cstdlib>
-#include <cstring>
-#include <sys/stat.h>
-#include <ftw.h>
+
+#include <boost/filesystem.hpp>
+
 
 namespace metaSMT {
 
   struct GoTmp {
     GoTmp ()
-    : prevPath(get_current_dir_name())
-    , path( (char*) malloc(1025) )
+    : prevPath(boost::filesystem::current_path())
+    , path()
     {
-      struct stat st;
-      if(stat("/dev/shm",&st) == 0) {
-        strncpy(path, "/dev/shm/metaSMT-XXXXXX", 1025);
-        mkdtemp(path);
-      } else if(stat("/tmp",&st) == 0) {
-        strncpy(path, "/tmp/metaSMT-XXXXXX", 1025);
-        mkdtemp(path);
-      } 
-      chdir(path);
+
+      if ( tryDir("/dev/shm") ) {
+        // we are done, use ramdisk
+      } else if( tryDir( boost::filesystem::temp_directory_path()) ) {
+        // done, use /tmp
+      } else {
+        // currend dir should always work
+        tryDir( prevPath );
+      }
+      boost::filesystem::current_path(path);
+
     }
   
     ~GoTmp() {
-      chdir(prevPath);
-  
-      recursive_delete(path);
-  
-      free(path);
-      free(prevPath);
+      boost::filesystem::current_path(prevPath);
+      boost::filesystem::remove_all(path);
     }
 
-    static int recursive_deleter(const char * path, const struct stat *, int type, struct FTW *){
-      switch (type) {
-        case FTW_D:
-        case FTW_DP:
-        case FTW_DNR:
-          return rmdir(path);
-        case FTW_F:
-        case FTW_NS:
-        case FTW_SL:
-        case FTW_SLN:
-          return unlink(path);
+    private:
+      bool tryDir(boost::filesystem::path dir) {
+        try {
+          if (is_directory(dir)) {
+            dir /= "metaSMT-%%%%%%";
+            boost::filesystem::create_directory(path);
+            return true;
+          } 
+        } catch (std::exception &) {
+          // fallback to false
+        }
+        return false;
       }
-      return 1;
-    }
-    static int recursive_delete (const char* path) {
 
-      return nftw( path, recursive_deleter, 20, FTW_DEPTH|FTW_PHYS|FTW_MOUNT);
-    }
-  
-    char* prevPath;
-    char* path;
+    private:
+      boost::filesystem::path prevPath;
+      boost::filesystem::path path;
   };
 
 } /* metaSMT */
