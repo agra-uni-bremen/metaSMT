@@ -63,7 +63,7 @@ if ( NOT TIMEOUT )
 endif()
 
 
-if(metaSMT_USE_SWORD)
+if(metaSMT_USE_SWORD AND NOT APPLE)
   find_package(SWORD QUIET)
 else(metaSMT_USE_SWORD)
   set(SWORD_FOUND 0)
