@@ -1,10 +1,12 @@
 #include "../metaSMT/impl/_var_id.hpp"
 
+#include <boost/atomic.hpp>
+
 namespace metaSMT {
   namespace impl {
       unsigned new_var_id(  )
       {
-        static unsigned _id = 0;
+        static boost::atomic_uint _id ( 0u );
         ++_id;
         return _id;
       } 

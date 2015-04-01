@@ -3,7 +3,7 @@ SRC_DIR=$( cd $(dirname $0) && pwd)
 
 BUILD_DIR=$PWD/build
 
-BOOST=boost-1_52_0
+BOOST=boost-1_55_0
 
 REQUIRES="
   $BOOST
