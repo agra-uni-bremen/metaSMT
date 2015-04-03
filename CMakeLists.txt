@@ -1,12 +1,8 @@
 PROJECT(metaSMT)
+cmake_minimum_required(VERSION 2.8.9)
 
-cmake_minimum_required(VERSION 2.8.2)
 include(CheckIncludeFileCXX)
-if(CMAKE_VERSION VERSION_LESS 2.8.3)
-  include(cmake/feature_summary_stub.cmake)
-else()
-  include(FeatureSummary)
-endif()
+include(FeatureSummary)
 
 include(CTest)
 
