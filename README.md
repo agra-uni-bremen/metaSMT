@@ -24,6 +24,14 @@ In the same way the python bindings of metaSMT require the boost python
 libraries which will fail to build if the python development package is not
 installed (*python-dev* on Debian-based systems).
 
+
+metaSMT heavily relies on different dependencies (e.g. the different solving
+engines). For a succesfull build, a folder named 'dependencies' containing them
+is expetected to be present in the metaSMT main folder.  You can either freshly
+clone the repository from https://github.com/agra-uni-bremen/dependencies.git
+or symlink to an existing dependencies folder. The foldername 'dependencies' is
+fixed and can not be changed
+
 ## 1. The `bootstrap.sh` script
 
 The `bootstrap.sh` script provided by metaSMT can automatically download and
