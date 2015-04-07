@@ -89,11 +89,32 @@ in the build folder or by setting the option using `ccmake .` or
 `cmake-gui .`.
 
 ## 3. Using metaSMT
+There are two methods of using metaSMT
+* internally: Write your own code within the metaSMT toolbox folder
+* externally: Use metaSMT with your own, probably already existing, cmake project.
+
+### Internal project 
 
 The toolbox folder provides an easy way to use metaSMT in your own code.
 Just create a subfolder and start writing a program. All C++ code will
 automatically build into an executable. The folder contains a separate README
 and some examples using metaSMT.
+
+### External project 
+To use metaSMT with your (already existing) project you need to tell `cmake` that it should 
+be looking for metaSMT. To do so, edit the main `CMakeLists.txt` file and add the line
+
+    find_package( metaSMT REQUIRED )
+
+You still have to tell `cmake` where to look for metaSMT by setting the variable 
+`CMAKE_PREFIX_PATH`, either by
+
+    export CMAKE_PREFIX_PATH=/path/to/metaSMT/install
+    cmake [...]
+
+or
+
+    cmake -DCMAKE_PREFIX_PATH=/path/to/metaSMT/install [...]
 
 ## 4. Documentation
 
