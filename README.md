@@ -27,10 +27,10 @@ installed (*python-dev* on Debian-based systems).
 
 metaSMT heavily relies on different dependencies (e.g. the different solving
 engines). For a succesfull build, a folder named 'dependencies' containing them
-is expetected to be present in the metaSMT main folder.  You can either freshly
+is expected to be present in the metaSMT main folder.  You can either freshly
 clone the repository from https://github.com/agra-uni-bremen/dependencies.git
-or symlink to an existing dependencies folder. The foldername 'dependencies' is
-fixed and can not be changed
+or symlink to an existing dependencies folder. The folder name 'dependencies' is
+fixed and cannot be changed
 
 ## 1. The `bootstrap.sh` script
 
