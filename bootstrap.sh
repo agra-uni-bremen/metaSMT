@@ -34,6 +34,7 @@ CMAKE_GENERATOR=""
 
 
 
+
 usage() {
   cat << EOF
 $0 sets up a metaSMT build directory.
@@ -52,6 +53,8 @@ usage: $0 [--free] [--non-free] build
    -G <generator> pass generator to CMake
   --cmake=/p/t/c  use this version of CMake
   --cmake         build a custom CMake version
+  --build <pkg>   build this dependency package, must exist in depdencies
+  -b <pkg>
   <build>         the directory to setup the build environment in
 EOF
   exit 1
@@ -76,6 +79,8 @@ while [[ "$@" ]]; do
     --clean|-c)   CLEAN="rm -rf";;
     --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
+    --build|-b)   REQUIRES="$REQUIRES $2"; shift;;
+
              *)   ## assume build dir
                   BUILD_DIR="$1" ;;
   esac
