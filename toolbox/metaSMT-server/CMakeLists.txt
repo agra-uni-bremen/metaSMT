@@ -6,7 +6,11 @@ add_tool_executable( metaSMT-server
   REQUIRES
     Boost_FOUND
     Boolector_FOUND
+    CUDD_FOUND
+    MiniSat_FOUND
     PicoSAT_FOUND
+    STP_FOUND
+    SWORD_FOUND
     Z3_FOUND
   LIBRARIES
     pthread
