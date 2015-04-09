@@ -12,17 +12,17 @@ REQUIRES="
 FREE="
   cvc4-1.4
   picosat-936
-  lingeling-ayv-86bf266-140429
   boolector-1.5.118
   aiger-20071012
   cudd-2.4.2
   minisat-git
   stp-svn
+  Z3-git
 "
 
 NONFREE="
-  Z3-4.1
   SWORD-1.1
+  lingeling-ayv-86bf266-140429
 "
 
 CMAKE=cmake
@@ -31,6 +31,7 @@ CMAKE_PACKAGE=cmake-2.8.7
 
 CMAKE_ARGS=""
 CMAKE_GENERATOR=""
+
 
 
 
@@ -52,6 +53,8 @@ usage: $0 [--free] [--non-free] build
    -G <generator> pass generator to CMake
   --cmake=/p/t/c  use this version of CMake
   --cmake         build a custom CMake version
+  --build <pkg>   build this dependency package, must exist in depdencies
+  -b <pkg>
   <build>         the directory to setup the build environment in
 EOF
   exit 1
@@ -76,6 +79,8 @@ while [[ "$@" ]]; do
     --clean|-c)   CLEAN="rm -rf";;
     --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
+    --build|-b)   REQUIRES="$REQUIRES $2"; shift;;
+
              *)   ## assume build dir
                   BUILD_DIR="$1" ;;
   esac
