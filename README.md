@@ -30,7 +30,7 @@ engines). For a succesfull build, a folder named 'dependencies' containing them
 is expected to be present in the metaSMT main folder.  You can either freshly
 clone the repository from https://github.com/agra-uni-bremen/dependencies.git
 or symlink to an existing dependencies folder. The folder name 'dependencies' is
-fixed and cannot be changed
+fixed and cannot be changed.
 
 ## 1. The `bootstrap.sh` script
 
