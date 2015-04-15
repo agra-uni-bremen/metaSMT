@@ -32,7 +32,7 @@ CMAKE_PACKAGE=cmake-3.2.2
 CMAKE_ARGS=""
 CMAKE_GENERATOR=""
 
-
+num_threads="1"
 
 
 usage() {
@@ -55,6 +55,7 @@ usage: $0 [--free] [--non-free] build
   --cmake         build a custom CMake version
   --build <pkg>   build this dependency package, must exist in depdencies
   -b <pkg>
+  -j N            The number of make jobs
   <build>         the directory to setup the build environment in
 EOF
   exit 1
@@ -80,6 +81,11 @@ while [[ "$@" ]]; do
     --cmake=*)    CMAKE="${1#--cmake=}";;
     --cmake)      BUILD_CMAKE="yes";;
     --build|-b)   REQUIRES="$REQUIRES $2"; shift;;
+    -j)
+        num_threads="$2";
+        shift;;
+    -j*)
+        num_threads="${1/-j}";;
 
              *)   ## assume build dir
                   BUILD_DIR="$1" ;;
@@ -108,12 +114,12 @@ if ! cd dependencies; then
 fi
 
 if [ "$BUILD_CMAKE" = "yes" ]; then
-  ./build "$DEPS" $CMAKE_PACKAGE &&
+  ./build -j $num_threads "$DEPS" $CMAKE_PACKAGE &&
   CMAKE=$DEPS/$CMAKE_PACKAGE/bin/cmake
   export PATH="$DEPS/$CMAKE_PACKAGE/bin:$PATH"
 fi
 
-./build "$DEPS" $REQUIRES || {
+./build -j $num_threads "$DEPS" $REQUIRES || {
   echo "building dependencies $REQUIRES failed."
   exit 3
 }
