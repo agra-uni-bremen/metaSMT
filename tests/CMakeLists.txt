@@ -8,7 +8,7 @@ link_libraries(boost_test metaSMT)
 find_program(AWK awk)
 
 function (add_all_tests prog cfile)
-  cmake_parse_arguments(opts "" "" "ENVIRONMENT;ARGS;" ${ARGN})
+  cmake_parse_arguments(opts "" "" "ENVIRONMENT;ARGS" ${ARGN})
   execute_process( COMMAND
     ${AWK} -f search_tests.awk ${cfile}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
