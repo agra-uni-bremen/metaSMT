@@ -10,13 +10,14 @@ REQUIRES="
 "
 
 FREE="
+  cryptominisat-git
   cvc4-1.4
   picosat-936
   boolector-1.5.118
   aiger-20071012
   cudd-2.4.2
   minisat-git
-  stp-svn
+  stp-git
   Z3-git
 "
 
