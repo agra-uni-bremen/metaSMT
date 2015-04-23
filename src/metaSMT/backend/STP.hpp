@@ -454,7 +454,6 @@ namespace metaSMT {
         , mpl::pair<bvtags::bvugt_tag,     VC_F2<&vc_bvGtExpr> >
         , mpl::pair<bvtags::bvuge_tag,     VC_F2<&vc_bvGeExpr> >
         , mpl::pair<bvtags::concat_tag,    VC_F2<&vc_bvConcatExpr> >
-        // , mpl::pair<bvtags::bvashr_tag,    VC_F2<&boolector_sra > >
         > Opcode_Map;
 
         typedef
