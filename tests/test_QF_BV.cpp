@@ -1669,14 +1669,14 @@ BOOST_AUTO_TEST_CASE( bvshl_128_30 )
 
 BOOST_AUTO_TEST_CASE( bvshr_t )
 {
-   const unsigned w = 32;
-   BOOST_REQUIRE( solve(ctx) );
+  const unsigned w = 128u;
+  BOOST_REQUIRE( solve(ctx) );
 
-   assumption( ctx, equal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
-   BOOST_REQUIRE( solve(ctx) );
+  assumption( ctx, equal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
+  BOOST_REQUIRE( solve(ctx) );
 
-   assumption( ctx, nequal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
-   BOOST_REQUIRE( !solve(ctx) );
+  assumption( ctx, nequal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
+  BOOST_REQUIRE( !solve(ctx) );
 }
 
 BOOST_AUTO_TEST_CASE( bvashr_t )
