@@ -1592,16 +1592,16 @@ BOOST_AUTO_TEST_CASE( concat_extract_y )
 
 BOOST_AUTO_TEST_CASE( bvshl_t )
 {
-   const unsigned w = 32;
-   bitvector x = new_bitvector(w);
+  const unsigned w = 128u;
 
-   BOOST_REQUIRE( solve(ctx) );
+  bitvector x = new_bitvector(w);
+  BOOST_REQUIRE( solve(ctx) );
 
-   assertion( ctx, equal( bvmul(x, bvuint(2,w)), bvshl( x, bvuint(2,w))) );
-   BOOST_REQUIRE( solve(ctx) );
+  assertion( ctx, equal( bvmul(x, bvuint(2,w)), bvshl(x, bvuint(2,w))) );
+  BOOST_REQUIRE( solve(ctx) );
 
-   assertion( ctx, nequal( bvmul(x, bvuint(2,w)), bvshl( x, bvuint(2,w))) );
-   BOOST_REQUIRE( !solve(ctx) );
+  assertion( ctx, nequal( bvmul(x, bvuint(2,w)), bvshl(x, bvuint(2,w))) );
+  BOOST_REQUIRE( !solve(ctx) );
 }
 
 BOOST_AUTO_TEST_CASE( bvshl_all )

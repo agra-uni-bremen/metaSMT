@@ -313,11 +313,13 @@ namespace metaSMT {
       }
 
       result_type operator()( bvtags::bvshl_tag, result_type a, result_type b ) {
-        return ptr(vc_bvVar32LeftShiftExpr(vc, b, a));
+        const int w = getBVLength(a);
+        return ptr(vc_bvLeftShiftExprExpr(vc, w, b, a));
       }
 
       result_type operator()( bvtags::bvshr_tag, result_type a, result_type b ) {
-        return ptr(vc_bvVar32RightShiftExpr(vc, b, a));
+        const int w = getBVLength(a);
+        return ptr(vc_bvRightShiftExprExpr(vc, w, b, a));
       }
 
       result_type operator()( bvtags::extract_tag const &
