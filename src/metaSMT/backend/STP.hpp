@@ -312,12 +312,19 @@ namespace metaSMT {
         return ptr(vc_boolToBVExpr(vc, comp));
       }
 
-      result_type operator()( bvtags::bvshl_tag, result_type a, result_type b ) {
-        return ptr(vc_bvVar32LeftShiftExpr(vc, b, a));
+      result_type operator()( bvtags::bvshl_tag, const result_type& a, const result_type& b ) {
+        const int w = getBVLength(a);
+        return ptr(vc_bvLeftShiftExprExpr(vc, w, a, b));
       }
 
-      result_type operator()( bvtags::bvshr_tag, result_type a, result_type b ) {
-        return ptr(vc_bvVar32RightShiftExpr(vc, b, a));
+      result_type operator()( bvtags::bvshr_tag, const result_type& a, const result_type& b ) {
+        const int w = getBVLength(a);
+        return ptr(vc_bvRightShiftExprExpr(vc, w, a, b));
+      }
+
+      result_type operator()( bvtags::bvashr_tag, const result_type& a, const result_type& b ) {
+        const int w = getBVLength(a);
+        return ptr(vc_bvSignedRightShiftExprExpr(vc, w, a, b));
       }
 
       result_type operator()( bvtags::extract_tag const &
@@ -447,7 +454,6 @@ namespace metaSMT {
         , mpl::pair<bvtags::bvugt_tag,     VC_F2<&vc_bvGtExpr> >
         , mpl::pair<bvtags::bvuge_tag,     VC_F2<&vc_bvGeExpr> >
         , mpl::pair<bvtags::concat_tag,    VC_F2<&vc_bvConcatExpr> >
-        // , mpl::pair<bvtags::bvashr_tag,    VC_F2<&boolector_sra > >
         > Opcode_Map;
 
         typedef

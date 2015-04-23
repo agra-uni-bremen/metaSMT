@@ -1592,16 +1592,16 @@ BOOST_AUTO_TEST_CASE( concat_extract_y )
 
 BOOST_AUTO_TEST_CASE( bvshl_t )
 {
-   const unsigned w = 32;
-   bitvector x = new_bitvector(w);
+  const unsigned w = 128u;
 
-   BOOST_REQUIRE( solve(ctx) );
+  bitvector x = new_bitvector(w);
+  BOOST_REQUIRE( solve(ctx) );
 
-   assertion( ctx, equal( bvmul(x, bvuint(2,w)), bvshl( x, bvuint(2,w))) );
-   BOOST_REQUIRE( solve(ctx) );
+  assertion( ctx, equal( bvmul(x, bvuint(2,w)), bvshl(x, bvuint(2,w))) );
+  BOOST_REQUIRE( solve(ctx) );
 
-   assertion( ctx, nequal( bvmul(x, bvuint(2,w)), bvshl( x, bvuint(2,w))) );
-   BOOST_REQUIRE( !solve(ctx) );
+  assertion( ctx, nequal( bvmul(x, bvuint(2,w)), bvshl(x, bvuint(2,w))) );
+  BOOST_REQUIRE( !solve(ctx) );
 }
 
 BOOST_AUTO_TEST_CASE( bvshl_all )
@@ -1669,14 +1669,14 @@ BOOST_AUTO_TEST_CASE( bvshl_128_30 )
 
 BOOST_AUTO_TEST_CASE( bvshr_t )
 {
-   const unsigned w = 32;
-   BOOST_REQUIRE( solve(ctx) );
+  const unsigned w = 128u;
+  BOOST_REQUIRE( solve(ctx) );
 
-   assumption( ctx, equal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
-   BOOST_REQUIRE( solve(ctx) );
+  assumption( ctx, equal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
+  BOOST_REQUIRE( solve(ctx) );
 
-   assumption( ctx, nequal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
-   BOOST_REQUIRE( !solve(ctx) );
+  assumption( ctx, nequal( bvuint(1,w), bvshr(bvuint(8,w), bvuint(3, w))) );
+  BOOST_REQUIRE( !solve(ctx) );
 }
 
 BOOST_AUTO_TEST_CASE( bvashr_t )
