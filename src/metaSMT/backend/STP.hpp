@@ -34,7 +34,9 @@ namespace metaSMT {
 
       STP()
         : vc( vc_createValidityChecker() )
-      {}
+      {
+        make_division_total( vc );
+      }
 
       ~STP() {
         for( Exprs::iterator it = exprs.begin(), ie = exprs.end();
@@ -444,7 +446,7 @@ namespace metaSMT {
         , mpl::pair<bvtags::bvudiv_tag,    VC_SIZE_F2<&vc_bvDivExpr> >
         , mpl::pair<bvtags::bvurem_tag,    VC_SIZE_F2<&vc_bvModExpr> >
         , mpl::pair<bvtags::bvsdiv_tag,    VC_SIZE_F2<&vc_sbvDivExpr> >
-        , mpl::pair<bvtags::bvsrem_tag,    VC_SIZE_F2<&vc_sbvModExpr> >
+        , mpl::pair<bvtags::bvsrem_tag,    VC_SIZE_F2<&vc_sbvRemExpr> >
         , mpl::pair<bvtags::bvslt_tag,     VC_F2<&vc_sbvLtExpr> >
         , mpl::pair<bvtags::bvsle_tag,     VC_F2<&vc_sbvLeExpr> >
         , mpl::pair<bvtags::bvsgt_tag,     VC_F2<&vc_sbvGtExpr> >
