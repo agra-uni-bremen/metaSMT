@@ -34,7 +34,9 @@ namespace metaSMT {
 
       STP()
         : vc( vc_createValidityChecker() )
-      {}
+      {
+        make_division_total( vc );
+      }
 
       ~STP() {
         for( Exprs::iterator it = exprs.begin(), ie = exprs.end();
