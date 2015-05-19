@@ -5,6 +5,8 @@
 #include "adder_impl.hpp"
 #include "bdd_impl.hpp"
 
+#include <boost/optional.hpp>
+
 namespace metaSMT {
   namespace cardinality {
     namespace cardtags = metaSMT::logic::cardinality::tag;

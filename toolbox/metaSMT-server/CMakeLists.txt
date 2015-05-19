@@ -12,6 +12,7 @@ add_tool_executable( metaSMT-server
     STP_FOUND
     SWORD_FOUND
     Z3_FOUND
+    STP_FOUND
   LIBRARIES
     pthread
     ${Boost_SYSTEM_LIBRARY}

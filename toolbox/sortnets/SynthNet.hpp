@@ -1,106 +1,18 @@
-#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
-#include <metaSMT/DirectSolver_Context.hpp>
-#include <metaSMT/backend/Boolector.hpp>
-#include <metaSMT/backend/SMT2.hpp>
-#include <metaSMT/backend/SWORD_Backend.hpp>
-#include <metaSMT/backend/Z3_Backend.hpp>
-#include <metaSMT/backend/MiniSAT.hpp>
-#include <metaSMT/backend/PicoSAT.hpp>
-#include <metaSMT/backend/CUDD_Context.hpp>
-#include <metaSMT/backend/SAT_Aiger.hpp>
-#include <metaSMT/BitBlast.hpp>
-#include <metaSMT/frontend/Logic.hpp>
-#include <metaSMT/support/cardinality.hpp>
-#include <metaSMT/support/run_algorithm.hpp>
-#include <metaSMT/API/Comment.hpp>
+#pragma once
 
+#include <metaSMT/API/Assertion.hpp>
+#include <metaSMT/support/cardinality.hpp>
+
+#include <boost/foreach.hpp>
 #include <boost/timer.hpp>
-#include <boost/multi_array.hpp>
-#include <boost/mpl/vector.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/tuple/tuple_io.hpp>
-#include <boost/foreach.hpp>
 
 #include <iostream>
-#include <set>
 
 using namespace metaSMT;
 using namespace metaSMT::logic;
-
-#define foreach BOOST_FOREACH
-
-struct Level {
-
-  std::vector<predicate> vars;
-
-  Level(unsigned size)
-  {
-    for (unsigned i = 0; i < size; i++) {
-      vars.push_back( new_variable() );
-    }
-  }
-
-  predicate & operator[] (unsigned i) {
-    return vars[i];
-  }
-
-  template <typename Context>
-  typename Context::result_type
-  is_sorted(Context & ctx) {
-    //std::cout << "is_sorted called\n";
-    typename Context::result_type ret = evaluate(ctx, True);
-    for (unsigned i = 1; i < vars.size(); i++) {
-      ret = evaluate(ctx, And(ret, 
-          implies(vars[i-1], vars[i])
-      ));
-    }
-    return ret;
-  }
-
-  template <typename Context>
-  typename Context::result_type
-  equal_to(Context & ctx, std::string const & val) {
-    typename Context::result_type ret = evaluate(ctx, True);
-    for (unsigned i = 0; i < vars.size(); i++) {
-      if(val[i] == '1') {
-        ret = evaluate(ctx, And(ret, 
-              vars[i]
-              ));
-      } else {
-        ret = evaluate(ctx, And(ret, 
-              Not(vars[i])
-              ));
-      }
-    }
-    return ret;
-  }
-
-  template <typename Context>
-  void print_assignment(std::ostream& out, Context & ctx) {
-    for (unsigned i = 0; i < vars.size(); i++) {
-      bool b = read_value(ctx, vars[i]);
-      out << b;
-    }
-    out << '\n';
-  }
-
-  template <typename Context>
-  void print(std::ostream& out, Context & ctx) {
-    print_assignment(out, ctx);
-  }
-
-  template <typename Context>
-  std::string assignment(Context & ctx) {
-    std::string ret(vars.size(), '-');
-    for (unsigned i = 0; i < vars.size(); i++) {
-      bool b = read_value(ctx, vars[i]);
-      ret[i] = b ? '1' : '0';
-    }
-    return ret;
-  }
-};
-
 
 template <typename Context>
 struct SynthNet
@@ -118,7 +30,7 @@ struct SynthNet
   NetType::extent_gen extents;
   GateVariables gate_vars;
   ExchangeGates all_gates;
-  
+
 
   SynthNet(unsigned lines)
   : num_lines(lines)
@@ -142,7 +54,7 @@ struct SynthNet
 
   // add sortnet for counterexample
   //
-  // 1 \/ x --\  /--y  
+  // 1 \/ x --\  /--y
   // 0 /\ x \/.\/...y ...
   // 1 \/ x /\./\...y
   // 0 /\ x --/  \--y
@@ -171,7 +83,7 @@ struct SynthNet
     add_level_vars();
     unsigned nlv = num_levels;
     ++num_levels;
-    std::cout << "adding level to " << num_cex << " " << num_levels << std::endl; 
+    std::cout << "adding level to " << num_cex << " " << num_levels << std::endl;
     net.resize(extents[num_cex][num_levels]);
     for (unsigned i = 0; i < num_cex; i++) {
       //std::cout << "creating Level " << i << "," << nlv << "\n";
@@ -197,7 +109,7 @@ struct SynthNet
       ops[i] = evaluate(ctx, equal(a[i], b[i]));
     }
 
-    foreach( Tuple const & pos, all_gates) {
+    BOOST_FOREACH (Tuple const & pos, all_gates) {
       predicate & swap = gate_vars[aidx][pos];
       unsigned p1 = pos.get<0>();
       unsigned p2 = pos.get<1>();
@@ -218,7 +130,7 @@ struct SynthNet
   void add_level_vars() {
     ExchangeIndex ei;
     std::vector<predicate> vars;
-    foreach( Tuple & tup, all_gates) {
+    BOOST_FOREACH (Tuple & tup, all_gates) {
       predicate p = new_variable();
       ei.insert(std::make_pair(tup, p));
       vars.push_back(p);
@@ -229,8 +141,8 @@ struct SynthNet
   }
 
   bool synth() {
-    std::cout 
-      << "starting synthesis for depth " << num_levels-1  
+    std::cout
+      << "starting synthesis for depth " << num_levels-1
       << ", " << num_cex << " counterexamples" << std::endl;
     boost::timer timer;
     assumeSorted();
@@ -239,7 +151,7 @@ struct SynthNet
     return b;
   }
 
-  
+
   ExchangeGates gates(unsigned level) {
     ExchangeIndex & ei = gate_vars[level];
     ExchangeGates ret;
@@ -264,7 +176,7 @@ struct SynthNet
       std::vector<bool> unused(num_lines, true);
       Level& a = *net[0][lev-1];
       Level& b = *net[0][lev];
-      foreach( Tuple const & exg, gates(lev-1)) {
+      BOOST_FOREACH (Tuple const & exg, gates(lev-1)) {
         //std::cout << "creating gate " << lev <<" " << exg << '\n';
         unsigned p1 = exg.get<0>();
         unsigned p2 = exg.get<1>();
@@ -292,9 +204,9 @@ struct SynthNet
       Level& lev = *net[0][0];
       std::string cex = lev.assignment(ver);
       add_counterexample(cex);
-      std::cout 
+      std::cout
         << "found counterexample " << num_cex << '\n'
-        << cex 
+        << cex
         << '\n'
         ;
       for (unsigned i = 1; i < num_levels; i++) {
@@ -318,6 +230,10 @@ struct SynthNet
     for (unsigned i = 0; i < num_levels; i++) {
       net[cex][i]->print_assignment(out, ctx);
 
+      if (i == num_levels -1) {
+        break; // do not print the last gates, they are not used.
+      }
+
       ExchangeIndex & ei = gate_vars[i];
 
       for( ExchangeIndex::iterator i = ei.begin();
@@ -333,104 +249,3 @@ struct SynthNet
   }
 
 };
-
-template<typename Solver>
-struct sortnet
-{
-  typedef bool result_type;
-
-  typedef DirectSolver_Context< IgnoreComments<solver::Z3_Backend> > VerifyerContext;
-  unsigned size; 
-  SynthNet<Solver> syn_net;
-
-  typedef std::list< Level > Net;
-  Net ver_net;
-  
-  //sortnet ( unsigned size ) 
-  sortnet ( unsigned min_depth, std::vector<std::string> const & inits ) 
-  : size(inits[0].size())
-  , syn_net(size)
-  { 
-    for (unsigned i = 0; i < min_depth; i++) {
-      syn_net.add_level();
-    }
-    foreach( std::string const & init, inits) {
-      syn_net.add_counterexample(init);
-    }
-  }
-
-  void print_solution(std::ostream& out) {
-     out << "found solution\n";
-    //syn_net.print_all(out);
-    syn_net.print_one(out);
-  }
-
-  void print_counterexample(std::ostream& out) {
-  }
-
-  bool verify() {
-    VerifyerContext ver;
-    return syn_net.verify_or_add_counterexample(ver);
-  }
-
-  result_type operator() ()
-  {
-    while(true) {
-      while( syn_net.synth() ) {
-        print_solution(std::cout);
-        if( verify() ) {
-          std::cout << "Found Solution." << std::endl;
-          print_solution(std::cout);
-          return result_type();
-        } else {
-          print_counterexample(std::cout);
-        }
-      }
-      std::cout << "add another level." << std::endl;
-      syn_net.add_level();
-    }
-    return result_type(); 
-  }
-
-};
-
-int main(int argc, const char *argv[])
-{
-  typedef boost::mpl::vector < 
-      DirectSolver_Context < IgnoreComments< solver::Boolector > > 
-    , DirectSolver_Context < IgnoreComments< solver::Z3_Backend > >
-    , DirectSolver_Context < IgnoreComments< solver::SWORD_Backend > >
-    , DirectSolver_Context < solver::SMT2 >
-    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < solver::MiniSAT > > > >
-    , DirectSolver_Context < IgnoreComments<BitBlast < SAT_Aiger < solver::PicoSAT > > > >
-    , DirectSolver_Context < IgnoreComments<BitBlast < solver::CUDD_Context > > >
-  > SolverVec;
-
-  if( argc < 3) {
-    std::cout 
-      << "usage: "<< argv[0] 
-      << "<solver> <minimual depth of the sortnet> <input> [...]\n"
-      << "solver can be: \n"
-      << "\t0 - Direct Boolector\n"
-      << "\t1 - Direct Z3\n"
-      << "\t2 - Direct SWORD\n"
-      << "\t3 - Direct SMT-File (Z3)\n"
-      << "\t4 - Direct AIG->MiniSAT\n"
-      << "\t5 - Direct AIG->PicoSAT\n"
-      << "\t6 - Direct CUDD\n"
-      << std::endl;
-    exit(1);
-  }
-
-  unsigned solver = atoi ( argv[1] ); 
-  unsigned min_depth = atoi ( argv[2] ); 
-
-  std::vector<std::string> inits;
-  for (unsigned i = 3; i < argc; i++) {
-    inits.push_back(argv[i]);
-  }
-
-  run_algorithm<SolverVec, sortnet> ( solver, min_depth, inits ); 
-
-  return 0;
-}
