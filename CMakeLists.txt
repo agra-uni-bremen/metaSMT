@@ -260,7 +260,7 @@ endif()
 
 if(CUDD_FOUND)
   config_find(CUDD ${CUDD_DIR})
-  list(APPEND metaSMT_LIBS CUDD_obj )
+  list(APPEND metaSMT_LIBS CUDD_obj CUDD_cudd )
   list(APPEND metaSMT_INCLUDES ${CUDD_INCLUDE_DIR} ${cudd_INCLUDE_DIRS})
 endif()
 
