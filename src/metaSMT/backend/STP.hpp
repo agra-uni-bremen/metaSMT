@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../tags/QF_BV.hpp"
+#include "../tags/Array.hpp"
 #include "../result_wrapper.hpp"
 
 extern "C" {
@@ -16,6 +17,7 @@ namespace metaSMT {
   namespace solver {
     namespace predtags = ::metaSMT::logic::tag;
     namespace bvtags = ::metaSMT::logic::QF_BV::tag;
+    namespace arraytags = ::metaSMT::logic::Array::tag;
 
     /**
      * @ingroup Backend
@@ -372,6 +374,40 @@ namespace metaSMT {
                              , result_type b) {
         return ptr(vc_notExpr(vc, operator()(predtags::equal_tag(), a, b)));
       }
+      
+    
+      result_type operator() (arraytags::array_var_tag const & var
+                              , boost::any args )
+      {
+        if (var.id == 0 ) {
+          throw std::runtime_error("uninitialized array used");
+        }
+       
+        Type index_sort = vc_bvType(vc, var.index_width);
+        Type elem_sort = vc_bvType(vc, var.elem_width);
+        Type ty = vc_arrayType(vc, index_sort, elem_sort);
+
+        char buf[64];
+        sprintf(buf, "var_%u", var.id);
+	
+        return(ptr(vc_varExpr(vc, buf, ty)));	
+
+      }
+
+      
+      result_type operator() (arraytags::select_tag const &
+                              , result_type array
+                              , result_type index) {
+        return ptr(vc_readExpr(vc, array, index));
+      }
+
+      result_type operator() (arraytags::store_tag const &
+                              , result_type array
+                              , result_type index
+                              , result_type value) {
+        return ptr(vc_writeExpr(vc, array, index, value));
+      }
+      
 
       result_type operator()( predtags::distinct_tag const &
                              , result_type a
