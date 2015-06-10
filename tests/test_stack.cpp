@@ -12,7 +12,7 @@ using namespace metaSMT::logic;
 namespace proto = boost::proto;
 using boost::dynamic_bitset;
 
-BOOST_FIXTURE_TEST_SUITE(stack_t, Solver_Fixture )
+BOOST_FIXTURE_TEST_SUITE(stack_test, Solver_Fixture )
 
 BOOST_AUTO_TEST_CASE( simple_sat )
 {
