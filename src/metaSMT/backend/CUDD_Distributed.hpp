@@ -175,8 +175,10 @@ private:
     Cudd_DumpDot (_manager.getManager(),1,&root,iname, NULL,file);
     fclose(file);	
   }
-    private:
+    protected:
       boost::mt19937 gen;
+
+    private:
       BDD previous;
     }; // class CUDD_Distribuded
 
