@@ -1,0 +1,33 @@
+language: cpp
+
+sudo: false
+
+compiler:
+  - gcc
+
+addons:
+  apt:
+    sources:
+    - kalakris-cmake
+    - ubuntu-toolchain-r-test
+    packages:
+    - cmake
+
+cache:
+  directories:
+  - deps
+
+before_install:
+  - git clone https://github.com/agra-uni-bremen/dependencies.git
+  - ./bootstrap.sh --deps deps/ --free -m RELEASE build/
+
+before_script:
+  - cd build
+
+script: make
+
+after_success:
+  - make test
+
+os:
+  - linux
