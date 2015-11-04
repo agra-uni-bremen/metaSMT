@@ -30,7 +30,6 @@ TRAVIS="
   boolector-1.5.118
   cudd-2.4.2
   minisat-git
-  Z3-git
 "
 
 CMAKE=cmake
