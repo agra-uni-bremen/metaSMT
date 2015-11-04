@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/agra-uni-bremen/metaSMT.svg?branch=development)](https://travis-ci.org/agra-uni-bremen/metaSMT)
+
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/6215/badge.svg)](https://scan.coverity.com/projects/agra-uni-bremen-metasmt)
+
 metaSMT is a wrapper around various SMT or SMT-like solvers.
 This means you are able to program against this library and use any
 of the implemented solvers.
