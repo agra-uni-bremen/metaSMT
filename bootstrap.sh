@@ -26,6 +26,13 @@ NONFREE="
   lingeling-ayv-86bf266-140429
 "
 
+TRAVIS="
+  boolector-1.5.118
+  cudd-2.4.2
+  minisat-git
+  Z3-git
+"
+
 CMAKE=cmake
 BUILD_CMAKE="no"
 CMAKE_PACKAGE=cmake-3.2.2
@@ -41,8 +48,9 @@ usage() {
 $0 sets up a metaSMT build directory.
 usage: $0 [--free] [--non-free] build
   --help          show this help
-  --free          include free backends (Aiger, Boolector, CUDD, PicoSat)
-  --non-free      include non-free backends (SWORD, Z3)
+  --free          include free backends (Aiger, Boolector, CUDD, PicoSat, ...)
+  --non-free      include non-free backends (SWORD, Lingeling)
+  --travis        include selected free backends for testing with Travis CI
   --clean         delete build directory before creating a new one
   --deps <dir>    build dependencies in this directory
    -d <dir>       can be shared in different projects
@@ -73,6 +81,7 @@ while [[ "$@" ]]; do
     --help|-h)    usage;;
     --free)       REQUIRES="$REQUIRES $FREE" ;;
     --non-free)   REQUIRES="$REQUIRES $NONFREE" ;;
+    --travis)     REQUIRES="$REQUIRES $TRAVIS" ;;
     --deps|-d)    DEPS="$2"; shift;;
     --install|-i) INSTALL="$2"; shift;;
     --mode|-m)    CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_BUILD_TYPE=$2"; shift;;

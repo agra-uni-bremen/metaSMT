@@ -19,7 +19,7 @@ cache:
 
 before_install:
   - git clone https://github.com/agra-uni-bremen/dependencies.git
-  - ./bootstrap.sh --deps deps/ --free -m RELEASE build/
+  - ./bootstrap.sh --deps deps/ --travis -m RELEASE build/
 
 before_script:
   - cd build
