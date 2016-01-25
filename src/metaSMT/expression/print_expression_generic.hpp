@@ -5,10 +5,8 @@
 #include <boost/spirit/include/karma_eps.hpp>
 #include <boost/spirit/include/karma_string.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/spirit/home/phoenix/bind.hpp>
-#include <boost/spirit/home/phoenix/bind/bind_function.hpp>
-#include <boost/spirit/home/phoenix/bind/bind_member_function.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
 BOOST_FUSION_ADAPT_STRUCT(
