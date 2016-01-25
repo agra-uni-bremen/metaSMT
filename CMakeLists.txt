@@ -171,7 +171,7 @@ if(Z3_FOUND)
     set(Z3_LIBRARIES ${Z3_LIBRARIES} gomp)
   endif()
 
-  set(Z3_LIBRARIES ${Z3_LIBRARIES} rt)
+  set(Z3_LIBRARIES ${Z3_LIBRARIES} rt pthread)
 
   include(CheckCXXSourceRuns)
 
