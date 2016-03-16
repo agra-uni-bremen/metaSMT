@@ -39,7 +39,7 @@ namespace metaSMT {
       }
 
       public:
-        typedef BtorNode* result_type;
+        typedef BoolectorNode* result_type;
 
         result_type ptr(result_type expr) {
           _exprs.push_back(expr);
@@ -49,16 +49,13 @@ namespace metaSMT {
         Boolector ()
         {
           _btor = boolector_new();
-          boolector_enable_model_gen(_btor);
-          boolector_enable_inc_usage(_btor);
-          boolector_abort_function(&Boolector::_boolector_error);
+          boolector_set_opt(_btor, "model_gen", 1);
+          boolector_set_opt(_btor, "incremental", 1);
+          //boolector_abort_function(&Boolector::_boolector_error);
         }
 
         ~Boolector() {
-          for( std::list<result_type>::iterator ite = _exprs.begin(); ite!=_exprs.end(); ++ite)
-          {
-            boolector_release(_btor, *ite);
-          }
+          boolector_release_all(_btor);
           boolector_delete(_btor);
         }
 
@@ -76,7 +73,7 @@ namespace metaSMT {
 
         result_wrapper read_value(result_type var)
         {
-          char* value = boolector_bv_assignment(_btor, var);
+          const char* value = boolector_bv_assignment(_btor, var);
           std::string s(value);
           boolector_free_bv_assignment(_btor, value);
           return result_wrapper(s);
