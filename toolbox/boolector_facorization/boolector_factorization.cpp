@@ -48,8 +48,8 @@ int run_metaSMT () {
 int run_btor () {
 
   Btor* btor = boolector_new();
-  boolector_set_opt(_btor, "model_gen", 1); 
-  boolector_set_opt(_btor, "incremental", 1); 
+  boolector_set_opt(btor, "model_gen", 1); 
+  boolector_set_opt(btor, "incremental", 1); 
 
   BoolectorNode* a = boolector_var(btor, width, "a");
   BoolectorNode* b = boolector_var(btor, width, "b");
@@ -75,7 +75,7 @@ int run_btor () {
       valids++; 
     }
   }
-  boolector_release_all(_btor);  
+  boolector_release_all(btor);  
   boolector_delete(btor);
   return valids; 
 }
