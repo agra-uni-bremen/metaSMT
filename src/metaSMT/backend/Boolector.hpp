@@ -46,14 +46,11 @@ namespace metaSMT {
           return expr;
         }
       
-        Boolector (bool use_minisat = false)
+        Boolector()
         {
           _btor = boolector_new();
-          if (use_minisat)
-            assert(boolector_set_sat_solver_minisat(_btor));
           boolector_set_opt(_btor, "model_gen", 1);
           boolector_set_opt(_btor, "incremental", 1);
-          boolector_set_opt(_btor, "rewrite_level", 1);
           //boolector_abort_function(&Boolector::_boolector_error);
         }
 
@@ -390,8 +387,10 @@ namespace metaSMT {
         /* pseudo command */
         void command ( Boolector const & ) { };
 
-      private:
+      protected:
         Btor *_btor;
+
+      private:
         std::list<result_type> _exprs;
     };
 
