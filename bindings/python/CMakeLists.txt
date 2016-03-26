@@ -83,6 +83,7 @@ if(PYTHONINTERP_FOUND)
     OUTPUT "${_CTESTFILE}_"
     COMMAND ${PYMETASMT} tests --discover
      | ${AWK}
+        -v testtime="${TIMEOUT}"
         -v pymetaSMT="${PYMETASMT}"
         -v path="${CMAKE_CURRENT_SOURCE_DIR}"
         -f "${CMAKE_CURRENT_SOURCE_DIR}/generate_ctest_script.awk"
